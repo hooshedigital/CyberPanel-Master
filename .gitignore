@@ -1,0 +1,43 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Credentials & private keys
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# Logs
+*.log
+logs/
+
+# Backups
+*.bak
+*.backup
+backups/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Runtime / cache
+cache/
+tmp/
+temp/
+
+# Local configuration
+config/local/
