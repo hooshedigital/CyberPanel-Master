@@ -16,6 +16,12 @@ class BridgeTests(unittest.TestCase):
             self.assertFalse(bridge.gateway_status()["connected"])
             opener.assert_not_called()
 
+    def test_gateway_rejects_status_prefix_impostor(self):
+        bad={"gateway":{"enabled":True,"status_url":"https://supabase.hooshedigital.ir/functions/v1/ai-gateway/api/status.attacker"}}
+        with patch.object(bridge,"safe_config",return_value=bad), patch.object(bridge.urllib.request,"build_opener") as opener:
+            self.assertFalse(bridge.gateway_status()["connected"])
+            opener.assert_not_called()
+
     def test_gateway_rejects_credentials_in_url(self):
         bad={"gateway":{"enabled":True,"status_url":"https://evil@supabase.hooshedigital.ir/functions/v1/ai-gateway/api/status"}}
         with patch.object(bridge,"safe_config",return_value=bad), patch.object(bridge.urllib.request,"build_opener") as opener:
