@@ -43,8 +43,14 @@ def display_context(lang):
     if not isinstance(resources,dict):resources={}
     counts=parsa.get("mission_counts",{})
     if not isinstance(counts,dict):counts={}
+    containers=health.get("containers",{})
+    if not isinstance(containers,dict):containers={}
     # The gateway/server agent are never marked connected without fresh evidence.
-    core=agent.get("verified_core_version") if isinstance(agent.get("verified_core_version"),str) else None
+    try:
+        from cyberpanel_version import VERSION, BUILD
+        core = f"{VERSION} Build {BUILD}"
+    except (ImportError, AttributeError, TypeError, ValueError):
+        core = agent.get("verified_core_version") if isinstance(agent.get("verified_core_version"),str) else None
     return {**context_for(lang),"master":{
         "version":MASTER_VERSION,"version_label":label(core),
         "health_fresh":bool(health),"incidents":count,
@@ -53,6 +59,7 @@ def display_context(lang):
         "parsa_counts":{k:v for k,v in counts.items() if isinstance(k,str) and type(v) is int and 0<=v<=100000},
         "disk_used":resources.get("disk_pct"),
         "gateway_connected":gateway.get("connected") is True,
+        "router_healthy":containers.get("parsa-ai-router-pilot")=="ok",
         "cyberagent_connected":agent.get("connected") is True,
         "cyberagent_state":str(agent.get("state","unknown"))[:24],
         "updated":health.get("generated_utc")
