@@ -1,0 +1,45 @@
+{% extends "baseTemplate/index.html" %}
+{% block title %}CyberPanel Master{% endblock %}
+{% block module_scripts %}{% endblock %}
+{% block content %}
+<div class="dashboard-wrapper" dir="{{ direction }}" lang="{{ lang }}">
+  <div class="dashboard-container">
+    <div class="row">
+      <div class="col-md-9"><h2 class="section-title">{{ t.brand }}</h2><p>{{ t.agent_subtitle }}</p></div>
+      <div class="col-md-3" style="text-align:end">
+        {{ t.language }}: <a href="?lang=en" hreflang="en">English</a> · <a href="?lang=fa" hreflang="fa">فارسی</a>
+      </div>
+    </div>
+    <div class="cp-tile-grid">
+      <div class="cp-tile"><span class="cp-tile-ic"><i class="fas fa-heartbeat"></i></span>
+        <span><div class="cp-tile-title">{{ t.health }}</div><div class="cp-tile-sub">{{ t.issues }}: {{ master.incidents }}</div></span>
+      </div>
+      <div class="cp-tile"><span class="cp-tile-ic"><i class="fas fa-brain"></i></span>
+        <span><div class="cp-tile-title">{{ t.parsa }}</div><div class="cp-tile-sub">{% if master.parsa_connected %}{{ t.connected }} · {{ master.parsa_state }}{% else %}{{ t.waiting }}{% endif %}</div></span>
+      </div>
+      <div class="cp-tile"><span class="cp-tile-ic"><i class="fas fa-server"></i></span>
+        <span><div class="cp-tile-title">{{ t.server_agent }}</div><div class="cp-tile-sub">{% if master.cyberagent_connected %}{{ t.connected }} · {{ master.cyberagent_state }}{% else %}{{ t.agent_unverified }}{% endif %}</div></span>
+      </div>
+      <div class="cp-tile"><span class="cp-tile-ic"><i class="fas fa-project-diagram"></i></span>
+        <span><div class="cp-tile-title">{{ t.gateway }}</div><div class="cp-tile-sub">{% if master.gateway_connected %}{{ t.connected }}{% else %}{{ t.gateway_unverified }}{% endif %}</div></span>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-body">
+      <h3>{{ t.overview }}</h3>
+      <p><strong>{{ t.parsa }}</strong>: {{ t.parsa_desc }}</p>
+      <p><strong>{{ t.server_agent }}</strong>: {{ t.agent_desc }}</p>
+      <p><strong>{{ t.gateway }}</strong>: {{ t.gateway_desc }}</p>
+      <p>{{ t.no_actions }}</p>
+      <p><a href="{% url 'hooshCyberAgentDashboard' %}">{{ t.health }}</a> ·
+         <a href="{% url 'hooshSmartBackupDashboard' %}">{{ t.backup }}</a></p>
+    </div></div>
+    <div class="panel"><div class="panel-body">
+      <h3>{{ t.agent }}</h3>
+      <p>{{ t.parsa }}: {% for state,count in master.parsa_counts.items %}{{ state }} {{ count }} · {% empty %}{{ t.waiting }}{% endfor %}</p>
+      {% if master.disk_used != None %}<p>{{ t.disk }}: {{ master.disk_used }}%</p>{% endif %}
+      <p>{{ t.last_update }}: {{ master.updated|default_if_none:"—" }}</p>
+    </div></div>
+    <p class="text-muted" style="padding:12px 0;font-size:12px">{{ master.version_label }} · HooshDigital</p>
+  </div>
+</div>
+{% endblock %}
