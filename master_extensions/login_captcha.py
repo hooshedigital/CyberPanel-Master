@@ -50,8 +50,10 @@ class TurnstileLoginMiddleware:
         if not conf.get("enabled",False):
             return self.get_response(request)
         endpoint = conf.get("login_post_path","")
-        if not isinstance(endpoint,str) or not endpoint.startswith("/") or endpoint.startswith("//"):
-            return self._deny()
+        if not isinstance(endpoint,str) or not endpoint.startswith("/") or endpoint.startswith("//") or "?" in endpoint or "#" in endpoint:
+            # Invalid configuration must never block unrelated CyberPanel pages.
+            # This config is not safe for deployment; external release checks must catch it.
+            return self.get_response(request)
         if request.method != "POST" or request.path != endpoint:
             return self.get_response(request)
         try:
