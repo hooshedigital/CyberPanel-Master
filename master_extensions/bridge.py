@@ -54,11 +54,11 @@ def core_version():
                     parsed = json.loads(value)
                     v = parsed.get("version") if isinstance(parsed, dict) else None
                     b = parsed.get("build") if isinstance(parsed, dict) else None
-                    if isinstance(v, str) and re.fullmatch(r"[0-9]+(?:\\.[0-9]+){1,3}", v) and type(b) is int and 0 <= b <= 99999:
+                    if isinstance(v, str) and re.fullmatch(r"[0-9]+(?:\.[0-9]+){1,3}", v) and type(b) is int and 0 <= b <= 99999:
                         return f"{v} Build {b}"
                 except (ValueError, TypeError):
                     pass
-            if re.fullmatch(r"[0-9]+(?:\\.[0-9]+){1,3}(?:[-. ]?(?:build|b)[ ]?[0-9]+)?",value,re.I):
+            if re.fullmatch(r"[0-9]+(?:\.[0-9]+){1,3}(?:[-. ]?(?:build|b)[ ]?[0-9]+)?",value,re.I):
                 return value
         except (OSError,ValueError):
             continue
