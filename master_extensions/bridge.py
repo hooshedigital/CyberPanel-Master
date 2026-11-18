@@ -83,8 +83,8 @@ def gateway_status():
         or parsed.username or parsed.password or parsed.fragment
         or parsed.query or parsed.scheme not in ("https","http")
         or (parsed.scheme=="http" and parsed.hostname not in ("localhost","127.0.0.1"))
-        or not parsed.path.startswith("/functions/v1/ai-gateway/api/status")
-        and not (parsed.hostname in ("localhost","127.0.0.1") and parsed.path=="/health")):
+        or not (parsed.path == "/functions/v1/ai-gateway/api/status"
+                or (parsed.hostname in ("localhost","127.0.0.1") and parsed.path=="/health"))):
         return result
     try:
         opener=urllib.request.build_opener(_NoRedirect)
