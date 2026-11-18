@@ -1,0 +1,19 @@
+name: CyberPanel Master add-on safety checks
+on:
+  push:
+    branches: [feat/master-captcha-i18n-cyberagent-20261118]
+    paths: ["master_extensions/**", ".github/workflows/master-checks.yml"]
+  pull_request:
+    paths: ["master_extensions/**", ".github/workflows/master-checks.yml"]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test safe siteverify, secret isolation and RTL/LTR translations
+        run: |
+          python3 -m compileall -q master_extensions
+          python3 -m unittest discover -s master_extensions/tests -v

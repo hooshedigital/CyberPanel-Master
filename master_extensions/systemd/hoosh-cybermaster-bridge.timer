@@ -1,0 +1,9 @@
+[Unit]
+Description=Sample CyberPanel Master AI/Server agent presence every 3 minutes
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=3min
+RandomizedDelaySec=10s
+Unit=hoosh-cybermaster-bridge.service
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,45 @@
+{% extends "baseTemplate/index.html" %}
+{% load i18n %}
+{% block title %}Smart Backup | CyberPanel Master{% endblock %}
+{% block module_scripts %}{% endblock %}
+{% block content %}
+<style>
+.hb-root{max-width:1120px;margin:16px auto 52px;padding:0 20px}
+.hb-title{font-size:28px;font-weight:800;margin:0 0 8px;color:var(--text-primary,#202b42)}
+.hb-sub{color:var(--text-secondary,#63718b);margin-bottom:24px}
+.hb-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;margin:20px 0}
+.hb-card{border:1px solid var(--border-primary,#dde3ee);border-radius:15px;padding:20px;background:var(--bg-primary,#fff);min-width:0}
+.hb-label{font-size:13px;color:var(--text-secondary,#63718b)}
+.hb-number{font-size:24px;font-weight:750;margin-top:8px;word-break:break-word;color:var(--text-primary,#202b42)}
+.hb-note{font-size:13px;color:var(--text-secondary,#63718b);line-height:1.85}
+.hb-section{margin-top:22px}
+.hb-table{width:100%;border-collapse:collapse;text-align:start}
+.hb-table th,.hb-table td{padding:12px 10px;border-bottom:1px solid var(--border-primary,#dde3ee)}
+.hb-table th{color:var(--text-secondary,#63718b);font-size:13px}
+.hb-actions{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0}
+.hb-link{border-radius:9px;padding:10px 14px;background:#214ebb;color:#fff!important;text-decoration:none}
+.hb-link-alt{background:var(--bg-secondary,#eef3fc);color:var(--text-primary,#202b42)!important}
+.hb-warn{border-right:4px solid #b88519;padding:13px;background:var(--bg-secondary,#f7f9fc);border-radius:8px}
+@media(max-width:600px){.hb-root{padding:0 10px}.hb-title{font-size:22px}.hb-table th,.hb-table td{font-size:12px;padding:8px}}
+</style>
+<main class="hb-root" dir="{{ direction }}" lang="{{ lang }}" aria-label="Hoosh Smart Backup">
+<nav style="text-align:end;margin:0 0 8px" aria-label="Language">{{ b.lang }}: <a href="?lang=en" hreflang="en">English</a> · <a href="?lang=fa" hreflang="fa">فارسی</a></nav>
+<h1 class="hb-title">{{ b.title }}</h1>
+<p class="hb-sub">{{ b.subtitle }}</p>
+<div class="hb-cards">
+<section class="hb-card"><div class="hb-label">{{ b.full_backups }}</div><div class="hb-number">{{ daily_count }}</div><div class="hb-note">{{ b.retention }}</div></section>
+<section class="hb-card"><div class="hb-label">{{ b.size_daily }}</div><div class="hb-number">{{ total_daily_gb }} GB</div><div class="hb-note">{{ b.size_note }}</div></section>
+<section class="hb-card"><div class="hb-label">{{ b.free }}</div><div class="hb-number">{{ disk_free_gb|default_if_none:"—" }} GB</div><div class="hb-note">{{ b.disk_used }}: {{ disk_used|default_if_none:"—" }}٪</div></section>
+<section class="hb-card"><div class="hb-label">{{ b.engine }}</div><div class="hb-number" style="font-size:18px">{{ backup.state }}</div><div class="hb-note">Snapshot: {{ backup.count|default_if_none:"—" }}</div></section>
+</div>
+<section class="hb-card hb-section">
+<h2 style="font-size:20px">{{ b.local }}</h2>
+<div style="overflow-x:auto"><table class="hb-table"><thead><tr><th>{{ b.date }}</th><th>{{ b.archive }}</th><th>{{ b.checksum }}</th></tr></thead>
+<tbody>{% for copy in daily %}<tr><td>{{ copy.date }}</td><td>{{ copy.size_gb }} GB</td><td>{% if copy.checksum_recorded %}{{ b.checksum_present }}{% else %}{{ b.checksum_missing }}{% endif %}</td></tr>{% empty %}<tr><td colspan="3">{{ b.none }}</td></tr>{% endfor %}</tbody></table></div>
+</section>
+<div class="hb-actions"><a class="hb-link" href="{% url 'OneClickBackups' %}">{{ b.core_backups }}</a><a class="hb-link hb-link-alt" href="{% url 'scheduleBackup' %}">{{ b.schedule }}</a><a class="hb-link hb-link-alt" href="{% url 'hooshSmartBackupDashboard' %}">{{ b.refresh }}</a></div>
+<p class="hb-warn">{{ b.warning }}</p>
+<p class="hb-note">HooshDigital Smart Backup {{ version }} · {{ b.footer }} · CyberPanel Master v{{ master_version }} · CyberPanel Core {{ core_version }}</p>
+<p class="hb-note"><a href="{% url 'hooshCyberPanelMaster' %}">CyberPanel Master</a></p>
+</main>
+{% endblock %}

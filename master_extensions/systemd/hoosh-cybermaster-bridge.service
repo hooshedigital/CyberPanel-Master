@@ -1,0 +1,24 @@
+[Unit]
+Description=Hoosh CyberPanel Master read-only CyberAgent/Gateway status bridge
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/usr/bin/python3 /opt/hoosh-cybermaster/bridge.py
+StateDirectory=hoosh-cyber-agent
+StateDirectoryMode=0755
+ProtectSystem=strict
+ProtectHome=yes
+ReadOnlyPaths=/usr/local/CyberCP
+NoNewPrivileges=yes
+PrivateTmp=yes
+RestrictSUIDSGID=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+TimeoutStartSec=15
+Nice=15
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
