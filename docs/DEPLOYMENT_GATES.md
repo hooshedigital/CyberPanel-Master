@@ -27,3 +27,7 @@ This public repository contains add-on code only. No private host files, server 
 - After changing only approved files, smoke direct and domain HTTPS on 443/8090; verify guest redirect, 403 for non-admin, valid form login.
 - Do not restart LSWS broadly while unrelated OpenHands vhost configuration check fails.
 - Code in this branch is NOT automatically deployed.
+
+## Dedicated Cloudflare Turnstile widget provisioned
+
+A Managed-mode widget was created in the owner's Cloudflare account specifically for `manage.hooshedigital.ir` (DNS-only compatible). Public sitekey: `0x4AAAAAAGG-PjEcCDvWgNdr`. **Not yet embedded or active.** The private Siteverify secret was deliberately not returned to the chat or committed. It must be delivered to the server exclusively via an independently authorized secure secret channel, never command-line argv/Root Broker audit logs. Once the exact login POST integration is tested and the secret is safely installed, the middleware may be enabled with fail-closed validation and rollback.
