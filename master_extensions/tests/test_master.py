@@ -77,13 +77,14 @@ class MasterSecurityTests(unittest.TestCase):
             path="/verifyLogin"
             method="POST"
         middleware=TurnstileLoginMiddleware(lambda r:"normal-login")
-        with patch.object(login_captcha,"_config",return_value={"enabled":True,"login_post_path":"broken"}), patch.object(TurnstileLoginMiddleware,"_deny",return_value="blocked"):
+        with patch.object(login_captcha,"_config",return_value={"enabled":True,"login_post_path":"broken"}), patch.object(login_captcha,"flag_enabled",return_value=True), patch.object(TurnstileLoginMiddleware,"_deny",return_value="blocked"):
             self.assertEqual(middleware(Request()),"blocked")
             Request.method="GET"
             self.assertEqual(middleware(Request()),"normal-login")
 
     def test_enabled_valid_login_post_requires_verified_token(self):
         class Request:
+            session={}
             method="POST"
             path="/verifyLogin"
             META={"REMOTE_ADDR":"127.0.0.1","CONTENT_TYPE":"application/json"}
@@ -91,10 +92,26 @@ class MasterSecurityTests(unittest.TestCase):
             def get_host(self): return "manage.hooshedigital.ir"
         conf={"enabled":True,"login_post_path":"/verifyLogin","hostname":"manage.hooshedigital.ir","secret_file":"/private/test"}
         middleware=TurnstileLoginMiddleware(lambda r:"authenticated-by-core")
-        with patch.object(login_captcha,"_config",return_value=conf), patch.object(login_captcha,"_read_secret",return_value="secret"), patch.object(login_captcha,"verify_token",return_value=TurnstileResult(False,"challenge_failed")),patch.object(TurnstileLoginMiddleware,"_deny",return_value="blocked"):
+        with patch.object(login_captcha,"_config",return_value=conf), patch.object(login_captcha,"flag_enabled",return_value=True), patch.object(login_captcha,"_read_secret",return_value="secret"), patch.object(login_captcha,"verify_token",return_value=TurnstileResult(False,"challenge_failed")),patch.object(TurnstileLoginMiddleware,"_deny",return_value="blocked"):
             self.assertEqual(middleware(Request()),"blocked")
-        with patch.object(login_captcha,"_config",return_value=conf), patch.object(login_captcha,"_read_secret",return_value="secret"), patch.object(login_captcha,"verify_token",return_value=TurnstileResult(True,"verified")):
+        with patch.object(login_captcha,"_config",return_value=conf), patch.object(login_captcha,"flag_enabled",return_value=True), patch.object(login_captcha,"_read_secret",return_value="secret"), patch.object(login_captcha,"verify_token",return_value=TurnstileResult(True,"verified")):
             self.assertEqual(middleware(Request()),"authenticated-by-core")
+
+    def test_enabled_without_root_marker_preserves_existing_login(self):
+        class Request:
+            method="POST"
+            path="/verifyLogin"
+        with patch.object(login_captcha,"_config",return_value={"enabled":True}), patch.object(login_captcha,"flag_enabled",return_value=False):
+            self.assertEqual(TurnstileLoginMiddleware(lambda r:"existing-login")(Request()),"existing-login")
+
+    def test_authenticated_session_skips_revalidation(self):
+        class Request:
+            method="POST"
+            path="/verifyLogin"
+            session={"userID": 12}
+        conf={"enabled":True,"login_post_path":"/verifyLogin"}
+        with patch.object(login_captcha,"_config",return_value=conf), patch.object(login_captcha,"flag_enabled",return_value=True):
+            self.assertEqual(TurnstileLoginMiddleware(lambda r:"already-authenticated")(Request()),"already-authenticated")
 
     def test_i18n(self):
         self.assertEqual(resolve_language(None,None),"en")
