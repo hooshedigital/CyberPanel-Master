@@ -6,8 +6,19 @@ verified. Never bypass Django/CyberPanel authentication or existing CSRF.
 from __future__ import annotations
 import ipaddress
 import json
+import stat
 from pathlib import Path
 from .turnstile_core import verify_token
+
+FLAG = Path('/etc/hoosh-cybermaster/turnstile-enabled')
+
+def flag_enabled():
+    try:
+        if FLAG.is_symlink(): return False
+        s=FLAG.stat()
+        return stat.S_ISREG(s.st_mode) and s.st_uid==0 and not s.st_mode & 0o022
+    except OSError:
+        return False
 
 def _config():
     from django.conf import settings
@@ -47,7 +58,7 @@ class TurnstileLoginMiddleware:
 
     def __call__(self,request):
         conf = _config()
-        if not conf.get("enabled",False):
+        if not conf.get("enabled",False) or not flag_enabled():
             return self.get_response(request)
         endpoint = conf.get("login_post_path","")
         if not isinstance(endpoint,str) or not endpoint.startswith("/") or endpoint.startswith("//") or "?" in endpoint or "#" in endpoint:
@@ -55,6 +66,8 @@ class TurnstileLoginMiddleware:
             # GET pages remain available for recovery and owner diagnostics.
             return self._deny() if request.method == "POST" else self.get_response(request)
         if request.method != "POST" or request.path != endpoint:
+            return self.get_response(request)
+        if request.session.get("userID") is not None:
             return self.get_response(request)
         try:
             secret = _read_secret(conf.get("secret_file",""))
@@ -73,6 +86,6 @@ class TurnstileLoginMiddleware:
     @staticmethod
     def _deny():
         from django.http import JsonResponse
-        response = JsonResponse({"captcha_required":True,"error":"captcha_verification_failed"},status=403)
+        response = JsonResponse({"captcha_required":True,"error":"captcha_verification_failed","error_message":"Security verification failed. Please retry."},status=403)
         response["Cache-Control"]="no-store"
         return response
