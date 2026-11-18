@@ -28,6 +28,14 @@ class BridgeTests(unittest.TestCase):
             self.assertFalse(bridge.gateway_status()["connected"])
             opener.assert_not_called()
 
+    def test_actual_cyberpanel_json_version(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            v=Path(d)/"version.txt"
+            v.write_text('{"version":"3.0","build":4}')
+            with patch.object(bridge,"CORE_VERSION_FILES",(v,)):
+                self.assertEqual(bridge.core_version(),"3.0 Build 4")
+
     def test_core_version_never_guessed(self):
         with patch.object(bridge,"CORE_VERSION_FILES",(Path("/nonexistent/cyberpanel/version"),)):
             self.assertIsNone(bridge.core_version())
