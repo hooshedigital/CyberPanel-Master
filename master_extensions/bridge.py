@@ -49,7 +49,16 @@ def core_version():
             if p.is_symlink() or not p.is_file() or p.stat().st_size > 100:
                 continue
             value = p.read_text(encoding="utf-8").strip()
-            if re.fullmatch(r"[0-9]+(?:\.[0-9]+){1,3}(?:[-. ]?(?:build|b)[ ]?[0-9]+)?",value,re.I):
+            if p.suffix == ".txt":
+                try:
+                    parsed = json.loads(value)
+                    v = parsed.get("version") if isinstance(parsed, dict) else None
+                    b = parsed.get("build") if isinstance(parsed, dict) else None
+                    if isinstance(v, str) and re.fullmatch(r"[0-9]+(?:\\.[0-9]+){1,3}", v) and type(b) is int and 0 <= b <= 99999:
+                        return f"{v} Build {b}"
+                except (ValueError, TypeError):
+                    pass
+            if re.fullmatch(r"[0-9]+(?:\\.[0-9]+){1,3}(?:[-. ]?(?:build|b)[ ]?[0-9]+)?",value,re.I):
                 return value
         except (OSError,ValueError):
             continue
