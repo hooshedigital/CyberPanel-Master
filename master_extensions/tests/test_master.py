@@ -8,7 +8,10 @@ from urllib.parse import parse_qs
 from master_extensions.turnstile_core import verify_token, SITEVERIFY
 from master_extensions.i18n import resolve_language, context_for, LABELS
 from master_extensions.version import label, MASTER_VERSION
-from master_extensions.login_captcha import _extract_token, _read_secret
+from master_extensions.login_captcha import _extract_token, _read_secret, TurnstileLoginMiddleware
+from master_extensions import login_captcha
+from master_extensions.turnstile_core import TurnstileResult
+from unittest.mock import patch
 
 class FakeResponse:
     status = 200
@@ -60,6 +63,38 @@ class MasterSecurityTests(unittest.TestCase):
         class TooLong(Request):
             body=b"x"*20000
         self.assertIsNone(_extract_token(TooLong()))
+
+    def test_disabled_captcha_never_changes_login(self):
+        class Request:
+            method="POST"
+            path="/verifyLogin"
+        with patch.object(login_captcha,"_config",return_value={"enabled":False}):
+            result=TurnstileLoginMiddleware(lambda r:"normal-login")(Request())
+        self.assertEqual(result,"normal-login")
+
+    def test_enabled_captcha_invalid_route_denies_posts_not_get(self):
+        class Request:
+            path="/verifyLogin"
+            method="POST"
+        middleware=TurnstileLoginMiddleware(lambda r:"normal-login")
+        with patch.object(login_captcha,"_config",return_value={"enabled":True,"login_post_path":"broken"}), patch.object(TurnstileLoginMiddleware,"_deny",return_value="blocked"):
+            self.assertEqual(middleware(Request()),"blocked")
+            Request.method="GET"
+            self.assertEqual(middleware(Request()),"normal-login")
+
+    def test_enabled_valid_login_post_requires_verified_token(self):
+        class Request:
+            method="POST"
+            path="/verifyLogin"
+            META={"REMOTE_ADDR":"127.0.0.1","CONTENT_TYPE":"application/json"}
+            body=b'{"captcha_token":"test-challenge"}'
+            def get_host(self): return "manage.hooshedigital.ir"
+        conf={"enabled":True,"login_post_path":"/verifyLogin","hostname":"manage.hooshedigital.ir","secret_file":"/private/test"}
+        middleware=TurnstileLoginMiddleware(lambda r:"authenticated-by-core")
+        with patch.object(login_captcha,"_config",return_value=conf), patch.object(login_captcha,"_read_secret",return_value="secret"), patch.object(login_captcha,"verify_token",return_value=TurnstileResult(False,"challenge_failed")),patch.object(TurnstileLoginMiddleware,"_deny",return_value="blocked"):
+            self.assertEqual(middleware(Request()),"blocked")
+        with patch.object(login_captcha,"_config",return_value=conf), patch.object(login_captcha,"_read_secret",return_value="secret"), patch.object(login_captcha,"verify_token",return_value=TurnstileResult(True,"verified")):
+            self.assertEqual(middleware(Request()),"authenticated-by-core")
 
     def test_i18n(self):
         self.assertEqual(resolve_language(None,None),"en")
