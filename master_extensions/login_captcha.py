@@ -51,9 +51,9 @@ class TurnstileLoginMiddleware:
             return self.get_response(request)
         endpoint = conf.get("login_post_path","")
         if not isinstance(endpoint,str) or not endpoint.startswith("/") or endpoint.startswith("//") or "?" in endpoint or "#" in endpoint:
-            # Invalid configuration must never block unrelated CyberPanel pages.
-            # This config is not safe for deployment; external release checks must catch it.
-            return self.get_response(request)
+            # Fail closed for POSTs when CAPTCHA was enabled but route config is broken.
+            # GET pages remain available for recovery and owner diagnostics.
+            return self._deny() if request.method == "POST" else self.get_response(request)
         if request.method != "POST" or request.path != endpoint:
             return self.get_response(request)
         try:
