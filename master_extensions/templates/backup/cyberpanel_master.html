@@ -23,12 +23,16 @@
       <div class="cp-tile"><span class="cp-tile-ic"><i class="fas fa-project-diagram"></i></span>
         <span><div class="cp-tile-title">{{ t.gateway }}</div><div class="cp-tile-sub">{% if master.gateway_connected %}{{ t.connected }}{% else %}{{ t.gateway_unverified }}{% endif %}</div></span>
       </div>
+      <div class="cp-tile"><span class="cp-tile-ic"><i class="fas fa-route"></i></span>
+        <span><div class="cp-tile-title">{{ t.router }}</div><div class="cp-tile-sub">{% if master.router_healthy %}{{ t.connected }}{% else %}{{ t.unknown }}{% endif %}</div></span>
+      </div>
     </div>
     <div class="panel"><div class="panel-body">
       <h3>{{ t.overview }}</h3>
       <p><strong>{{ t.parsa }}</strong>: {{ t.parsa_desc }}</p>
       <p><strong>{{ t.server_agent }}</strong>: {{ t.agent_desc }}</p>
       <p><strong>{{ t.gateway }}</strong>: {{ t.gateway_desc }}</p>
+      <p><strong>{{ t.router }}</strong>: {{ t.router_desc }}</p>
       <p>{{ t.no_actions }}</p>
       <p><a href="{% url 'hooshCyberAgentDashboard' %}">{{ t.health }}</a> ·
          <a href="{% url 'hooshSmartBackupDashboard' %}">{{ t.backup }}</a></p>
