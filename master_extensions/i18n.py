@@ -1,0 +1,52 @@
+"""English and Persian labels scoped to new modules; never switch core UI globally."""
+LANGUAGES = ("en", "fa")
+COOKIE = "cybermaster_lang"
+LABELS = {
+ "en": {
+  "brand":"CyberPanel Master","agent":"Cyber Agent","agent_subtitle":"Hosting intelligence and safe operations",
+  "overview":"Overview","health":"Hosting health","parsa":"PARSA executor",
+  "server_agent":"Hoosh CyberAgent","gateway":"AI Gateway","backup":"Smart Backup",
+  "issues":"Confirmed incidents","disk":"Disk usage","ram":"Available memory",
+  "check":"Health check","status":"Status","inspection":"Recommended next step",
+  "ok":"Healthy","failed":"Needs attention","unknown":"Not verified","idle":"Idle",
+  "connected":"Connected","offline":"Offline","waiting":"Waiting for telemetry",
+  "no_actions":"Monitoring only. Changes require separate owner approval.",
+  "gateway_desc":"Routes AI requests to approved providers; it does not execute server commands.",
+  "agent_desc":"Monitors infrastructure and proposes safe operations; no direct web-to-root access.",
+  "parsa_desc":"Plans and executes approved missions through its separate executor.",
+  "gateway_unverified":"Gateway live connection not verified",
+  "agent_unverified":"CyberAgent production deployment not verified",
+  "go_back":"Back to CyberPanel","language":"Language","english":"English","persian":"فارسی",
+  "read_only":"Read-only dashboard","available":"Available","not_ready":"Not configured",
+  "count":"Total","date":"Date","size":"Size (GB)","checksums":"Checksum recorded",
+  "last_update":"Last updated","local_backups":"Local backup inventory",
+  "backup_warning":"Inventory does not prove that restoring a backup will succeed.",
+  "core_version":"CyberPanel core","master_version":"Master extension"},
+ "fa": {
+  "brand":"سایبرپنل مستر","agent":"ایجنت سایبر","agent_subtitle":"هوشمندی میزبانی و عملیات امن",
+  "overview":"نمای کلی","health":"سلامت میزبانی","parsa":"عامل اجرایی پارسا",
+  "server_agent":"ایجنت سرور هوش","gateway":"درگاه هوش مصنوعی","backup":"بکاپ هوشمند",
+  "issues":"رخدادهای تأییدشده","disk":"مصرف دیسک","ram":"حافظه آزاد",
+  "check":"بررسی سلامت","status":"وضعیت","inspection":"اقدام پیشنهادی",
+  "ok":"سالم","failed":"نیازمند بررسی","unknown":"تأییدنشده","idle":"آماده‌به‌کار",
+  "connected":"متصل","offline":"آفلاین","waiting":"در انتظار داده",
+  "no_actions":"این صفحه فقط وضعیت را نمایش می‌دهد. تغییرات به تأیید مستقل مالک نیاز دارند.",
+  "gateway_desc":"درخواست هوش مصنوعی را به ارائه‌دهنده مجاز هدایت می‌کند، اما فرمان سرور اجرا نمی‌کند.",
+  "agent_desc":"منابع سرور را پایش و راهکار امن پیشنهاد می‌کند؛ از وب به Root دسترسی مستقیم ندارد.",
+  "parsa_desc":"مأموریت‌ها را برنامه‌ریزی و از طریق عامل مستقل و با تأیید اجرا می‌کند.",
+  "gateway_unverified":"اتصال زنده درگاه هنوز تأیید نشده است",
+  "agent_unverified":"استقرار عملیاتی ایجنت سرور هنوز تأیید نشده است",
+  "go_back":"بازگشت به سایبرپنل","language":"زبان","english":"English","persian":"فارسی",
+  "read_only":"داشبورد فقط‌خواندنی","available":"در دسترس","not_ready":"پیکربندی‌نشده",
+  "count":"تعداد کل","date":"تاریخ","size":"حجم (گیگابایت)","checksums":"ثبت چک‌سام",
+  "last_update":"آخرین بروزرسانی","local_backups":"آرشیو بکاپ محلی",
+  "backup_warning":"وجود فایل بکاپ موفقیت بازیابی را ثابت نمی‌کند.",
+  "core_version":"هسته سایبرپنل","master_version":"افزونه مستر"}
+}
+def resolve_language(query: str | None, cookie: str | None) -> str:
+    if query in LANGUAGES: return query
+    if cookie in LANGUAGES: return cookie
+    return "en"
+def context_for(lang: str) -> dict:
+    if lang not in LANGUAGES: raise ValueError("unknown language")
+    return {"lang":lang,"direction":"rtl" if lang=="fa" else "ltr","t":LABELS[lang]}
