@@ -50,3 +50,37 @@ def resolve_language(query: str | None, cookie: str | None) -> str:
 def context_for(lang: str) -> dict:
     if lang not in LANGUAGES: raise ValueError("unknown language")
     return {"lang":lang,"direction":"rtl" if lang=="fa" else "ltr","t":LABELS[lang]}
+
+# Dedicated legacy Smart Backup page labels; English is the default UI language.
+BACKUP_LABELS = {
+ "en": {
+  "title":"Smart Backup · HooshDigital",
+  "subtitle":"Secure, low-resource, read-only backup inventory inside CyberPanel",
+  "local":"Local full-backup archives","retention":"Current retention: 7 days",
+  "daily_size":"Daily backup volume","archive_note":"Archive sum; not actual Restic storage usage",
+  "disk_free":"Available server disk space","disk_used":"Disk used",
+  "engine":"Backup engine V1","local_recent":"Recent local archives",
+  "date":"Date","size":"Archive size","checksum":"Checksum file",
+  "recorded":"Recorded; not verified in real time","missing":"Not available",
+  "empty":"No displayable backups found","cp_backups":"CyberPanel Backups",
+  "schedule":"Configure Schedule","refresh":"Refresh Status",
+  "warning":"The V1 engine remains disabled until restore testing and an encrypted destination are configured. No backup, delete or restore commands run from this page. A checksum file does not by itself prove integrity.",
+  "footer":"Independent of commercial CyberPanel features; original site and service routes remain unchanged.",
+  "language":"Language"
+ },
+ "fa": {
+  "title":"پشتیبان‌گیری هوشمند · هوش دیجیتال",
+  "subtitle":"نمای امن، کم‌مصرف و فقط‌خواندنی آرشیوهای پشتیبان در سایبرپنل",
+  "local":"بکاپ‌های کامل محلی","retention":"دوره نگهداری فعلی: ۷ روز",
+  "daily_size":"حجم بکاپ‌های روزانه","archive_note":"جمع حجم آرشیوها، نه مصرف واقعی Restic",
+  "disk_free":"فضای آزاد سرور","disk_used":"مصرف دیسک",
+  "engine":"وضعیت موتور بکاپ V1","local_recent":"نسخه‌های محلی اخیر",
+  "date":"تاریخ","size":"حجم آرشیو","checksum":"فایل checksum",
+  "recorded":"ثبت‌شده؛ هنوز بررسی لحظه‌ای نشده","missing":"موجود نیست",
+  "empty":"بکاپ قابل نمایش یافت نشد","cp_backups":"بکاپ‌های CyberPanel",
+  "schedule":"تنظیم زمان‌بندی","refresh":"تازه‌سازی وضعیت",
+  "warning":"موتور V1 تا پایان آزمون بازیابی و تنظیم مقصد رمزگذاری‌شده فعال نمی‌شود. از این صفحه دستور بکاپ، حذف یا بازیابی اجرا نمی‌شود؛ ثبت فایل checksum به‌تنهایی سلامت آن را ثابت نمی‌کند.",
+  "footer":"این ابزار مستقل از امکانات تجاری CyberPanel است؛ مسیرهای اصلی سایت و سرویس‌ها تغییر نکرده‌اند.",
+  "language":"زبان"
+ }
+}
