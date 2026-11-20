@@ -69,6 +69,19 @@ class NativeUIAndI18NAudit(unittest.TestCase):
             self.assertIn(item["icon"], head)
             self.assertNotIn('url', item)
 
+    def test_smart_backup_controller_matches_its_real_template(self):
+        view = (ROOT / "master_extensions" / "integration" / "hoosh_smart_bilingual.py").read_text()
+        html = (TEMPLATES / "hoosh_smart.html").read_text()
+        self.assertIn('"backup/hoosh_smart.html"', view)
+        self.assertIn('"b": BACKUP_VIEW_LABELS[lang]', view)
+        self.assertIn('"lang": lang', view)
+        self.assertIn('"direction": direction', view)
+        self.assertIn('"master_version": MASTER_VERSION', view)
+        self.assertIn('"core_version": core_version()', view)
+        self.assertIn('master_extensions.i18n import', view)
+        self.assertNotIn("from .master_extensions.i18n", view)
+        self.assertIn('backup_state_label|default:backup.state', html)
+
     def test_english_and_persian_links_are_explicitly_directional(self):
         for template in ("cyberpanel_master.html", "hoosh_smart.html",
                          "hoosh_smart_bilingual.html"):
