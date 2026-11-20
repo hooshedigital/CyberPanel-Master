@@ -24,7 +24,12 @@ LABELS = {
   "backup_warning":"Inventory does not prove that restoring a backup will succeed.",
   "core_version":"CyberPanel core","master_version":"Master extension",
   "billing_heading":"Billing & WHMCS","billing_desc":"Open WHMCS with its own identity and 2FA. This is a link, not single sign-on.",
-  "billing_open":"Open WHMCS admin","billing_not_ready":"WHMCS admin URL is not configured"},
+  "billing_open":"Open WHMCS admin","billing_not_ready":"WHMCS admin URL is not configured",
+  "commerce_heading":"WHMCS Commerce Center",
+  "commerce_intro":"A single admin workspace for the commercial roadmap: billing, products, hosting, affiliates, marketing, Linux and servers.",
+  "commerce_warning":"Roadmap only. No live WHMCS connection, payment or provisioning is implied.",
+  "commerce_stage":"Target release",
+  "commerce_note":"These features are not connected until each integration passes staging and owner approval."},
  "fa": {
   "brand":"سایبرپنل مستر","agent":"ایجنت سایبر","agent_subtitle":"هوشمندی میزبانی و عملیات امن",
   "overview":"نمای کلی","health":"سلامت میزبانی","parsa":"عامل اجرایی پارسا",
@@ -47,7 +52,12 @@ LABELS = {
   "backup_warning":"وجود فایل بکاپ موفقیت بازیابی را ثابت نمی‌کند.",
   "core_version":"هسته سایبرپنل","master_version":"افزونه مستر",
   "billing_heading":"فروش و صورتحساب WHMCS","billing_desc":"ورود به بخش مدیریت WHMCS با احراز هویت و تأیید دومرحله‌ای خود آن انجام می‌شود؛ این فقط یک لینک امن است.",
-  "billing_open":"ورود به مدیریت WHMCS","billing_not_ready":"نشانی مدیریت WHMCS هنوز تنظیم نشده است"}
+  "billing_open":"ورود به مدیریت WHMCS","billing_not_ready":"نشانی مدیریت WHMCS هنوز تنظیم نشده است",
+  "commerce_heading":"مرکز مدیریت تجاری WHMCS",
+  "commerce_intro":"محیط واحد مدیریت نقشه توسعه مالی، محصولات، پکیج هاست، افیلیت، بازاریابی، لینوکس و سرورها.",
+  "commerce_warning":"این بخش نقشه توسعه است؛ اتصال زنده، پرداخت یا ساخت سرویس هنوز از این صفحه انجام نمی‌شود.",
+  "commerce_stage":"نسخه هدف",
+  "commerce_note":"هر قابلیت فقط پس از تست مرحله‌ای و تأیید مالک به اتصال عملیاتی ارتقا پیدا می‌کند."}
 }
 def resolve_language(query: str | None, cookie: str | None) -> str:
     if query in LANGUAGES: return query

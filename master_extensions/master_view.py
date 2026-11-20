@@ -13,6 +13,7 @@ from plogical.httpProc import httpProc
 from .i18n import COOKIE,context_for,resolve_language
 from .version import MASTER_VERSION,label
 from .billing_links import trusted_billing_admin_url
+from .commerce_modules import modules_for, status_note
 
 BASE = Path("/var/lib/hoosh-cyber-agent")
 ALLOW = {"health.json","gateway-status.json","server-agent-status.json"}
@@ -64,7 +65,9 @@ def display_context(lang):
         "cyberagent_connected":agent.get("connected") is True,
         "cyberagent_state":str(agent.get("state","unknown"))[:24],
         "updated":health.get("generated_utc"),
-        "billing_admin_url":trusted_billing_admin_url()
+        "billing_admin_url":trusted_billing_admin_url(),
+        "commerce_modules":modules_for(lang),
+        "commerce_note":status_note(lang)
     }}
 
 @never_cache
