@@ -1,0 +1,13 @@
+# STAGING TEMPLATE ONLY. Only enable after source, I/O, permissions and load review.
+[Unit]
+Description=CyberPanel Master safe disk inventory every 10 minutes
+
+[Timer]
+OnCalendar=*:0/10
+RandomizedDelaySec=60
+AccuracySec=1min
+Persistent=true
+Unit=hoosh-cybermaster-ops.service
+
+[Install]
+WantedBy=timers.target
