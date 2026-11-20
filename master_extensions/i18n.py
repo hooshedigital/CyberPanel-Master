@@ -135,6 +135,12 @@ BACKUP_LABELS = {
   "warning":"The V1 engine remains disabled until restore testing and an encrypted destination are configured. No backup, delete or restore commands run from this page. A checksum file does not by itself prove integrity.",
   "footer":"Independent of commercial CyberPanel features; original site and service routes remain unchanged.",
   "language":"Language","snapshot":"Snapshots",
+  "cleanup_heading":"Cache cleanup preview",
+  "cleanup_desc":"Review-only cache candidates; nothing is removed here.",
+  "cleanup_missing":"No recent cleanup preview",
+  "cleanup_apt":"Old APT archives","cleanup_temp":"Master temporary files",
+  "cleanup_partial":"Incomplete scan","cleanup_count":"Candidates",
+  "cleanup_approval":"Deletion requires independent approval and rollback.",
  },
  "fa": {
   "title":"پشتیبان‌گیری هوشمند · هوش دیجیتال",
@@ -149,6 +155,12 @@ BACKUP_LABELS = {
   "schedule":"تنظیم زمان‌بندی","refresh":"تازه‌سازی وضعیت",
   "warning":"موتور V1 تا پایان آزمون بازیابی و تنظیم مقصد رمزگذاری‌شده فعال نمی‌شود. از این صفحه دستور بکاپ، حذف یا بازیابی اجرا نمی‌شود؛ ثبت فایل checksum به‌تنهایی سلامت آن را ثابت نمی‌کند.",
   "footer":"این ابزار مستقل از امکانات تجاری CyberPanel است؛ مسیرهای اصلی سایت و سرویس‌ها تغییر نکرده‌اند.",
-  "language":"زبان","snapshot":"نسخه‌های ذخیره‌شده"
+  "language":"زبان","snapshot":"نسخه‌های ذخیره‌شده",
+  "cleanup_heading":"پیش‌نمایش پاک‌سازی کش",
+  "cleanup_desc":"فقط نامزدهای کش بررسی می‌شوند؛ حذف از این صفحه ممکن نیست.",
+  "cleanup_missing":"گزارش تازه پاک‌سازی وجود ندارد",
+  "cleanup_apt":"بسته‌های قدیمی APT","cleanup_temp":"فایل‌های موقت مستر",
+  "cleanup_partial":"اسکن ناقص","cleanup_count":"نامزدها",
+  "cleanup_approval":"حذف به تأیید مستقل و برنامه بازگشت نیاز دارد."
  }
 }
