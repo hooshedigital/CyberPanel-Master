@@ -193,6 +193,31 @@ def agent_summary(*, report: dict | None = None, now: datetime | None = None) ->
     checks_total = report.get("checks_total")
     if type(checks_total) is not int or not 0 <= checks_total <= 10000:
         checks_total = None
+    # Only expose validated check names/statuses from the existing agent.
+    # Freeform log text, arguments, paths and credentials never enter Django HTML.
+    raw_checks = report.get("checks")
+    safe_checks = []
+    allowed_names = (
+        "memory", "resource_guard", "disk:/", "disk:/var/lib",
+        "service:lscpd.service", "service:lshttpd.service", "service:pdns.service",
+        "service:mariadb.service", "service:docker.service",
+        "service:hooshedigital-mcp-auth0-staging.service",
+    )
+    if alive and isinstance(raw_checks, list) and len(raw_checks) <= 200:
+        for item in raw_checks:
+            if not isinstance(item, dict):
+                continue
+            name, state = item.get("name"), item.get("status")
+            if name not in allowed_names or state not in ("ok", "warning", "critical", "unknown"):
+                continue
+            if any(c["name"] == name for c in safe_checks):
+                continue
+            safe_checks.append({"name": name, "status": state})
+    check_health = {
+        "ok": sum(c["status"] == "ok" for c in safe_checks),
+        "warning": sum(c["status"] == "warning" for c in safe_checks),
+        "critical": sum(c["status"] == "critical" for c in safe_checks),
+    }
     version = report.get("version")
     if not isinstance(version, str) or len(version) > 32 or not version.replace(".", "").replace("-", "").replace("+", "").isalnum():
         version = None
@@ -202,6 +227,8 @@ def agent_summary(*, report: dict | None = None, now: datetime | None = None) ->
         "updated": stamp if alive else None,
         "status": reported,
         "checks_total": checks_total if alive else None,
+        "checks": safe_checks,
+        "check_health": check_health,
         # A fresh heartbeat is not evidence that command execution is authorized.
         "operations_enabled": False,
     }
