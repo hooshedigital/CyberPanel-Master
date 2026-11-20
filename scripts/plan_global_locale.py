@@ -67,9 +67,9 @@ def patch_settings(text: str) -> str:
         "LANGUAGE_COOKIE_PATH": "'/'",
     }
     for option, value in flags.items():
-        if re.search(rf"(?m)^\\s*{re.escape(option)}\\s*=", text):
+        if re.search(rf"(?m)^\s*{re.escape(option)}\s*=", text):
             raise ValueError("language cookie setting exists: manual parity review required")
-        text += f"\\n{option} = {value}\\n"
+        text += f"\n{option} = {value}\n"
     # We deliberately preserve all existing Core languages, database and secrets.
     return text
 
