@@ -1,5 +1,5 @@
 """Keep custom extension and upstream versions distinct."""
-MASTER_VERSION = "0.1.0"
+MASTER_VERSION = "0.2.0-dev.1"
 
 def label(core_version: str | None) -> str:
     core = (core_version or "not verified").strip()[:60]
