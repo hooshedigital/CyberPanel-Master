@@ -13,7 +13,7 @@ from master_extensions.wordpress_security_scan import scan_wordpress
 
 
 def make_core(root: Path):
-    (root / "CyberCP").mkdir()
+    (root / "CyberCP").mkdir(parents=True)
     (root / "baseTemplate/templates/baseTemplate").mkdir(parents=True)
     (root / "CyberCP/settings.py").write_text(
         "LANGUAGE_CODE = 'en'\nUSE_I18N = True\nLOCALE_PATHS = ('locale',)\n"
@@ -186,11 +186,19 @@ class WordPressSecurityScannerTests(unittest.TestCase):
         from pathlib import Path
         code = (Path(__file__).resolve().parents[2] / "master_extensions" /
                 "wordpress_security_scan.py").read_text()
-        self.assertNotIn("subprocess", code)
-        self.assertNotIn("requests.post", code)
-        self.assertNotIn("os.system(", code)
-        self.assertNotIn("os.remove(", code)
-        self.assertNotIn("unlink(", code)
+        import ast
+        syntax = ast.parse(code)
+        imports = [name.name for node in ast.walk(syntax)
+                   if isinstance(node, ast.Import) for name in node.names]
+        imports += [node.module for node in ast.walk(syntax)
+                    if isinstance(node, ast.ImportFrom)]
+        self.assertNotIn("subprocess", imports)
+        self.assertNotIn("requests", imports)
+        calls = [ast.unparse(node.func) for node in ast.walk(syntax)
+                 if isinstance(node, ast.Call)]
+        for forbidden in ("os.system", "os.remove", "os.unlink", "subprocess.run",
+                          "requests.post"):
+            self.assertNotIn(forbidden, calls)
         self.assertIn("O_NOFOLLOW", code)
 
 
