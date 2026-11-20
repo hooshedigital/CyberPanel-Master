@@ -115,7 +115,9 @@ def gateway_status():
     return result
 
 def emit(name,report):
-    assert name in ("gateway-status.json","server-agent-status.json")
+    if name not in ("gateway-status.json", "server-agent-status.json",
+                    "disk-inventory.json", "cleanup-candidates.json"):
+        raise ValueError("report name is not allowed")
     STATUS_DIR.mkdir(mode=0o755,parents=True,exist_ok=True)
     owner=STATUS_DIR.stat()
     if STATUS_DIR.is_symlink() or owner.st_uid!=0 or owner.st_mode & 0o022:
