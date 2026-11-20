@@ -143,7 +143,12 @@ def build_overlay(root: Path, output: Path) -> dict:
               "additional_language":"fa","production_changes":0,
               "file_count":len(changes),"files":changes}
     # Ship the two static/locale resources alongside the three source overlays.
-    from scripts.compile_po import compile_file
+    # Works both as a CLI (python scripts/stage_global_i18n.py) and imported
+    # package module (python -m unittest / python -m scripts.stage_global_i18n).
+    if __package__:
+        from .compile_po import compile_file
+    else:
+        from compile_po import compile_file
     project = Path(__file__).resolve().parents[1]
     css_src = project / "master_extensions/static/master_extensions/global-shell.css"
     css_dest = output / "baseTemplate/static/baseTemplate/css/hoosh-master-shell.css"
