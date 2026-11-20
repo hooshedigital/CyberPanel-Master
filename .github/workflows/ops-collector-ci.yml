@@ -1,0 +1,30 @@
+name: CyberPanel Master Ops Collector CI
+
+on:
+  push:
+    branches:
+      - feat/ops-disk-agent-cleanup-readonly-20261120
+    paths:
+      - "master_extensions/**"
+      - ".github/workflows/ops-collector-ci.yml"
+  pull_request:
+    paths:
+      - "master_extensions/**"
+      - ".github/workflows/ops-collector-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  ops-unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Bytecode compilation
+        run: python -m compileall -q master_extensions
+      - name: Ops tests and source parity
+        run: python -m unittest discover -s master_extensions/tests -v
