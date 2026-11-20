@@ -98,6 +98,19 @@ class GlobalCoreLanguageTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             patch_urls("urlpatterns = []")
 
+    def test_static_locale_coverage_audit_reports_untranslated_core_pages(self):
+        from scripts.audit_core_i18n import scan_translation_coverage
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            template = root / "baseTemplate/templates/baseTemplate/index.html"
+            template.parent.mkdir(parents=True)
+            template.write_text('{% trans "Dashboard" %} {% trans "New Text" %}')
+            report = scan_translation_coverage(root, {"Dashboard": "داشبورد"})
+            self.assertEqual(report["unique_source_keys"], 2)
+            self.assertEqual(report["translated_keys"], 1)
+            self.assertEqual(report["coverage_percent"], 50)
+            self.assertFalse(report["deployment_ready"])
+
     def test_compiler_rejects_duplicate_and_fuzzy_entries(self):
         data = 'msgid ""\nmsgstr "Content-Type: text/plain; charset=UTF-8\\n"\n'
         with self.assertRaises(ValueError):
