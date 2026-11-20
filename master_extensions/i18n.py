@@ -33,7 +33,7 @@ LABELS = {
   "storage_heading":"Linux storage and disk analysis",
   "storage_desc":"Filesystem totals are read live. Folder breakdown comes only from a separately scheduled, bounded and verified collector.",
   "storage_used":"Used space","storage_free":"Free space","storage_total":"Total capacity",
-  "storage_breakdown":"Storage categories","storage_pending":"Detailed scan not configured or stale",
+  "storage_inodes":"Inodes used","storage_breakdown":"Storage categories","storage_pending":"Detailed scan not configured or stale",
   "storage_partial":"Partial estimate: scan budget reached","storage_complete":"Scan complete",
   "storage_warning":"Low disk headroom: check off-server backups before any cleanup.",
   "storage_scan_only":"This dashboard does not scan the entire filesystem on page load.",
@@ -55,7 +55,7 @@ LABELS = {
   "agent_ops_fresh":"Recent agent heartbeat report","agent_ops_stale":"Agent status file unavailable, unrecognized or stale",
   "agent_ops_commands":"Existing supported checks: ops-status, resource-status, ops-once --dry-run",
   "agent_ops_approval":"Execution from this panel is not connected; operator approval and a scoped agent bridge are required.",
-  "agent_ops_version":"Reported agent version"},
+  "agent_ops_checks":"Checks reported","agent_ops_version":"Reported agent version"},
  "fa": {
   "brand":"سایبرپنل مستر","agent":"ایجنت سایبر","agent_subtitle":"هوشمندی میزبانی و عملیات امن",
   "overview":"نمای کلی","health":"سلامت میزبانی","parsa":"عامل اجرایی پارسا",
@@ -87,7 +87,7 @@ LABELS = {
   "storage_heading":"تحلیل فضای دیسک و ذخیره‌سازی لینوکس",
   "storage_desc":"فضای کل دیسک لحظه‌ای خوانده می‌شود؛ جزئیات پوشه‌ها فقط از گزارش اسکن محدود و زمان‌بندی‌شده دریافت می‌شود.",
   "storage_used":"فضای مصرف‌شده","storage_free":"فضای آزاد","storage_total":"ظرفیت کل",
-  "storage_breakdown":"دسته‌بندی مصرف فضا","storage_pending":"اسکن جزئیات هنوز فعال نیست یا داده آن قدیمی است",
+  "storage_inodes":"مصرف اینودها","storage_breakdown":"دسته‌بندی مصرف فضا","storage_pending":"اسکن جزئیات هنوز فعال نیست یا داده آن قدیمی است",
   "storage_partial":"برآورد ناقص: سقف منابع اسکن تمام شده است","storage_complete":"اسکن کامل",
   "storage_warning":"فضای آزاد کم است؛ پیش از پاک‌سازی از بکاپ خارج‌سروری اطمینان بگیرید.",
   "storage_scan_only":"نمایش این صفحه باعث اسکن سنگین کل سرور نمی‌شود.",
@@ -109,7 +109,7 @@ LABELS = {
   "agent_ops_fresh":"گزارش تازه از قلب تپنده ایجنت","agent_ops_stale":"فایل وضعیت ایجنت موجود، شناخته‌شده یا تازه نیست",
   "agent_ops_commands":"بررسی‌های موجود: ops-status، resource-status و ops-once --dry-run",
   "agent_ops_approval":"اجرای عملیات از این بخش هنوز متصل نیست و به پل ارتباطی محدود و تأیید اپراتور نیاز دارد.",
-  "agent_ops_version":"نسخه گزارش‌شده ایجنت"}
+  "agent_ops_checks":"تعداد بررسی‌های گزارش‌شده","agent_ops_version":"نسخه گزارش‌شده ایجنت"}
 }
 def resolve_language(query: str | None, cookie: str | None) -> str:
     if query in LANGUAGES: return query
