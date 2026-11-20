@@ -59,6 +59,17 @@ def patch_settings(text: str) -> str:
                         "language_registration")
     if "USE_I18N = True" not in text or "LOCALE_PATHS" not in text:
         raise ValueError("gettext not configured in current Core")
+    # Secure global preference cookie; no GET-based language switch.
+    flags = {
+        "LANGUAGE_COOKIE_SECURE": "True",
+        "LANGUAGE_COOKIE_HTTPONLY": "True",
+        "LANGUAGE_COOKIE_SAMESITE": "'Lax'",
+        "LANGUAGE_COOKIE_PATH": "'/'",
+    }
+    for option, value in flags.items():
+        if re.search(rf"(?m)^\\s*{re.escape(option)}\\s*=", text):
+            raise ValueError("language cookie setting exists: manual parity review required")
+        text += f"\\n{option} = {value}\\n"
     # We deliberately preserve all existing Core languages, database and secrets.
     return text
 
