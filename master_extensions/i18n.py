@@ -22,7 +22,9 @@ LABELS = {
   "count":"Total","date":"Date","size":"Size (GB)","checksums":"Checksum recorded",
   "last_update":"Last updated","local_backups":"Local backup inventory",
   "backup_warning":"Inventory does not prove that restoring a backup will succeed.",
-  "core_version":"CyberPanel core","master_version":"Master extension"},
+  "core_version":"CyberPanel core","master_version":"Master extension",
+  "billing_heading":"Billing & WHMCS","billing_desc":"Open WHMCS with its own identity and 2FA. This is a link, not single sign-on.",
+  "billing_open":"Open WHMCS admin","billing_not_ready":"WHMCS admin URL is not configured"},
  "fa": {
   "brand":"سایبرپنل مستر","agent":"ایجنت سایبر","agent_subtitle":"هوشمندی میزبانی و عملیات امن",
   "overview":"نمای کلی","health":"سلامت میزبانی","parsa":"عامل اجرایی پارسا",
@@ -43,7 +45,9 @@ LABELS = {
   "count":"تعداد کل","date":"تاریخ","size":"حجم (گیگابایت)","checksums":"ثبت چک‌سام",
   "last_update":"آخرین بروزرسانی","local_backups":"آرشیو بکاپ محلی",
   "backup_warning":"وجود فایل بکاپ موفقیت بازیابی را ثابت نمی‌کند.",
-  "core_version":"هسته سایبرپنل","master_version":"افزونه مستر"}
+  "core_version":"هسته سایبرپنل","master_version":"افزونه مستر",
+  "billing_heading":"فروش و صورتحساب WHMCS","billing_desc":"ورود به بخش مدیریت WHMCS با احراز هویت و تأیید دومرحله‌ای خود آن انجام می‌شود؛ این فقط یک لینک امن است.",
+  "billing_open":"ورود به مدیریت WHMCS","billing_not_ready":"نشانی مدیریت WHMCS هنوز تنظیم نشده است"}
 }
 def resolve_language(query: str | None, cookie: str | None) -> str:
     if query in LANGUAGES: return query

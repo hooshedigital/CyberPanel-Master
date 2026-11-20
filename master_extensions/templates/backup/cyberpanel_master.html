@@ -38,6 +38,15 @@
          <a href="{% url 'hooshSmartBackupDashboard' %}">{{ t.backup }}</a></p>
     </div></div>
     <div class="panel"><div class="panel-body">
+      <h3>{{ t.billing_heading }}</h3>
+      <p>{{ t.billing_desc }}</p>
+      {% if master.billing_admin_url %}
+        <p><a href="{{ master.billing_admin_url }}" target="_blank" rel="noopener noreferrer">{{ t.billing_open }}</a></p>
+      {% else %}
+        <p class="text-muted">{{ t.billing_not_ready }}</p>
+      {% endif %}
+    </div></div>
+    <div class="panel"><div class="panel-body">
       <h3>{{ t.agent }}</h3>
       <p>{{ t.parsa }}: {% for state,count in master.parsa_counts.items %}{{ state }} {{ count }} · {% empty %}{{ t.waiting }}{% endfor %}</p>
       {% if master.disk_used != None %}<p>{{ t.disk }}: {{ master.disk_used }}%</p>{% endif %}

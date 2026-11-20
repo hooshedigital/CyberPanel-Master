@@ -1,0 +1,21 @@
+name: Hoosh storefront contract and master add-on tests
+on:
+  push:
+    branches: ["feat/hoosh-storefront-whmcs-ux-v1-20261120"]
+    paths: ["storefront/**", "master_extensions/**", ".github/workflows/storefront-checks.yml"]
+  pull_request:
+    paths: ["storefront/**", "master_extensions/**", ".github/workflows/storefront-checks.yml"]
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate public storefront links (no live service calls)
+        run: node --test storefront/tests/*.test.cjs
+      - name: Verify Python extension tests and syntax
+        run: |
+          python3 -m compileall -q master_extensions
+          python3 -m unittest discover -s master_extensions/tests -v
