@@ -1,5 +1,13 @@
 # CyberPanel Master — HooshDigital
 
+**Product architecture correction (20 November 2026):** CyberPanel Master means the **entire hosting control panel product**, not an add-on page embedded in another named product. Upstream CyberPanel Core remains the open-source technical base. The existing `/backup/master/` page is the **Operations Center** within CyberPanel Master.
+
+**Next source prerelease:** `CyberPanel Master 0.2.0-dev.1` on the dedicated full-product rebuild Draft PR, **not deployed**. Core-wide default language is English, with Persian as the second user-selectable language. A source-audited Persian translation of 142 shared shell/navigation strings, a fail-closed global Core locale overlay, an agent check-card redesign, and an independent read-only WordPress static security scanner are staged. **Full Core localization and AI-backed paid-feature parity remain incomplete**; do not confuse source code with an operational production scanner.
+
+[Full-product rebuild and acceptance criteria (فارسی)](docs/CYBERPANEL_MASTER_FULL_PRODUCT_REBUILD_FA.md)
+
+---
+
 **Status:** CyberPanel Master v0.1.0 **partially deployed and server-verified** on CyberPanel Core **3.0 Build 4** (18 November 2026). Native branding, Master dashboard, English/Persian Smart Backup, read-only status bridge and Cloudflare Turnstile are present on the live server. Browser-positive login/2FA test and public AI Gateway repair remain open. Read the [exact production verification report](docs/PRODUCTION_VERIFICATION_20261118_FA.md).
 
 CyberPanel Master is an independent extension layer over the installed open-source CyberPanel, **not** a commercial Premium license unlock or a full fork. Its goal is to deliver a professional bilingual hosting panel with a secure login CAPTCHA, actionable monitoring, Smart Backup and integrations with PARSA, Hoosh CyberAgent and AI Gateway while retaining CyberPanel's native design.

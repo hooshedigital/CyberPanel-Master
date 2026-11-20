@@ -1,0 +1,434 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: CyberPanel Master 0.2.0-dev.1\n"
+"Language: fa\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: HooshDigital source-audited navigation translations\n"
+
+msgid "Skip to main content"
+msgstr "رفتن به محتوای اصلی"
+
+msgid "Toggle navigation menu"
+msgstr "باز و بسته کردن منو"
+
+msgid "SERVER CONTROL PANEL"
+msgstr "پنل مدیریت سرور"
+
+msgid "Your hosting workspace"
+msgstr "فضای مدیریت میزبانی شما"
+
+msgid "Search (Ctrl/Cmd-K)"
+msgstr "جست‌وجو (Ctrl/Cmd-K)"
+
+msgid "Open command palette"
+msgstr "باز کردن فرمان‌های سریع"
+
+msgid "Notifications"
+msgstr "اعلان‌ها"
+
+msgid "Dismiss all"
+msgstr "پاک کردن همه اعلان‌ها"
+
+msgid "Reliable email delivery"
+msgstr "ارسال مطمئن ایمیل"
+
+msgid "Learn more"
+msgstr "اطلاعات بیشتر"
+
+msgid "Dismiss"
+msgstr "بستن"
+
+msgid "Automatic backups not configured"
+msgstr "پشتیبان‌گیری خودکار تنظیم نشده است"
+
+msgid "Your websites are not secured with automatic backups."
+msgstr "برای وب‌سایت‌های شما بکاپ خودکار فعال نیست."
+
+msgid "Configure now"
+msgstr "اکنون تنظیم کنید"
+
+msgid "AI-powered malware detection"
+msgstr "شناسایی بدافزار با کمک هوش مصنوعی"
+
+msgid "Advanced threat detection, real-time scanning, zero false positives."
+msgstr "شناسایی پیشرفته تهدیدات و اسکن لحظه‌ای، بدون گزارش مثبت کاذب."
+
+msgid "Start AI Security Scan"
+msgstr "شروع اسکن امنیتی هوشمند"
+
+msgid ".htaccess support is now live"
+msgstr "پشتیبانی از ‎.htaccess اکنون فعال است"
+
+msgid "Full .htaccess support, PHP configuration works, zero rule rewrites needed."
+msgstr "پشتیبانی کامل از ‎.htaccess، تنظیمات PHP و بدون نیاز به بازنویسی قوانین."
+
+msgid "Color scheme"
+msgstr "رنگ‌بندی"
+
+msgid "Make it yours"
+msgstr "ظاهر دلخواه شما"
+
+msgid "Choose a color scheme. Saved in this browser."
+msgstr "رنگ‌بندی را انتخاب کنید؛ انتخاب شما در این مرورگر ذخیره می‌شود."
+
+msgid "Evergreen (default)"
+msgstr "سبز همیشگی (پیش‌فرض)"
+
+msgid "Ocean Blue"
+msgstr "آبی اقیانوسی"
+
+msgid "Cloud Teal"
+msgstr "فیروزه‌ای ابری"
+
+msgid "Violet"
+msgstr "بنفش"
+
+msgid "Slate"
+msgstr "خاکستری سنگی"
+
+msgid "Bright"
+msgstr "روشن"
+
+msgid "Apple"
+msgstr "اپل"
+
+msgid "Toggle dark mode"
+msgstr "تغییر حالت تیره"
+
+msgid "Logout"
+msgstr "خروج"
+
+msgid "Main navigation"
+msgstr "منوی اصلی"
+
+msgid "Search menu…"
+msgstr "جست‌وجوی منو…"
+
+msgid "Search navigation menu"
+msgstr "جست‌وجو در منوی اصلی"
+
+msgid "Clear search"
+msgstr "پاک کردن جست‌وجو"
+
+msgid "No matching menu items"
+msgstr "موردی در منو پیدا نشد"
+
+msgid "Click to copy"
+msgstr "برای کپی کلیک کنید"
+
+msgid "Copy server IP address"
+msgstr "کپی کردن نشانی IP سرور"
+
+msgid "Copied!"
+msgstr "کپی شد!"
+
+msgid "Loading..."
+msgstr "در حال بارگذاری…"
+
+msgid "HOSTING"
+msgstr "میزبانی"
+
+msgid "Dashboard"
+msgstr "داشبورد"
+
+msgid "Websites"
+msgstr "وب‌سایت‌ها"
+
+msgid "WordPress"
+msgstr "وردپرس"
+
+msgid "Email"
+msgstr "ایمیل"
+
+msgid "Databases & FTP"
+msgstr "پایگاه‌داده و FTP"
+
+msgid "Backups"
+msgstr "بکاپ‌ها"
+
+msgid "Build Services"
+msgstr "خدمات توسعه"
+
+msgid "HIRE US"
+msgstr "همکاری با ما"
+
+msgid "ACCOUNT"
+msgstr "حساب کاربری"
+
+msgid "Users & Plans"
+msgstr "کاربران و پلن‌ها"
+
+msgid "ADMINISTRATION"
+msgstr "مدیریت سیستم"
+
+msgid "Server"
+msgstr "سرور"
+
+msgid "Security"
+msgstr "امنیت"
+
+msgid "Settings"
+msgstr "تنظیمات"
+
+msgid "HELP"
+msgstr "راهنما"
+
+msgid "Connect"
+msgstr "ارتباط"
+
+msgid "Community"
+msgstr "انجمن"
+
+msgid "Breadcrumb"
+msgstr "مسیر صفحه"
+
+msgid "CyberEdge Cache"
+msgstr "کش CyberEdge"
+
+msgid "Make every WordPress site faster with CyberEdge Cache"
+msgstr "افزایش سرعت سایت‌های وردپرسی با کش CyberEdge"
+
+msgid "Install from WordPress Manager, connect your account, and verify the live Edge route without leaving CyberPanel."
+msgstr "از مدیریت وردپرس نصب کنید، حساب را متصل کنید و مسیر کش ابری را در همین پنل بررسی کنید."
+
+msgid "Get CyberEdge"
+msgstr "دریافت CyberEdge"
+
+msgid "Dismiss CyberEdge promotion"
+msgstr "بستن پیشنهاد CyberEdge"
+
+msgid "Command palette"
+msgstr "فرمان‌های سریع"
+
+msgid "Search pages and actions…"
+msgstr "جست‌وجوی صفحات و عملیات…"
+
+msgid "Search pages and actions"
+msgstr "جست‌وجوی صفحه و عملیات"
+
+msgid "No results"
+msgstr "نتیجه‌ای پیدا نشد"
+
+msgid "Create Website"
+msgstr "ایجاد وب‌سایت"
+
+msgid "Quick actions"
+msgstr "دسترسی‌های سریع"
+
+msgid "Deploy WordPress"
+msgstr "راه‌اندازی وردپرس"
+
+msgid "Create Email Account"
+msgstr "ایجاد حساب ایمیل"
+
+msgid "Create Database"
+msgstr "ایجاد پایگاه‌داده"
+
+msgid "Website Development"
+msgstr "توسعه وب‌سایت"
+
+msgid "Build services"
+msgstr "خدمات توسعه"
+
+msgid "WordPress & eCommerce"
+msgstr "وردپرس و فروشگاه اینترنتی"
+
+msgid "Website Speed Optimization"
+msgstr "بهینه‌سازی سرعت سایت"
+
+msgid "Android App Development"
+msgstr "توسعه برنامه اندروید"
+
+msgid "iOS App Development"
+msgstr "توسعه برنامه iOS"
+
+msgid "Custom Software & APIs"
+msgstr "نرم‌افزار اختصاصی و API"
+
+msgid "UI / UX Design"
+msgstr "طراحی رابط و تجربه کاربری"
+
+msgid "DevOps & Server Management"
+msgstr "دوآپس و مدیریت سرور"
+
+msgid "Maintenance & Support"
+msgstr "نگه‌داری و پشتیبانی"
+
+msgid "Sites"
+msgstr "سایت‌ها"
+
+msgid "WordPress Sites"
+msgstr "سایت‌های وردپرسی"
+
+msgid "Sub / Addon Domains"
+msgstr "زیردامنه‌ها و دامنه‌های افزوده"
+
+msgid "Create Sub / Addon Domain"
+msgstr "ایجاد زیردامنه یا دامنه افزوده"
+
+msgid "Email Accounts"
+msgstr "حساب‌های ایمیل"
+
+msgid "Email Forwarding"
+msgstr "انتقال ایمیل"
+
+msgid "Catch-All Email"
+msgstr "ایمیل دریافت‌کننده پیش‌فرض"
+
+msgid "Email Limits"
+msgstr "محدودیت‌های ایمیل"
+
+msgid "DKIM Manager"
+msgstr "مدیریت DKIM"
+
+msgid "Webmail"
+msgstr "وب‌میل"
+
+msgid "Roundcube add-on"
+msgstr "افزونه Roundcube"
+
+msgid "Email Delivery"
+msgstr "ارسال ایمیل"
+
+msgid "Email Debugger"
+msgstr "عیب‌یاب ایمیل"
+
+msgid "Mail Queue"
+msgstr "صف ایمیل"
+
+msgid "Email Marketing"
+msgstr "بازاریابی ایمیلی"
+
+msgid "Databases"
+msgstr "پایگاه‌های داده"
+
+msgid "Data"
+msgstr "داده‌ها"
+
+msgid "phpMyAdmin"
+msgstr "phpMyAdmin"
+
+msgid "MySQL Manager"
+msgstr "مدیریت MySQL"
+
+msgid "FTP Accounts"
+msgstr "حساب‌های FTP"
+
+msgid "One-Click Backups"
+msgstr "بکاپ با یک کلیک"
+
+msgid "Incremental Backups"
+msgstr "بکاپ افزایشی"
+
+msgid "Create Backup"
+msgstr "ایجاد بکاپ"
+
+msgid "Restore Backup"
+msgstr "بازیابی بکاپ"
+
+msgid "Schedule Backup"
+msgstr "زمان‌بندی بکاپ"
+
+msgid "View Profile"
+msgstr "مشاهده پروفایل"
+
+msgid "Account"
+msgstr "حساب کاربری"
+
+msgid "List Users"
+msgstr "فهرست کاربران"
+
+msgid "Create User"
+msgstr "ایجاد کاربر"
+
+msgid "Packages"
+msgstr "بسته‌ها"
+
+msgid "Reseller Center"
+msgstr "مرکز نمایندگان فروش"
+
+msgid "Services Status"
+msgstr "وضعیت سرویس‌ها"
+
+msgid "Applications"
+msgstr "برنامه‌ها"
+
+msgid "PHP Extensions"
+msgstr "افزونه‌های PHP"
+
+msgid "PHP Configs"
+msgstr "تنظیمات PHP"
+
+msgid "LiteSpeed Tuning"
+msgstr "بهینه‌سازی LiteSpeed"
+
+msgid "Top Processes"
+msgstr "پردازش‌های پرمصرف"
+
+msgid "Package Manager"
+msgstr "مدیریت بسته‌ها"
+
+msgid "Change Port"
+msgstr "تغییر درگاه"
+
+msgid "Docker Apps"
+msgstr "برنامه‌های Docker"
+
+msgid "Containers"
+msgstr "کانتینرها"
+
+msgid "Root File Manager"
+msgstr "فایل‌منیجر روت"
+
+msgid "DNS Zones"
+msgstr "ناحیه‌های DNS"
+
+msgid "Nameservers"
+msgstr "نام‌سرورها"
+
+msgid "Main Log"
+msgstr "لاگ اصلی"
+
+msgid "Access Logs"
+msgstr "لاگ‌های دسترسی"
+
+msgid "Error Logs"
+msgstr "لاگ‌های خطا"
+
+msgid "AI Scanner"
+msgstr "اسکنر هوشمند"
+
+msgid "Firewall"
+msgstr "دیوار آتش"
+
+msgid "Secure SSH"
+msgstr "امن‌سازی SSH"
+
+msgid "ModSecurity"
+msgstr "ModSecurity"
+
+msgid "ModSecurity Rules"
+msgstr "قوانین ModSecurity"
+
+msgid "Imunify 360"
+msgstr "Imunify 360"
+
+msgid "Manage SSL"
+msgstr "مدیریت SSL"
+
+msgid "Hostname SSL"
+msgstr "SSL نام میزبان"
+
+msgid "Version Management"
+msgstr "مدیریت نسخه‌ها"
+
+msgid "Design"
+msgstr "طراحی"
+
+msgid "Setup Wizard"
+msgstr "راهنمای راه‌اندازی"
+
+msgid "Pages"
+msgstr "صفحات"

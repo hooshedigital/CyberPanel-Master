@@ -1,5 +1,5 @@
 {% extends "baseTemplate/index.html" %}
-{% block title %}CyberPanel Master{% endblock %}
+{% block title %}Operations Center | CyberPanel Master{% endblock %}
 {% block module_scripts %}{% endblock %}
 {% block content %}
 <div class="dashboard-wrapper" dir="{{ direction }}" lang="{{ lang }}">
@@ -175,24 +175,84 @@
       </div>
     </section>
 
+    <!-- Scoped CyberPanel Master Operations Center presentation. No Core global CSS changes. -->
+    <style id="cp-master-agent-styles">
+      .cp-master-agent-console .cp-tile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-block:14px 24px}
+      .cp-master-agent-console .cp-tile{display:flex;align-items:flex-start;gap:14px;min-width:0;padding:18px;border:1px solid var(--border-primary,#dce4e5);border-radius:14px;background:var(--bg-primary,#fff);box-shadow:0 2px 10px rgba(22,39,32,.04)}
+      .cp-master-agent-console .cp-tile-ic{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:42px;height:42px;border-radius:12px;background:var(--bg-secondary,#eef3f1)}
+      .cp-master-agent-console .cp-tile-title{font-weight:700;line-height:1.6;overflow-wrap:anywhere}
+      .cp-master-agent-console .cp-tile-sub{font-size:13px;line-height:1.65;margin-block-start:5px;overflow-wrap:anywhere}
+      .cp-master-agent-console .cp-agent-check--ok{border-inline-start:4px solid var(--success-color,#238354)}
+      .cp-master-agent-console .cp-agent-check--warning{border-inline-start:4px solid var(--warning-color,#b17b22)}
+      .cp-master-agent-console .cp-agent-check--critical{border-inline-start:4px solid var(--danger-color,#b84040)}
+      .cp-master-agent-console .cp-agent-check--unknown{border-inline-start:4px solid var(--text-secondary,#839095)}
+      .cp-master-agent-console h4{margin-block:22px 10px;font-weight:700}
+      @media(max-width:560px){.cp-master-agent-console .cp-tile-grid{grid-template-columns:minmax(0,1fr)}}
+    </style>
     <section class="panel" id="agent-operations" aria-labelledby="agent-operations-heading">
-      <div class="panel-body">
-        <h3 id="agent-operations-heading">{{ t.agent_ops_heading }}</h3>
+      <div class="panel-body cp-master-agent-console">
+        <h3 id="agent-operations-heading"><i class="fas fa-brain" aria-hidden="true"></i> {{ t.agent_ops_heading }}</h3>
         <p>{{ t.agent_ops_desc }}</p>
-        <div class="cp-tile-grid">
+        <div class="cp-tile-grid" aria-label="{{ t.agent_ops_summary }}">
           <div class="cp-tile">
-            <span class="cp-tile-ic"><i class="fas fa-brain" aria-hidden="true"></i></span>
+            <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
             <span>
               <div class="cp-tile-title">{{ t.server_agent }}</div>
               <div class="cp-tile-sub">{% if master.ops.agent.fresh %}{{ t.agent_ops_fresh }}{% else %}{{ t.agent_ops_stale }}{% endif %}</div>
-              {% if master.ops.agent.version %}<div class="cp-tile-sub">{{ t.agent_ops_version }}: {{ master.ops.agent.version }}</div>{% endif %}
-              {% if master.ops.agent.checks_total != None %}<div class="cp-tile-sub">{{ t.agent_ops_checks }}: {{ master.ops.agent.checks_total }}</div>{% endif %}
+              {% if master.ops.agent.version %}
+                <div class="cp-tile-sub">{{ t.agent_ops_version }}: {{ master.ops.agent.version }}</div>
+              {% endif %}
+            </span>
+          </div>
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-circle-check" aria-hidden="true"></i></span>
+            <span>
+              <div class="cp-tile-title">{{ t.agent_ops_ok }}</div>
+              <div class="cp-tile-sub">{% if master.ops.agent.fresh %}{{ master.ops.agent.check_health.ok }}{% else %}{{ t.unknown }}{% endif %}</div>
+            </span>
+          </div>
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i></span>
+            <span>
+              <div class="cp-tile-title">{{ t.agent_ops_warning }}</div>
+              <div class="cp-tile-sub">{% if master.ops.agent.fresh %}{{ master.ops.agent.check_health.warning }}{% else %}{{ t.unknown }}{% endif %}</div>
+            </span>
+          </div>
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-shield-halved" aria-hidden="true"></i></span>
+            <span>
+              <div class="cp-tile-title">{{ t.agent_ops_critical }}</div>
+              <div class="cp-tile-sub">{% if master.ops.agent.fresh %}{{ master.ops.agent.check_health.critical }}{% else %}{{ t.unknown }}{% endif %}</div>
             </span>
           </div>
         </div>
-        <p>{{ t.agent_ops_commands }}</p>
+        <h4>{{ t.agent_ops_services }}</h4>
+        {% if master.ops.agent.fresh and master.ops.agent.checks %}
+        <div class="cp-tile-grid">
+          {% for check in master.ops.agent.checks %}
+          <div class="cp-tile cp-agent-check cp-agent-check--{{ check.status }}">
+            <span class="cp-tile-ic">
+              {% if check.status == "ok" %}<i class="fas fa-circle-check" aria-hidden="true"></i>
+              {% elif check.status == "warning" %}<i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+              {% else %}<i class="fas fa-circle-exclamation" aria-hidden="true"></i>{% endif %}
+            </span>
+            <span>
+              <div class="cp-tile-title">{{ check.label }}</div>
+              <div class="cp-tile-sub">
+                {% if check.status == "ok" %}{{ t.agent_ops_ok }}
+                {% elif check.status == "warning" %}{{ t.agent_ops_warning }}
+                {% elif check.status == "critical" %}{{ t.agent_ops_critical }}
+                {% else %}{{ t.unknown }}{% endif %}
+              </div>
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+          <p class="text-muted" role="status">{{ t.agent_ops_stale }}</p>
+        {% endif %}
         <p class="text-muted">{{ t.agent_ops_approval }}</p>
-        <p><a href="{% url 'hooshCyberAgentDashboard' %}">{{ t.server_agent }}</a></p>
+        <p><a href="{% url 'hooshCyberAgentDashboard' %}">{{ t.agent_ops_details }}</a></p>
       </div>
     </section>
 

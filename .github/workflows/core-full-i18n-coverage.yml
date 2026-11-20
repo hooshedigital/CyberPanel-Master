@@ -1,0 +1,44 @@
+name: CyberPanel Master whole-Core i18n baseline audit
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/audit_core_localization.py'
+      - 'scripts/plan_global_locale.py'
+      - 'locale/fa/LC_MESSAGES/django.po'
+      - 'master_extensions/product_locale.py'
+      - '.github/workflows/core-full-i18n-coverage.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upstream-i18n-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone upstream Core stable as an audit baseline only
+        run: |
+          git clone --depth 1 --single-branch --branch stable --filter=blob:none https://github.com/usmannasir/cyberpanel.git "$RUNNER_TEMP/cyberpanel-stable"
+      - name: Audit full Core templates and application JavaScript without modifying upstream
+        run: |
+          python3 scripts/audit_core_localization.py --core "$RUNNER_TEMP/cyberpanel-stable" --output "$RUNNER_TEMP/core-i18n-coverage.json"
+          python3 - "$RUNNER_TEMP/core-i18n-coverage.json" <<'PY'
+          import json, sys
+          data=json.load(open(sys.argv[1], encoding="utf-8"))
+          print(json.dumps(data["summary"], ensure_ascii=False))
+          print("modules=", data["summary"]["modules"])
+          print("scanned_files=", data["counted"])
+          assert data["scope"] == "full_cyberpanel_source_tree"
+          assert data["summary"]["modules"] > 5
+          assert data["counted"] > 40
+          assert not data["coverage_is_verified"], "Never claim complete localization from heuristic extraction"
+          PY
+      - name: Publish source-only module coverage evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: cyberpanel-master-upstream-i18n-inventory
+          path: ${{ runner.temp }}/core-i18n-coverage.json
+          retention-days: 14
