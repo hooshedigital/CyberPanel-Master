@@ -27,6 +27,7 @@ class OperationsOverviewTests(unittest.TestCase):
             {"kind": "apt_download_cache", "reclaimable_bytes": 3000000000},
             {"kind": "docker_volumes", "reclaimable_bytes": 99999999999},
             {"kind": "application_cache", "reclaimable_bytes": -1},
+            {"kind": ["apt_download_cache"], "reclaimable_bytes": 3000},
         ]})
         self.assertEqual(result, [{"kind": "apt_download_cache",
                                    "reclaimable_gb": 2.5, "requires_review": True}])
