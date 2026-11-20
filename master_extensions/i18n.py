@@ -55,7 +55,11 @@ LABELS = {
   "agent_ops_fresh":"Recent agent heartbeat report","agent_ops_stale":"Agent status file unavailable, unrecognized or stale",
   "agent_ops_commands":"Existing supported checks: ops-status, resource-status, ops-once --dry-run",
   "agent_ops_approval":"Execution from this panel is not connected; operator approval and a scoped agent bridge are required.",
-  "agent_ops_checks":"Checks reported","agent_ops_version":"Reported agent version"},
+  "agent_ops_checks":"Checks reported","agent_ops_version":"Reported agent version",
+  "agent_ops_summary":"Agent operational status overview",
+  "agent_ops_ok":"Healthy checks", "agent_ops_warning":"Warnings",
+  "agent_ops_critical":"Critical checks", "agent_ops_services":"Verified component health",
+  "agent_ops_details":"Open detailed server agent monitoring"},
  "fa": {
   "brand":"سایبرپنل مستر","agent":"ایجنت سایبر","agent_subtitle":"هوشمندی میزبانی و عملیات امن",
   "overview":"نمای کلی","health":"سلامت میزبانی","parsa":"عامل اجرایی پارسا",
@@ -109,7 +113,11 @@ LABELS = {
   "agent_ops_fresh":"گزارش تازه از قلب تپنده ایجنت","agent_ops_stale":"فایل وضعیت ایجنت موجود، شناخته‌شده یا تازه نیست",
   "agent_ops_commands":"بررسی‌های موجود: ops-status، resource-status و ops-once --dry-run",
   "agent_ops_approval":"اجرای عملیات از این بخش هنوز متصل نیست و به پل ارتباطی محدود و تأیید اپراتور نیاز دارد.",
-  "agent_ops_checks":"تعداد بررسی‌های گزارش‌شده","agent_ops_version":"نسخه گزارش‌شده ایجنت"}
+  "agent_ops_checks":"تعداد بررسی‌های گزارش‌شده","agent_ops_version":"نسخه گزارش‌شده ایجنت",
+  "agent_ops_summary":"نمای کلی عملیات ایجنت",
+  "agent_ops_ok":"بررسی‌های سالم", "agent_ops_warning":"هشدارها",
+  "agent_ops_critical":"بررسی‌های بحرانی", "agent_ops_services":"سلامت تأییدشده سرویس‌ها",
+  "agent_ops_details":"مشاهده جزئیات کامل پایش ایجنت سرور"}
 }
 def resolve_language(query: str | None, cookie: str | None) -> str:
     if query in LANGUAGES: return query
