@@ -9,9 +9,11 @@ class OperationsOverviewTests(unittest.TestCase):
                               "categories": {"backups": 10_000_000_000,
                                              "secret_path": 5000000000}})
         self.assertTrue(data["verified"])
-        self.assertEqual(data["used_pct"], 92)
-        self.assertEqual(data["categories"], [{"key": "backups", "size_gb": 10}])
+        self.assertEqual(data["used_pct"], 92.6)
+        self.assertTrue(data["partial"])
+        self.assertEqual(data["categories"], [{"key": "backups", "size_gb": 10, "complete": False}])
         self.assertNotIn("secret_path", str(data))
+        self.assertIsNone(data["inode_pct"])
 
     def test_disk_rejects_invalid_types_and_inconsistent_bytes(self):
         for data in ({"schema": 1, "total_bytes": True, "used_bytes": 0, "available_bytes": 0},
