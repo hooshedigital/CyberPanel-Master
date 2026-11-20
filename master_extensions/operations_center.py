@@ -119,8 +119,12 @@ def breakdown(lang: str, *, report: dict | None = None, now: datetime | None = N
             continue
         seen.add(key)
         partial |= not complete
+        scanned = group.get("scanned", 0)
+        if type(scanned) is not int or not 0 <= scanned <= 1000000:
+            scanned = 0
         output.append({"id": key, "name": LABELS[lang][key],
-                       "size_gib": _gib(count), "complete": complete})
+                       "size_gib": _gib(count), "complete": complete,
+                       "measured": bool(complete or scanned > 0)})
     return {"ready": bool(output), "groups": output, "partial": partial}
 
 
@@ -173,7 +177,9 @@ def cleanup_summary(*, report: dict | None = None, now: datetime | None = None) 
                 or type(amount) is not int or not 0 <= amount <= 2 ** 63
                 or type(number) is not int or not 0 <= number <= 1000000):
             continue
-        result.append({"id": category, "size_gib": _gib(amount), "count": number})
+        complete = entry.get("complete")
+        result.append({"id": category, "size_gib": _gib(amount), "count": number,
+                       "complete": complete is True})
     return {"ready": bool(result), "items": result,
             "total_gib": round(sum(x["size_gib"] for x in result), 2)}
 
