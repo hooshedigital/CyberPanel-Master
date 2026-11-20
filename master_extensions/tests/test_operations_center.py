@@ -46,6 +46,15 @@ class OperationsContracts(unittest.TestCase):
         self.assertEqual(got["free_gib"], 8)
         self.assertFalse(disk_summary(SimpleNamespace(total=0, used=0, free=0))["ready"])
 
+    def test_df_use_percent_excludes_reserved_blocks(self):
+        from types import SimpleNamespace
+        g = 1024 ** 3
+        result = disk_summary(SimpleNamespace(total=100 * g, used=88 * g, free=8 * g),
+                              inode_stat=SimpleNamespace(f_files=100, f_ffree=95))
+        self.assertEqual(result["used_percent"], 91.7)
+        self.assertEqual(result["reserved_gib"], 4)
+        self.assertEqual(result["inode_used_percent"], 5.0)
+
     def test_storage_freshness_limits_and_partial_scan(self):
         data = {"schema": 1, "generated_utc": NOW.isoformat(),
                 "groups": [{"category": "cache", "allocated_bytes": 2 * 1024 ** 3, "complete": False},
