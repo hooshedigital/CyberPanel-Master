@@ -95,6 +95,46 @@ def disk_summary(usage=None, *, inode_stat=None):
         return {"ready": False}
 
 
+
+def memory_summary(meminfo: str | None = None) -> dict:
+    """Inexpensive Linux memory + swap gauges, without shell or processes."""
+    if meminfo is None:
+        try:
+            with Path("/proc/meminfo").open("r", encoding="ascii") as handle:
+                meminfo = handle.read(16385)
+        except (OSError, UnicodeError):
+            return {"ready": False}
+    if not isinstance(meminfo, str) or len(meminfo) > 16384:
+        return {"ready": False}
+    values = {}
+    for line in meminfo.splitlines():
+        if ":" not in line:
+            continue
+        key, text = line.split(":", 1)
+        if key not in ("MemTotal", "MemAvailable", "SwapTotal", "SwapFree"):
+            continue
+        tokens = text.strip().split()
+        if len(tokens) != 2 or tokens[1] != "kB" or not tokens[0].isdigit():
+            return {"ready": False}
+        value = int(tokens[0])
+        if not 0 <= value <= 2 ** 40:
+            return {"ready": False}
+        values[key] = value
+    required = ("MemTotal", "MemAvailable", "SwapTotal", "SwapFree")
+    if not all(key in values for key in required):
+        return {"ready": False}
+    total, available = values["MemTotal"], values["MemAvailable"]
+    swap_total, swap_free = values["SwapTotal"], values["SwapFree"]
+    if total == 0 or available > total or swap_free > swap_total:
+        return {"ready": False}
+    return {
+        "ready": True,
+        "ram_available_gib": round(available / 1024 ** 2, 2),
+        "ram_used_percent": round(100 * (total - available) / total, 1),
+        "swap_used_gib": round((swap_total - swap_free) / 1024 ** 2, 2),
+        "swap_total_gib": round(swap_total / 1024 ** 2, 2),
+    }
+
 def breakdown(lang: str, *, report: dict | None = None, now: datetime | None = None) -> dict:
     if lang not in LABELS:
         raise ValueError("unsupported language")
@@ -189,6 +229,7 @@ def operations_context(lang: str, *, disk=None, storage=None, agent=None, cleanu
         raise ValueError("unsupported language")
     return {
         "disk": disk_summary(disk),
+        "memory": memory_summary(),
         "storage": breakdown(lang, report=storage),
         "agent": agent_summary(report=agent),
         "cleanup": cleanup_summary(report=cleanup),
