@@ -20,7 +20,7 @@ LABELS = {
     "refresh": "Refresh",
     "warning": "Backup engine V1 remains disabled until restore testing and encrypted destination setup are complete. This page cannot run backups, deletion or restoration. A recorded checksum does not confirm integrity.",
     "footer": "An independent HooshDigital add-on; CyberPanel's commercial license features are unchanged.",
-    "lang": "Language"
+    "lang": "Language", "snapshot": "Snapshots"
   },
   "fa": {
     "title": "پشتیبان‌گیری هوشمند · هوش دیجیتال",
@@ -42,7 +42,7 @@ LABELS = {
     "refresh": "تازه‌سازی",
     "warning": "موتور V1 تا تکمیل آزمون بازیابی و تنظیم مقصد رمزگذاری‌شده فعال نمی‌شود. این صفحه امکان ایجاد، حذف یا بازیابی بکاپ ندارد. ثبت چک‌سام به معنی تأیید سلامت آن نیست.",
     "footer": "افزونه مستقل هوش دیجیتال؛ امکانات تجاری دارای لایسنس سایبرپنل تغییر نمی‌کنند.",
-    "lang": "زبان"
+    "lang": "زبان", "snapshot": "نسخه‌های ذخیره‌شده"
   }
 }
 def labels(lang):
