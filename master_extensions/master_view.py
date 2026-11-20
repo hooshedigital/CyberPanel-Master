@@ -38,8 +38,9 @@ def display_context(lang):
     health=_report("health.json",600)
     gateway=_report("gateway-status.json")
     agent=_report("server-agent-status.json")
-    disk_report=_report("disk-inventory.json",600)
-    cleanup_report=_report("cleanup-candidates.json",600)
+    # Timer cadence is ~10m with jitter; 30m TTL tolerates bounded delay.
+    disk_report=_report("disk-inventory.json",1800)
+    cleanup_report=_report("cleanup-candidates.json",1800)
     ops_report=_report("agent-operations.json",300)
     parsa=health.get("parsa",{})
     if not isinstance(parsa,dict):parsa={}
@@ -75,6 +76,8 @@ def display_context(lang):
         "commerce_note":status_note(lang),
         "disk_inventory":disk_overview(disk_report),
         "cleanup_candidates":cleanup_candidates(cleanup_report),
+        "cleanup_verified":cleanup_report.get("schema")==1,
+        "cleanup_complete":cleanup_report.get("analysis_complete") is True,
         "agent_operations":agent_overview(ops_report)
     }}
 
