@@ -88,9 +88,16 @@ def disk_summary(usage=None, *, inode_stat=None):
             if (type(count) is int and type(free_count) is int
                     and count > 0 and 0 <= free_count <= count):
                 inode_used = round(100 * (count - free_count) / count, 1)
-        return {"ready": True, "used_percent": round(100 * used / total, 1),
+        # GNU df Use% divides used blocks by (used + available) blocks,
+        # excluding filesystem-reserved capacity not available to this user.
+        available_base = used + free
+        if available_base == 0 or used + free > total:
+            return {"ready": False}
+        reserved = total - available_base
+        return {"ready": True, "used_percent": round(100 * used / available_base, 1),
                 "total_gib": _gib(total), "used_gib": _gib(used),
-                "free_gib": _gib(free), "inode_used_percent": inode_used}
+                "free_gib": _gib(free), "reserved_gib": _gib(reserved),
+                "inode_used_percent": inode_used}
     except (OSError, AttributeError, ValueError):
         return {"ready": False}
 
