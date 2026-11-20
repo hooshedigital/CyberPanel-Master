@@ -9,7 +9,7 @@ This public repository contains add-on code only. No private host files, server 
 - Keep secret in root-owned group-readable file with no world read; never pass as command-line arg to Owner Broker or GitHub.
 - Patch existing login Javascript to forward captcha_token, and add widget without replacing password, session or CSRF checks.
 - Test expired, missing, invalid, cross-domain and correct tokens on isolated staging; verify successful admin login, failed password, and rollback access.
-- Turnstile middleware remains disabled until all checks pass. Do not lock out admin.
+- For a **new installation or a future redeploy**, keep Turnstile middleware disabled until all valid/invalid-token and positive-login/2FA checks pass in staging. The 18 Nov report documents an **existing active production widget**; this is historical evidence, not permission to redeploy. Do not lock out admin.
 
 ## Agent
 - PARSA pilot Heartbeat exists; Hoosh CyberAgent deployment not assumed from GitHub README.
