@@ -67,7 +67,7 @@ def cleanup_candidates(report: object) -> list[dict]:
             continue
         key = item.get("kind")
         size = _bounded_int(item.get("reclaimable_bytes"))
-        if key not in allowed or key in seen or size is None:
+        if not isinstance(key, str) or key not in allowed or key in seen or size is None:
             continue
         seen.add(key)
         results.append({"kind": key, "reclaimable_gb": round(size / 10**9, 2),
