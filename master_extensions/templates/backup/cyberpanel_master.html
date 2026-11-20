@@ -37,6 +37,27 @@
       <p><a href="{% url 'hooshCyberAgentDashboard' %}">{{ t.health }}</a> ·
          <a href="{% url 'hooshSmartBackupDashboard' %}">{{ t.backup }}</a></p>
     </div></div>
+
+    <section class="panel" id="whmcs-center" aria-labelledby="whmcs-center-heading">
+      <div class="panel-body">
+        <h3 id="whmcs-center-heading">{{ t.commerce_heading }}</h3>
+        <p>{{ t.commerce_intro }}</p>
+        <p class="text-muted" role="status">{{ t.commerce_warning }}</p>
+        <div class="row">
+          {% for module in master.commerce_modules %}
+          <div class="col-md-4 col-sm-6">
+            <article class="cp-tile" style="margin:8px 0;padding:16px;display:block;min-height:180px">
+              <h4 style="margin-top:0">{{ module.name }}</h4>
+              <p class="text-muted">{{ module.description }}</p>
+              <p><small>{{ t.commerce_stage }}: {{ module.stage }}</small></p>
+              <small class="text-muted" aria-label="{{ module.status }}">{{ module.status }}</small>
+            </article>
+          </div>
+          {% endfor %}
+        </div>
+        <p class="text-muted">{{ t.commerce_note }}</p>
+      </div>
+    </section>
     <div class="panel"><div class="panel-body">
       <h3>{{ t.billing_heading }}</h3>
       <p>{{ t.billing_desc }}</p>
