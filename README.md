@@ -52,6 +52,15 @@ Before any new live deployment, consult the [Core/UI/i18n/CAPTCHA audit](docs/CO
 
 **All source changes are on an isolated review branch. No live WordPress, WHMCS, CyberPanel or DNS configuration was changed.**
 
+## Linux Storage & CyberAgent Operations (staged 2026-11-20)
+
+A native bilingual CyberPanel Master operations page now includes low-cost root filesystem/inode indicators, bounded asynchronous disk-category reports, safe cache cleanup previews, an admin-only confined workspace navigator, and status from the **existing** `hoosh-cyberagent` heartbeat contract. No global theme/icon/core layout modifications were made.
+
+- [Architecture, limitations and staged acceptance (فارسی)](docs/LINUX_STORAGE_AGENT_OPERATIONS_V1_FA.md)
+- [Disk inventory #23](https://github.com/hooshedigital/CyberPanel-Master/issues/23), [cleanup broker #24](https://github.com/hooshedigital/CyberPanel-Master/issues/24), [file moves #25](https://github.com/hooshedigital/CyberPanel-Master/issues/25), [agent worker bridge #26](https://github.com/hooshedigital/CyberPanel-Master/issues/26)
+
+The nonroot systemd collector is a **disabled deployment proposal**, not installed. File moves, deletions and web-triggered agent commands remain unavailable until Owner Broker, audit, rollback, and production source/parity review have passed. The current hosting website File Manager and SSL configuration are untouched.
+
 ## Original project roadmap
 
 
