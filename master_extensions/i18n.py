@@ -3,7 +3,7 @@ LANGUAGES = ("en", "fa")
 COOKIE = "cybermaster_lang"
 LABELS = {
  "en": {
-  "brand":"CyberPanel Master","agent":"Cyber Agent","agent_subtitle":"Hosting intelligence and safe operations",
+  "brand":"Operations Center","agent":"Cyber Agent","agent_subtitle":"Hosting intelligence and safe operations",
   "overview":"Overview","health":"Hosting health","parsa":"PARSA executor",
   "server_agent":"Hoosh CyberAgent","gateway":"AI Gateway","router":"PARSA AI Router","backup":"Smart Backup",
   "issues":"Confirmed incidents","disk":"Disk usage","ram":"Available memory",
@@ -61,7 +61,7 @@ LABELS = {
   "agent_ops_critical":"Critical checks", "agent_ops_services":"Verified component health",
   "agent_ops_details":"Open detailed server agent monitoring"},
  "fa": {
-  "brand":"سایبرپنل مستر","agent":"ایجنت سایبر","agent_subtitle":"هوشمندی میزبانی و عملیات امن",
+  "brand":"مرکز عملیات","agent":"ایجنت سایبر","agent_subtitle":"هوشمندی میزبانی و عملیات امن",
   "overview":"نمای کلی","health":"سلامت میزبانی","parsa":"عامل اجرایی پارسا",
   "server_agent":"ایجنت سرور هوش","gateway":"درگاه هوش مصنوعی","router":"مسیریاب داخلی پارسا","backup":"بکاپ هوشمند",
   "issues":"رخدادهای تأییدشده","disk":"مصرف دیسک","ram":"حافظه آزاد",
