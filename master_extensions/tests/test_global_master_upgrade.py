@@ -111,6 +111,29 @@ class GlobalCoreLanguageTests(unittest.TestCase):
             self.assertEqual(report["coverage_percent"], 50)
             self.assertFalse(report["deployment_ready"])
 
+    def test_overlay_builder_direct_cli_invocation(self):
+        import subprocess
+        import sys
+        script = Path(__file__).resolve().parents[2] / "scripts/stage_global_i18n.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "core"
+            out = Path(tmp) / "overlay"
+            for path, source in ((SETTINGS, SAMPLE_SETTINGS),
+                                 (URLS, SAMPLE_URLS), (TEMPLATE, SAMPLE_SHELL)):
+                target = root / path
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(source)
+            run = subprocess.run(
+                [sys.executable, str(script), "--core", str(root),
+                 "--output", str(out)],
+                cwd=tmp, capture_output=True, text=True, timeout=20,
+            )
+            self.assertEqual(run.returncode, 0, run.stderr[-1000:])
+            self.assertTrue((out / "master_extensions/locale/fa/LC_MESSAGES/django.mo").is_file())
+            self.assertEqual(
+                __import__("json").loads(run.stdout)["file_count"], 6
+            )
+
     def test_compiler_rejects_duplicate_and_fuzzy_entries(self):
         data = 'msgid ""\nmsgstr "Content-Type: text/plain; charset=UTF-8\\n"\n'
         with self.assertRaises(ValueError):
