@@ -26,6 +26,18 @@ The installed **CyberPanel Core 3.0 Build 4** was verified from `/usr/local/Cybe
 
 ---
 
+## WHMCS under CyberPanel Master — Commerce Center (development)
+
+**Repository ownership decision (20 Nov 2026):** WHMCS integrations, product and package factory, affiliate/partner marketing, invoice/payment lifecycle, hosted services, Linux/VPS provider adapters, and identity work are all managed under **CyberPanel-Master**. WHMCS remains the billing source of truth; CyberPanel controls real hosting accounts and a separate provider handles VPS resources.
+
+- [WHMCS subsystem boundaries](whmcs/README.md)
+- [Persian commerce and Premium-compatible development roadmap](whmcs/ROADMAP_FA.md)
+- [Existing CyberPanel API audit plan](whmcs/API_EXISTING_AUDIT_FA.md)
+- [Main storefront and safe WHMCS checkout contract](docs/WEBSITE_COMMERCE_V1_FA.md)
+- [GitHub issues #4–#11](https://github.com/hooshedigital/CyberPanel-Master/issues)
+
+A **read-only, admin-only WHMCS Commerce Center section** is staged in the CyberPanel Master native template and displays planned modules. Until the real WHMCS installation and previously built CyberPanel API are verified, it displays no fabricated data, billing API state or working provisioning control. The current WHMCS admin link opens a separately authenticated login. **There is no root impersonation, premium license bypass, or production installation in this branch.**
+
 ## Original project roadmap
 
 
@@ -100,3 +112,4 @@ CyberPanel-Master/
 ├── config/
 ├── tests/
 └── whmcs/
+```
