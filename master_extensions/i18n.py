@@ -82,7 +82,7 @@ BACKUP_LABELS = {
   "schedule":"Configure Schedule","refresh":"Refresh Status",
   "warning":"The V1 engine remains disabled until restore testing and an encrypted destination are configured. No backup, delete or restore commands run from this page. A checksum file does not by itself prove integrity.",
   "footer":"Independent of commercial CyberPanel features; original site and service routes remain unchanged.",
-  "language":"Language"
+  "language":"Language","snapshot":"Snapshots",
  },
  "fa": {
   "title":"پشتیبان‌گیری هوشمند · هوش دیجیتال",
@@ -97,6 +97,6 @@ BACKUP_LABELS = {
   "schedule":"تنظیم زمان‌بندی","refresh":"تازه‌سازی وضعیت",
   "warning":"موتور V1 تا پایان آزمون بازیابی و تنظیم مقصد رمزگذاری‌شده فعال نمی‌شود. از این صفحه دستور بکاپ، حذف یا بازیابی اجرا نمی‌شود؛ ثبت فایل checksum به‌تنهایی سلامت آن را ثابت نمی‌کند.",
   "footer":"این ابزار مستقل از امکانات تجاری CyberPanel است؛ مسیرهای اصلی سایت و سرویس‌ها تغییر نکرده‌اند.",
-  "language":"زبان"
+  "language":"زبان","snapshot":"نسخه‌های ذخیره‌شده"
  }
 }
