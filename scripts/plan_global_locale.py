@@ -98,6 +98,10 @@ def patch_shell(text: str) -> str:
         ' dir="{% if LANGUAGE_CODE == \'fa\' %}rtl{% else %}ltr{% endif %}" ng-app="CyberCP">',
         "global_language_and_direction",
     )
+    text = replace_once(
+        text, "{% block title %}CyberPanel{% endblock %}",
+        "{% block title %}CyberPanel Master{% endblock %}", "whole_product_brand"
+    )
     anchor = '            <button id="theme-toggle" class="theme-toggle"'
     text = replace_once(text, anchor, LANGUAGE_SWITCH + anchor,
                         "native_global_header_language_switch")
