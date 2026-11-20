@@ -49,3 +49,18 @@
 - نمونه‌های پرونده‌های ظاهراً زائد، حتی با سن بالا، مجوز پاک‌سازی نیستند: ممکن است process آن‌ها را باز داشته یا سرویس به آن‌ها نیاز داشته باشد.
 
 برای نصب آینده از unit/timer پیشنهادی `deploy/systemd/hoosh-cybermaster-ops.service` و `deploy/systemd/hoosh-cybermaster-ops.timer` فقط پس از بررسی در staging و انطباق مسیر checkout استفاده شود. فایل سرویس را بدون بررسی و تأیید مالک به production منتقل نکنید.
+
+
+## مرحله ۳ — زیرساخت File Explorer شبیه SFTP (بدون endpoint عمومی)
+
+کد `master_extensions/ops_file_browser.py` یک تابع `list_directory` فقط‌خواندنی و **بدون اتصال HTTP** ارائه می‌دهد. مرور فقط با کلیدهای server-owned برای ریشه‌های `websites`، `backups` و `logs` ممکن است. مسیرهای مطلق دریافتی، `..`، separatorهای نامعتبر، symlink traversal، دستگاه/مونت دیگر و bind mountهای داخلی رد می‌شوند. از `dir_fd` و `O_NOFOLLOW` برای مقاومت در برابر مسابقه تغییر symlink استفاده شده است.
+
+- فهرست نام، نوع، اندازه و زمان تغییر فایل‌ها را ارائه می‌کند؛ محتوای فایل را نمی‌خواند و هیچ جابه‌جایی یا حذف ندارد.
+- سقف ۱۰۰ مدخل در هر صفحه، حداکثر ۵۰۰۰ مدخل بررسی و بودجه زمانی دو ثانیه. اگر فهرست ناقص باشد، `incomplete=true` و cursor بعدی صادر نمی‌شود.
+- هنوز REST/Django endpoint، نمای HTML کامل فایل‌ها، tenant RBAC و approval مربوط به انتقال فایل وجود ندارد؛ نباید تابع از ورودی کاربران بدون لایه ACL استفاده شود.
+- پیش از نمایش اطلاعات فایل‌های مشتری در CyberPanel باید مالکیت حساب/دامنه و سطح دسترسی reseller/admin در Core واقعی بررسی و انطباق نصب تأیید شود.
+- **انتقال فایل آینده:** صرفاً بعد از ساخت `preflight_plan`، بررسی quota و فضای مقصد، مجوز محدود امضا شده، اجرای broker و audit/rollback. پیاده‌سازی ساده `shutil.move` در وب‌سرور ممنوع است.
+
+### وضعیت آزمون
+
+تست‌های امنیتی و سنجش budget در `master_extensions/tests/test_ops_collector.py`، `test_ops_overview.py`، `test_ops_file_browser.py` و `test_bridge.py` به سورس افزوده شده‌اند. Workflow اختصاصی `.github/workflows/ops-collector-ci.yml` برای اجرا در GitHub Actions ثبت شده است. **تا زمانی که خروجی موفق run از GitHub Actions مشاهده نشده، تست‌ها «طراحی و ثبت‌شده» محسوب می‌شوند، نه «پاس‌شده».** هیچ اجرای production از روی این PR تأیید نشده است.
