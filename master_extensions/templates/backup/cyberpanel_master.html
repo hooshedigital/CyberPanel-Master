@@ -38,6 +38,164 @@
          <a href="{% url 'hooshSmartBackupDashboard' %}">{{ t.backup }}</a></p>
     </div></div>
 
+
+    <section class="panel" id="linux-storage" aria-labelledby="linux-storage-heading">
+      <div class="panel-body">
+        <h3 id="linux-storage-heading">{{ t.storage_heading }}</h3>
+        <p>{{ t.storage_desc }}</p>
+        <div class="cp-tile-grid">
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
+            <span><div class="cp-tile-title">{{ t.storage_used }}</div>
+              <div class="cp-tile-sub">{% if master.ops.disk.ready %}{{ master.ops.disk.used_gib }} GiB · {{ master.ops.disk.used_percent }}%{% else %}{{ t.unknown }}{% endif %}</div>
+            </span>
+          </div>
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-heartbeat" aria-hidden="true"></i></span>
+            <span><div class="cp-tile-title">{{ t.storage_free }}</div>
+              <div class="cp-tile-sub">{% if master.ops.disk.ready %}{{ master.ops.disk.free_gib }} GiB{% else %}{{ t.unknown }}{% endif %}</div>
+            </span>
+          </div>
+          {% if master.ops.disk.reserved_gib %}
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
+            <span><div class="cp-tile-title">{{ t.storage_reserved }}</div>
+              <div class="cp-tile-sub">{{ master.ops.disk.reserved_gib }} GiB</div>
+            </span>
+          </div>
+          {% endif %}
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-project-diagram" aria-hidden="true"></i></span>
+            <span><div class="cp-tile-title">{{ t.storage_total }}</div>
+              <div class="cp-tile-sub">{% if master.ops.disk.ready %}{{ master.ops.disk.total_gib }} GiB{% else %}{{ t.unknown }}{% endif %}</div>
+            </span>
+          </div>
+          {% if master.ops.memory.ready %}
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-heartbeat" aria-hidden="true"></i></span>
+            <span><div class="cp-tile-title">{{ t.storage_memory }}</div>
+              <div class="cp-tile-sub">{{ master.ops.memory.ram_available_gib }} GiB</div>
+            </span>
+          </div>
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
+            <span><div class="cp-tile-title">{{ t.storage_swap }}</div>
+              <div class="cp-tile-sub">{{ master.ops.memory.swap_used_gib }} / {{ master.ops.memory.swap_total_gib }} GiB</div>
+            </span>
+          </div>
+          {% endif %}
+          {% if master.ops.disk.inode_used_percent != None %}
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
+            <span><div class="cp-tile-title">{{ t.storage_inodes }}</div>
+              <div class="cp-tile-sub">{{ master.ops.disk.inode_used_percent }}%</div>
+            </span>
+          </div>
+          {% endif %}
+        </div>
+        {% if master.ops.disk.ready and master.ops.disk.used_percent >= 90 %}
+          <p class="text-muted" role="status">{{ t.storage_warning }}</p>
+        {% endif %}
+        <h4>{{ t.storage_breakdown }}</h4>
+        {% if master.ops.storage.ready %}
+          <div class="cp-tile-grid">
+          {% for group in master.ops.storage.groups %}
+            <div class="cp-tile">
+              <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
+              <span><div class="cp-tile-title">{{ group.name }}</div>
+              <div class="cp-tile-sub">{% if group.measured %}{{ group.size_gib }} GiB{% else %}{{ t.unknown }}{% endif %} · {% if group.complete %}{{ t.storage_complete }}{% else %}{{ t.storage_partial }}{% endif %}</div></span>
+            </div>
+          {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted">{{ t.storage_pending }}</p>
+        {% endif %}
+        <p class="text-muted">{{ t.storage_scan_only }}</p>
+      </div>
+    </section>
+
+    <section class="panel" id="safe-cleanup" aria-labelledby="safe-cleanup-heading">
+      <div class="panel-body">
+        <h3 id="safe-cleanup-heading">{{ t.cleanup_heading }}</h3>
+        <p>{{ t.cleanup_desc }}</p>
+        {% if master.ops.cleanup.ready %}
+          <div class="cp-tile-grid">
+          {% for candidate in master.ops.cleanup.items %}
+            <div class="cp-tile">
+              <span class="cp-tile-ic"><i class="fas fa-heartbeat" aria-hidden="true"></i></span>
+              <span>
+                <div class="cp-tile-title">{% if candidate.id == "apt_archives" %}{{ t.cleanup_apt }}{% else %}{{ t.cleanup_temp }}{% endif %}</div>
+                <div class="cp-tile-sub">{% if candidate.complete %}{{ t.cleanup_count }}: {{ candidate.count }} · {{ t.cleanup_saved }}: {{ candidate.size_gib }} GiB{% else %}{{ t.storage_partial }}{% endif %}</div>
+              </span>
+            </div>
+          {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted">{{ t.cleanup_pending }}</p>
+        {% endif %}
+        <p>{{ t.cleanup_approval }}</p>
+        <p><a href="{% url 'hooshSmartBackupDashboard' %}">{{ t.backup }}</a></p>
+      </div>
+    </section>
+
+    <section class="panel" id="managed-files" aria-labelledby="managed-files-heading">
+      <div class="panel-body">
+        <h3 id="managed-files-heading">{{ t.workspace_heading }}</h3>
+        <p>{{ t.workspace_desc }}</p>
+        {% if master.ops.workspace.ready %}
+          <p><strong dir="ltr">{{ master.ops.workspace.current }}</strong></p>
+          {% if master.ops.workspace.parent != None %}
+            <p><a href="?lang={{ lang }}&amp;folder={{ master.ops.workspace.parent }}">{{ t.workspace_parent }}</a></p>
+          {% endif %}
+          <div class="cp-tile-grid">
+          {% for entry in master.ops.workspace.items %}
+            <div class="cp-tile">
+              <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
+              <span>
+                <div class="cp-tile-title" dir="auto">
+                  {% if entry.kind == "folder" %}<a href="?lang={{ lang }}&amp;folder={{ entry.href }}">{{ entry.name }}</a>
+                  {% else %}{{ entry.name }}{% endif %}
+                </div>
+                <div class="cp-tile-sub">
+                  {% if entry.kind == "folder" %}{{ t.workspace_folder }}
+                  {% elif entry.kind == "file" %}{{ t.workspace_file }} · {{ entry.size_bytes }} B
+                  {% else %}{{ t.workspace_blocked }}{% endif %}
+                </div>
+              </span>
+            </div>
+          {% empty %}
+            <p class="text-muted">{{ t.workspace_empty }}</p>
+          {% endfor %}
+          </div>
+          {% if master.ops.workspace.truncated %}<p class="text-muted">{{ t.workspace_truncated }}</p>{% endif %}
+        {% else %}
+          <p class="text-muted">{{ t.workspace_pending }}</p>
+        {% endif %}
+        <p>{{ t.workspace_move }}</p>
+      </div>
+    </section>
+
+    <section class="panel" id="agent-operations" aria-labelledby="agent-operations-heading">
+      <div class="panel-body">
+        <h3 id="agent-operations-heading">{{ t.agent_ops_heading }}</h3>
+        <p>{{ t.agent_ops_desc }}</p>
+        <div class="cp-tile-grid">
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-brain" aria-hidden="true"></i></span>
+            <span>
+              <div class="cp-tile-title">{{ t.server_agent }}</div>
+              <div class="cp-tile-sub">{% if master.ops.agent.fresh %}{{ t.agent_ops_fresh }}{% else %}{{ t.agent_ops_stale }}{% endif %}</div>
+              {% if master.ops.agent.version %}<div class="cp-tile-sub">{{ t.agent_ops_version }}: {{ master.ops.agent.version }}</div>{% endif %}
+              {% if master.ops.agent.checks_total != None %}<div class="cp-tile-sub">{{ t.agent_ops_checks }}: {{ master.ops.agent.checks_total }}</div>{% endif %}
+            </span>
+          </div>
+        </div>
+        <p>{{ t.agent_ops_commands }}</p>
+        <p class="text-muted">{{ t.agent_ops_approval }}</p>
+        <p><a href="{% url 'hooshCyberAgentDashboard' %}">{{ t.server_agent }}</a></p>
+      </div>
+    </section>
+
     <section class="panel" id="whmcs-center" aria-labelledby="whmcs-center-heading">
       <div class="panel-body">
         <h3 id="whmcs-center-heading">{{ t.commerce_heading }}</h3>

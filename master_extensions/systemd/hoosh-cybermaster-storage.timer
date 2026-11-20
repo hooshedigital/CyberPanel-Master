@@ -1,0 +1,13 @@
+[Unit]
+Description=Scheduled read-only disk inventory for CyberPanel Master
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=10min
+RandomizedDelaySec=1min
+AccuracySec=1min
+Persistent=false
+Unit=hoosh-cybermaster-storage.service
+
+[Install]
+WantedBy=timers.target

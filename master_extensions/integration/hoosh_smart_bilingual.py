@@ -119,9 +119,11 @@ def dashboard(request):
     from master_extensions.backup_i18n import LABELS as BACKUP_VIEW_LABELS
     from master_extensions.version import MASTER_VERSION
     from master_extensions.bridge import core_version
+    from master_extensions.operations_center import cleanup_summary
     requested = request.GET.get("lang")
     lang = resolve_language(requested, request.COOKIES.get(COOKIE))
     data = summary()
+    data["cleanup_preview"] = cleanup_summary()
     state = data.get("backup", {}).get("state", "not_configured")
     states = {
         "en": {"not_configured": "Not configured", "idle": "Idle",

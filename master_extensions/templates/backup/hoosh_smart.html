@@ -37,6 +37,25 @@
 <div style="overflow-x:auto"><table class="hb-table"><thead><tr><th>{{ b.date }}</th><th>{{ b.archive }}</th><th>{{ b.checksum }}</th></tr></thead>
 <tbody>{% for copy in daily %}<tr><td>{{ copy.date }}</td><td>{{ copy.size_gb }} GB</td><td>{% if copy.checksum_recorded %}{{ b.checksum_present }}{% else %}{{ b.checksum_missing }}{% endif %}</td></tr>{% empty %}<tr><td colspan="3">{{ b.none }}</td></tr>{% endfor %}</tbody></table></div>
 </section>
+
+<section class="hb-card hb-section" aria-labelledby="hb-cleanup-heading">
+  <h2 id="hb-cleanup-heading" style="font-size:20px">{{ b.cleanup_heading }}</h2>
+  <p class="hb-note">{{ b.cleanup_desc }}</p>
+  {% if cleanup_preview.ready %}
+    <div class="hb-cards">
+    {% for candidate in cleanup_preview.items %}
+      <div class="hb-card">
+        <div class="hb-label">{% if candidate.id == "apt_archives" %}{{ b.cleanup_apt }}{% else %}{{ b.cleanup_temp }}{% endif %}</div>
+        <div class="hb-number">{% if candidate.complete %}{{ candidate.size_gib }} GiB{% else %}—{% endif %}</div>
+        <div class="hb-note">{% if candidate.complete %}{{ b.cleanup_count }}: {{ candidate.count }}{% else %}{{ b.cleanup_partial }}{% endif %}</div>
+      </div>
+    {% endfor %}
+    </div>
+  {% else %}
+    <p class="hb-note">{{ b.cleanup_missing }}</p>
+  {% endif %}
+  <p class="hb-warn">{{ b.cleanup_approval }}</p>
+</section>
 <div class="hb-actions"><a class="hb-link" href="{% url 'OneClickBackups' %}">{{ b.core_backups }}</a><a class="hb-link hb-link-alt" href="{% url 'scheduleBackup' %}">{{ b.schedule }}</a><a class="hb-link hb-link-alt" href="{% url 'hooshSmartBackupDashboard' %}">{{ b.refresh }}</a></div>
 <p class="hb-warn">{{ b.warning }}</p>
 <p class="hb-note">HooshDigital Smart Backup {{ version }} · {{ b.footer }} · CyberPanel Master v{{ master_version }} · CyberPanel Core {{ core_version }}</p>

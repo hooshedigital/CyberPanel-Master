@@ -20,7 +20,13 @@ LABELS = {
     "refresh": "Refresh",
     "warning": "Backup engine V1 remains disabled until restore testing and encrypted destination setup are complete. This page cannot run backups, deletion or restoration. A recorded checksum does not confirm integrity.",
     "footer": "An independent HooshDigital add-on; CyberPanel's commercial license features are unchanged.",
-    "lang": "Language", "snapshot": "Snapshots"
+    "lang": "Language", "snapshot": "Snapshots",
+    "cleanup_heading": "Cache cleanup preview",
+    "cleanup_desc": "Review-only cache candidates. No files are removed from this page.",
+    "cleanup_missing": "No recent cleanup preview is available",
+    "cleanup_apt": "Old APT package archives", "cleanup_temp": "Master temporary files",
+    "cleanup_partial": "Incomplete scan", "cleanup_count": "Candidates",
+    "cleanup_approval": "Deletion requires separate approval and a rollback plan."
   },
   "fa": {
     "title": "پشتیبان‌گیری هوشمند · هوش دیجیتال",
@@ -42,7 +48,13 @@ LABELS = {
     "refresh": "تازه‌سازی",
     "warning": "موتور V1 تا تکمیل آزمون بازیابی و تنظیم مقصد رمزگذاری‌شده فعال نمی‌شود. این صفحه امکان ایجاد، حذف یا بازیابی بکاپ ندارد. ثبت چک‌سام به معنی تأیید سلامت آن نیست.",
     "footer": "افزونه مستقل هوش دیجیتال؛ امکانات تجاری دارای لایسنس سایبرپنل تغییر نمی‌کنند.",
-    "lang": "زبان", "snapshot": "نسخه‌های ذخیره‌شده"
+    "lang": "زبان", "snapshot": "نسخه‌های ذخیره‌شده",
+    "cleanup_heading": "پیش‌نمایش پاک‌سازی کش",
+    "cleanup_desc": "فقط نامزدهای کش بررسی می‌شوند؛ هیچ فایلی از این صفحه حذف نمی‌شود.",
+    "cleanup_missing": "گزارش تازه پاک‌سازی در دسترس نیست",
+    "cleanup_apt": "آرشیوهای قدیمی بسته APT", "cleanup_temp": "فایل‌های موقت مستر",
+    "cleanup_partial": "اسکن ناقص", "cleanup_count": "نامزدها",
+    "cleanup_approval": "هر حذف به تأیید جداگانه و برنامه بازگشت نیاز دارد."
   }
 }
 def labels(lang):
