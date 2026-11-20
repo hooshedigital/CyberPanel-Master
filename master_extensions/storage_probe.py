@@ -108,7 +108,8 @@ def snapshot(roots=ROOTS, *, scan=scan_tree, now=None) -> dict:
         seen.add(category)
         result = scan(root)
         groups.append({"category": category, "allocated_bytes": result["allocated_bytes"],
-                       "complete": result["complete"]})
+                       "complete": result["complete"],
+                       "scanned": result.get("scanned", 0)})
     return {"schema": 1, "generated_utc": now.isoformat(), "groups": groups}
 
 
