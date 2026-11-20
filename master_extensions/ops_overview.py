@@ -32,22 +32,34 @@ def _safe_pct(value: Any) -> float | None:
 def disk_overview(report: object) -> dict:
     """Never expose raw paths or untrusted strings from the telemetry payload."""
     result = {"verified": False, "used_pct": None, "free_gb": None,
-              "total_gb": None, "categories": []}
+              "total_gb": None, "inode_pct": None, "partial": True,
+              "categories": []}
     if not isinstance(report, dict) or report.get("schema") != 1:
         return result
     total = _bounded_int(report.get("total_bytes"))
     used = _bounded_int(report.get("used_bytes"))
     free = _bounded_int(report.get("available_bytes"))
-    if total is None or used is None or free is None or not total or used > total or free > total:
+    if (total is None or used is None or free is None or not total
+            or used > total or free > total or used + free > total
+            or not (used + free)):
         return result
-    result.update(verified=True, used_pct=round(used / total * 100, 1),
-                  free_gb=round(free / 10**9, 2), total_gb=round(total / 10**9, 2))
+    # Match df(1) Use%: free excludes filesystem-reserved blocks.
+    # The ratio used/total would under-report pressure on ext4.
+    result.update(verified=True, used_pct=round(used / (used + free) * 100, 1),
+                  free_gb=round(free / 10**9, 2), total_gb=round(total / 10**9, 2),
+                  inode_pct=_safe_pct(report.get("inode_used_pct")),
+                  partial=report.get("coverage") != "full")
     items = report.get("categories", {})
     if isinstance(items, dict):
         for key in DISK_CATEGORIES:
             size = _bounded_int(items.get(key))
             if size is not None:
-                result["categories"].append({"key": key, "size_gb": round(size / 10**9, 2)})
+                scans = report.get("category_scans", {})
+                scan = scans.get(key, {}) if isinstance(scans, dict) else {}
+                result["categories"].append({
+                    "key": key, "size_gb": round(size / 10**9, 2),
+                    "complete": scan.get("complete") is True if isinstance(scan, dict) else False,
+                })
     return result
 
 
