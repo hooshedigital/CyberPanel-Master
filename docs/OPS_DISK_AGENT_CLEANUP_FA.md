@@ -64,3 +64,14 @@
 ### وضعیت آزمون
 
 تست‌های امنیتی و سنجش budget در `master_extensions/tests/test_ops_collector.py`، `test_ops_overview.py`، `test_ops_file_browser.py` و `test_bridge.py` به سورس افزوده شده‌اند. Workflow اختصاصی `.github/workflows/ops-collector-ci.yml` برای اجرا در GitHub Actions ثبت شده است. **تا زمانی که خروجی موفق run از GitHub Actions مشاهده نشده، تست‌ها «طراحی و ثبت‌شده» محسوب می‌شوند، نه «پاس‌شده».** هیچ اجرای production از روی این PR تأیید نشده است.
+
+
+## مرحله ۴ — Smart Backup و بازبینی فایل‌های زائد در همان صفحه
+
+دو قالب `backup/hoosh_smart.html` و `backup/hoosh_smart_bilingual.html` اکنون بخش مستقل «بررسی پاک‌سازی فضای سرور» دارند. کنترلر واقعی `master_extensions/integration/hoosh_smart_bilingual.py` پس از تأیید ACL مدیر از `ops_telemetry.read_fresh_report` استفاده می‌کند و فقط خلاصه کاندیدها را با `ops_overview.cleanup_candidates` نمایش می‌دهد. **نسخه نصب‌شده سرور هنوز با این commit منطبق نشده است.**
+
+- گزارش باید root-owned، غیر symlink، دارای schema و timestamp معتبر، با محدودیت اندازه، و تازه‌تر از ۳۰ دقیقه باشد؛ در غیر این صورت صفحه «گزارشی موجود نیست» را نمایش می‌دهد.
+- هیچ نام فایل، مسیر خام، محتوای آرشیو یا فرمان حذف از collector به مرورگر منتقل نمی‌شود؛ `reclaimable_bytes` فقط تخمین است.
+- صفحه بکاپ همان کلاس‌های `hb-card` و `hb-table` موجود را استفاده می‌کند؛ بدون افزودن CSS/JS یا تغییر فرایند backup/restore.
+- هماهنگی en/fa برای قالب‌های Master و هر دو قالب Backup با بررسی ایستای منبع تأیید شد: ۹۵ کلید یکسان Master، ۳۳ کلید یکسان هر نوع Backup، بدون ارجاع قالب به کلید ناموجود. **این آزمون ایستا، جایگزین اجرای واقعی CI و screenshot نیست.**
+- بحران فضای ذخیره‌سازی: در بازرسی فقط‌خواندنی ۲۰ نوامبر، inode حدود ۵٪ و دیسک ۹۲٪ استفاده شده بود. Docker حاوی چندین image OpenHands و مجموعه rollback است؛ جمع اندازه اسمی imageها، فضای آزادشدنی را نشان نمی‌دهد. پیش از حذف باید `docker system df -v` و وابستگی image/volume/container بررسی شود؛ پیگیری در [Issue #30](https://github.com/hooshedigital/CyberPanel-Master/issues/30).
