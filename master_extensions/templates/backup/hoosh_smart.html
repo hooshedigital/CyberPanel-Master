@@ -23,14 +23,14 @@
 @media(max-width:600px){.hb-root{padding:0 10px}.hb-title{font-size:22px}.hb-table th,.hb-table td{font-size:12px;padding:8px}}
 </style>
 <main class="hb-root" dir="{{ direction }}" lang="{{ lang }}" aria-label="Hoosh Smart Backup">
-<nav style="text-align:end;margin:0 0 8px" aria-label="Language">{{ b.lang }}: <a href="?lang=en" hreflang="en">English</a> · <a href="?lang=fa" hreflang="fa">فارسی</a></nav>
+<nav style="text-align:end;margin:0 0 8px" aria-label="Language">{{ b.lang }}: <a href="?lang=en" hreflang="en" lang="en" dir="ltr">English</a> · <a href="?lang=fa" hreflang="fa" lang="fa" dir="rtl">فارسی</a></nav>
 <h1 class="hb-title">{{ b.title }}</h1>
 <p class="hb-sub">{{ b.subtitle }}</p>
 <div class="hb-cards">
 <section class="hb-card"><div class="hb-label">{{ b.full_backups }}</div><div class="hb-number">{{ daily_count }}</div><div class="hb-note">{{ b.retention }}</div></section>
 <section class="hb-card"><div class="hb-label">{{ b.size_daily }}</div><div class="hb-number">{{ total_daily_gb }} GB</div><div class="hb-note">{{ b.size_note }}</div></section>
 <section class="hb-card"><div class="hb-label">{{ b.free }}</div><div class="hb-number">{{ disk_free_gb|default_if_none:"—" }} GB</div><div class="hb-note">{{ b.disk_used }}: {{ disk_used|default_if_none:"—" }}٪</div></section>
-<section class="hb-card"><div class="hb-label">{{ b.engine }}</div><div class="hb-number" style="font-size:18px">{{ backup.state }}</div><div class="hb-note">Snapshot: {{ backup.count|default_if_none:"—" }}</div></section>
+<section class="hb-card"><div class="hb-label">{{ b.engine }}</div><div class="hb-number" style="font-size:18px">{{ backup_state_label|default:backup.state }}</div><div class="hb-note">{{ b.snapshot }}: {{ backup.count|default_if_none:"—" }}</div></section>
 </div>
 <section class="hb-card hb-section">
 <h2 style="font-size:20px">{{ b.local }}</h2>

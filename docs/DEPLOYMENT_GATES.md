@@ -9,7 +9,7 @@ This public repository contains add-on code only. No private host files, server 
 - Keep secret in root-owned group-readable file with no world read; never pass as command-line arg to Owner Broker or GitHub.
 - Patch existing login Javascript to forward captcha_token, and add widget without replacing password, session or CSRF checks.
 - Test expired, missing, invalid, cross-domain and correct tokens on isolated staging; verify successful admin login, failed password, and rollback access.
-- Turnstile middleware remains disabled until all checks pass. Do not lock out admin.
+- For a **new installation or a future redeploy**, keep Turnstile middleware disabled until all valid/invalid-token and positive-login/2FA checks pass in staging. The 18 Nov report documents an **existing active production widget**; this is historical evidence, not permission to redeploy. Do not lock out admin.
 
 ## Agent
 - PARSA pilot Heartbeat exists; Hoosh CyberAgent deployment not assumed from GitHub README.
@@ -30,4 +30,4 @@ This public repository contains add-on code only. No private host files, server 
 
 ## Dedicated Cloudflare Turnstile widget provisioned
 
-A Managed-mode widget was created in the owner's Cloudflare account specifically for `manage.hooshedigital.ir` (DNS-only compatible). Public sitekey: `0x4AAAAAAGG-PjEcCDvWgNdr`. **Not yet embedded or active.** The private Siteverify secret was deliberately not returned to the chat or committed. It must be delivered to the server exclusively via an independently authorized secure secret channel, never command-line argv/Root Broker audit logs. Once the exact login POST integration is tested and the secret is safely installed, the middleware may be enabled with fail-closed validation and rollback.
+**Chronology correction (20 Nov 2026):** The 18 Nov server verification report records that the managed widget for `manage.hooshedigital.ir` was **embedded and active** with public sitekey `0x4AAAAAAGG-PjEcCDvWgNdr`; missing/invalid tokens against `/verifyLogin` returned HTTP 403. The report does **not** demonstrate a successful real-browser login or completion of 2FA. The source-branch public key was different and is corrected in the audit branch, but installed source ↔ repository parity is still unverified. The private Siteverify secret remains server-only and must never be copied into GitHub, logs, argv, or chat. Do not redeploy CAPTCHA until browser-positive valid-token/login, lockout/CSRF/MFA, and owner recovery-path tests succeed.

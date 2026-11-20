@@ -38,6 +38,20 @@ The installed **CyberPanel Core 3.0 Build 4** was verified from `/usr/local/Cybe
 
 A **read-only, admin-only WHMCS Commerce Center section** is staged in the CyberPanel Master native template and displays planned modules. Until the real WHMCS installation and previously built CyberPanel API are verified, it displays no fabricated data, billing API state or working provisioning control. The current WHMCS admin link opens a separately authenticated login. **There is no root impersonation, premium license bypass, or production installation in this branch.**
 
+## 2026-11-20 source/UI/i18n/CAPTCHA audit (staging only)
+
+Before any new live deployment, consult the [Core/UI/i18n/CAPTCHA audit](docs/CORE_UI_I18N_AUDIT_20261120_FA.md) and [license-safe independent premium feature roadmap](docs/PREMIUM_FEATURE_PARITY_20261120_FA.md).
+
+- Repo source and installed panel **are not guaranteed identical**; historical Core version is **3.0 Build 4** while the Master extension is **0.1.0**.
+- New WHMCS Commerce tiles use the existing CyberPanel Master CSS classes and *already-used* icon classes, not another CSS framework. The source branch does not change base navigation.
+- Existing scoped English/Persian translations gained template direction and backup status fixes; full upstream Core translation is still an **open task**.
+- The Turnstile public sitekey in the source was inconsistent with the 18 Nov production report; the staging source now uses the documented public key and supports root-managed configuration. Actual browser login + 2FA and source parity still must pass **before rollout**.
+- Historical `cp-whmcs` and `hooshcloud` module evidence was recovered, but API source was **not read live** in this review; no duplicate integration is authorized until inventory.
+- Disk use was around **92%** by server `df` on 20 Nov. Backups need a validated offsite destination and rollback.
+- Pending release gates: [core/UI #13](https://github.com/hooshedigital/CyberPanel-Master/issues/13), [en/fa Core #14](https://github.com/hooshedigital/CyberPanel-Master/issues/14), [CAPTCHA #15](https://github.com/hooshedigital/CyberPanel-Master/issues/15), [Premium counterparts #16](https://github.com/hooshedigital/CyberPanel-Master/issues/16), [old API #10](https://github.com/hooshedigital/CyberPanel-Master/issues/10).
+
+**All source changes are on an isolated review branch. No live WordPress, WHMCS, CyberPanel or DNS configuration was changed.**
+
 ## Original project roadmap
 
 

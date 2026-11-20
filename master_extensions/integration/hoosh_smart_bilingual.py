@@ -115,12 +115,30 @@ def dashboard(request):
         return HttpResponseForbidden("Access denied")
     if not isinstance(acl, dict) or not acl.get("admin"):
         return HttpResponseForbidden("Administrator access required")
-    from .master_extensions.i18n import COOKIE, BACKUP_LABELS, resolve_language
+    from master_extensions.i18n import COOKIE, BACKUP_LABELS, resolve_language
+    from master_extensions.backup_i18n import LABELS as BACKUP_VIEW_LABELS
+    from master_extensions.version import MASTER_VERSION
+    from master_extensions.bridge import core_version
     requested = request.GET.get("lang")
     lang = resolve_language(requested, request.COOKIES.get(COOKIE))
     data = summary()
-    data.update({"backup_lang": lang, "backup_dir": "rtl" if lang == "fa" else "ltr",
-                 "backup_t": BACKUP_LABELS[lang]})
+    state = data.get("backup", {}).get("state", "not_configured")
+    states = {
+        "en": {"not_configured": "Not configured", "idle": "Idle",
+               "running": "Running", "success": "Completed", "error": "Error"},
+        "fa": {"not_configured": "پیکربندی‌نشده", "idle": "آماده",
+               "running": "در حال اجرا", "success": "تکمیل‌شده", "error": "خطا"},
+    }
+    direction = "rtl" if lang == "fa" else "ltr"
+    data.update({
+        "backup_lang": lang, "backup_dir": direction,
+        "backup_t": BACKUP_LABELS[lang],
+        # The installed route renders backup/hoosh_smart.html, which uses b/lang/direction.
+        "b": BACKUP_VIEW_LABELS[lang], "lang": lang, "direction": direction,
+        "backup_state_label": states[lang].get(state, states[lang]["not_configured"]),
+        "master_version": MASTER_VERSION,
+        "core_version": core_version() or ("تأییدنشده" if lang == "fa" else "Not verified"),
+    })
     response = httpProc(request, "backup/hoosh_smart.html", data, "admin").render()
     if requested in ("en", "fa"):
         response.set_cookie(COOKIE, lang, secure=True, httponly=True, samesite="Lax",
