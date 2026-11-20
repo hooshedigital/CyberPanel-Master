@@ -72,8 +72,8 @@
     <div>
       <span class="hm-tag"><i class="fas fa-shield-alt" aria-hidden="true"></i>{{ t.read_only }}</span>
       <nav class="hm-lang" aria-label="{{ t.language }}" style="margin-top:11px">
-        <a href="?lang=en" hreflang="en" lang="en" dir="ltr" aria-current="{% if lang == 'en' %}true{% else %}false{% endif %}">English</a>
-        <a href="?lang=fa" hreflang="fa" lang="fa" dir="rtl" aria-current="{% if lang == 'fa' %}true{% else %}false{% endif %}">فارسی</a>
+        <a href="?lang=en" hreflang="en" aria-current="{% if lang == 'en' %}true{% else %}false{% endif %}" lang="en" dir="ltr">English</a>
+        <a href="?lang=fa" hreflang="fa" aria-current="{% if lang == 'fa' %}true{% else %}false{% endif %}" lang="fa" dir="rtl">فارسی</a>
       </nav>
     </div>
   </header>
