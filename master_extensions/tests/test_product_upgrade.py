@@ -186,6 +186,47 @@ class WordPressSecurityScannerTests(unittest.TestCase):
             got = scan_wordpress(link)
             self.assertEqual(got["status"], "unavailable")
 
+    def test_quick_full_profiles_are_real_and_reports_are_localized(self):
+        from master_extensions.security_scan_report import (
+            scan_with_profile, explain_report, PROFILE_LIMITS,
+        )
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "sample.php").write_text("<?php eval(base64_decode('test'));")
+            quick = scan_with_profile(root, "quick")
+            full = scan_with_profile(root, "full")
+            self.assertEqual(quick["scan_type"], "quick")
+            self.assertEqual(full["scan_type"], "full")
+            self.assertLess(PROFILE_LIMITS["quick"]["seconds"],
+                            PROFILE_LIMITS["full"]["seconds"])
+            fa = explain_report(quick, "fa")
+            en = explain_report(full, "en")
+            self.assertEqual(len(fa["findings"]), 1)
+            self.assertNotEqual(fa["findings"][0]["title"], en["findings"][0]["title"])
+            self.assertEqual(fa["findings"][0]["action"], "review_only")
+            self.assertFalse(fa["ai_analysis_performed"])
+            self.assertFalse(fa["automatic_remediation"])
+            self.assertEqual(quick["provider_cost"], 0)
+            with self.assertRaises(ValueError):
+                scan_with_profile(root, "../../unbounded")
+
+    def test_scanner_reports_reject_untrusted_rules_and_potential_html_payloads(self):
+        from master_extensions.security_scan_report import explain_report
+        report = {"engine": "static-indicators-v1", "status": "completed",
+                  "findings": [
+                    {"rule_id": "unknown", "severity": "critical",
+                     "relative_path": "<script>alert(1)</script>",
+                     "evidence_sha256": "f" * 64},
+                    {"rule_id": "PHP_EVAL_BASE64", "severity": "high",
+                     "relative_path": "wp-content/test.php",
+                     "evidence_sha256": "f" * 64},
+                  ]}
+        result = explain_report(report, "en")
+        self.assertEqual(len(result["findings"]), 1)
+        self.assertNotIn("<script>", str(result))
+        with self.assertRaises(ValueError):
+            explain_report(report, "ar")
+
     def test_no_auto_fix_no_paid_api_and_no_exec(self):
         from pathlib import Path
         code = (Path(__file__).resolve().parents[2] / "master_extensions" /
