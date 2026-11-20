@@ -23,6 +23,17 @@ CyberPanel Master نام **کل محصول مدیریت میزبانی** است.
 - پایداری انتخاب زبان با `POST` دارای CSRF و cookie اختصاصی Django، محدود به `en/fa`، و `Secure/HttpOnly/SameSite` از شروط استقرار است.
 - قبل از استقرار، تطبیق نسخه واقعی Core و تفاوت‌های تولیدی آن با upstream، تست مرورگر EN/FA در عرض‌های مختلف، و login/2FA باید انجام شود.
 
+## نتیجه ممیزی مستقل کل Core (baseline upstream stable)
+
+گردش‌کار [CyberPanel Master whole-Core i18n baseline audit](https://github.com/hooshedigital/CyberPanel-Master/actions/runs/44797500684) واقعاً سورس upstream stable را کلون کرده، اسکن را اجرا و فایل گزارش را به‌عنوان artifact ثبت کرده است.
+
+- **۳۴ ماژول** در سورس مبنا
+- **۲٬۲۴۱ فایل** HTML و JavaScript بررسی‌شده
+- **۶٬۲۳۳ تگ ترجمه Django** شناسایی‌شده
+- **۳۰٬۵۵۹ نمونه احتمالی متن‌های سخت‌کدشده** (heuristic، شامل تکرار و JS؛ این تعداد به‌معنی رشته ترجمه‌نشده قطعی نیست)
+
+این baseline **نسخه نصب‌شده production نیست**. پس از source parity، همین ابزار را باید روی نسخه نصب‌شده اجرا کرد و بر اساس ماژول، واژه‌نامه ثابت، تفاوت‌های UI، gettext و JS اصلاح کرد. تا آن زمان نباید ادعا کرد ۱۴۲ ترجمه پوسته کل CyberPanel Master را فارسی کرده‌اند.
+
 ## مرکز ایجنت و عملیات
 
 - ایجنت موجود `hoosh-cyberagent` نسخه سورس ۰.۹.۰ تنها منبع اصلی وضعیت است؛ مغز پارسا، Owner Broker و Gateway سرویس‌های مستقلی هستند.
