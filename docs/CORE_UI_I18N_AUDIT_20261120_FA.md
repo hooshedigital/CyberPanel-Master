@@ -28,6 +28,7 @@
 - کارت‌های جدید WHMCS در شاخه قبلی `row/col`، inline CSS و markup متفاوت داشتند. در این ممیزی به `cp-tile-grid` / `cp-tile` / `cp-tile-ic` / `cp-tile-title` / `cp-tile-sub` موجود در Master تبدیل شدند؛ فقط آیکون‌های FontAwesome از پیش استفاده‌شده به کار رفتند.
 - لینک‌های انتخاب زبان `lang=en/dir=ltr` و `lang=fa/dir=rtl` دارند؛ ریشه قالب همچنان `dir="{{ direction }}"` است.
 - کلیدهای ترجمه `en/fa` و نمونه صفحات Master/Smart Backup با تست مستقل بررسی می‌شوند؛ برچسب `Snapshot` از دو قالب بکاپ حذف و معادل دو زبانه دارد.
+- **ایراد دیگری در سورس یافت و اصلاح شد:** controller بکاپ `hoosh_smart_bilingual.dashboard` قالب `backup/hoosh_smart.html` را render می‌کند، اما قبل از این ممیزی به‌جای متغیرهای موردانتظار قالب (`b/lang/direction`)، فقط `backup_t/backup_lang/backup_dir` را پاس می‌داد. نام import نیز به مسیر قدیمی `backup.master_extensions` اشاره می‌کرد، درحالی‌که مسیر نصب گزارش‌شده `/usr/local/CyberCP/master_extensions` است. اکنون controller هر دو نوع context را به‌صورت سازگار فراهم می‌کند، version واقعی یا «تأییدنشده» را می‌فرستد و وضعیت بکاپ را در قالب اصلی به زبان انتخاب‌شده نمایش می‌دهد. **تطبیق با نصب زنده و آزمون مرورگر قبل از deploy ضروری است.**
 - **ترجمه تمام هسته CyberPanel هنوز انجام نشده است.** این کار نیازمند استخراج متن‌های upstream و templateهای نصب‌شده، i18n/gettext و screenshot/browser regression در چند نقش (admin/reseller/client) است. ترجمه خودکار و گسترده HTML ممنوع است.
 - اسکریپت `brand_core.py` با SHA سخت‌گیرانه و مقدار version/footer ثابت در سورس قبلی موجود است؛ بدون بررسی هش نسخه نصب‌شده، تغییر یا اجرا نمی‌شود.
 
