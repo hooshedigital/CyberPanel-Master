@@ -51,6 +51,18 @@ class GlobalCoreLanguageTests(unittest.TestCase):
         self.assertIn('baseTemplate/css/hoosh-master-shell.css', shell)
         self.assertIn('nav id="sidebar"', shell)
 
+    def test_brand_stays_whole_panel_and_duplicate_menu_becomes_ops_center(self):
+        shell = SAMPLE_SHELL.replace(
+            '<div class="sidebar-logo">Brand</div>',
+            '<div class="sidebar-logo">CyberPanel Master</div>'
+            '<span>CyberPanel Master</span>'
+            "l:'CyberPanel Master'",
+        )
+        updated = patch_shell(shell)
+        self.assertIn('<div class="sidebar-logo">CyberPanel Master</div>', updated)
+        self.assertIn('<span>{% trans "Operations Center" %}</span>', updated)
+        self.assertIn('l:\'{% trans "Operations Center" %}\'', updated)
+
     def test_settings_preserve_english_default_and_existing_languages(self):
         updated = patch_settings(SAMPLE_SETTINGS)
         compile(updated, SETTINGS, "exec")
@@ -58,6 +70,9 @@ class GlobalCoreLanguageTests(unittest.TestCase):
         self.assertIn("LANGUAGES = tuple(LANGUAGES)", updated)
         self.assertIn('master_extensions', updated)
         self.assertIn('LOCALE_PATHS', updated)
+        self.assertIn('LANGUAGE_COOKIE_SECURE = True', updated)
+        self.assertIn('LANGUAGE_COOKIE_HTTPONLY = True', updated)
+        self.assertIn("LANGUAGE_COOKIE_SAMESITE = 'Lax'", updated)
 
     def test_language_post_uses_django_official_csrf_guarded_view(self):
         updated = patch_urls(SAMPLE_URLS)
