@@ -106,10 +106,13 @@ def patch_settings(source: str) -> str:
 def patch_urls(source: str) -> str:
     if STAMP in source or 'hooshMasterSetLanguage' in source:
         raise ValueError("URLconf already patched")
-    source = unique_replace(source,"urlpatterns = [","urlpatterns = [\\n"+URL_BLOCK,URLS)
-    if 'from django.urls import' not in source or 'path(' not in source:
+    source = unique_replace(source, "urlpatterns = [",
+                            "urlpatterns = [" + chr(10) + URL_BLOCK, URLS)
+    if 'from django.urls import path, re_path, include' not in source:
         raise ValueError("unsupported CyberCP URLconf")
-    return 'from django.views.i18n import set_language\n'+source
+    return unique_replace(source, "from django.urls import path, re_path, include",
+                          "from django.urls import path, re_path, include" + chr(10)
+                          + "from django.views.i18n import set_language", URLS)
 
 
 def build_overlay(root: Path, output: Path) -> dict:
