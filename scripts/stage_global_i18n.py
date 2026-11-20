@@ -86,6 +86,29 @@ def patch_shell(template: str) -> str:
         raise ValueError("unexpected sidebar layout")
     template = unique_replace(template,anchor,LANGUAGE_FORM+'\n'+anchor,TEMPLATE)
     template = unique_replace(template,'{% block header_scripts %}',HEAD_CSS+'\n{% block header_scripts %}',TEMPLATE)
+
+    # CyberPanel Master is already the installed shell brand. The second
+    # navigation entry with the same title is only its Operations Center.
+    # Do not replace the brand itself or other upstream page names.
+    native_panel = '<span>CyberPanel Master</span>'
+    if template.count(native_panel):
+        template = unique_replace(template, native_panel,
+                                  '<span>{% trans "Operations Center" %}</span>', TEMPLATE)
+    command_label = "l:'CyberPanel Master'"
+    if template.count(command_label):
+        template = unique_replace(template, command_label,
+                                  "l:'{% trans \"Operations Center\" %}'", TEMPLATE)
+
+    # Native header version must reflect the installed custom Master, while
+    # upstream Core version retains its own source of truth.
+    if template.count('Master v0.1.0'):
+        if template.count('Master v0.1.0') != 2:
+            raise ValueError('unexpected Master version tag placement')
+        template = template.replace('Master v0.1.0', 'Master v0.2.0-dev')
+    default_title = '{% block title %}CyberPanel{% endblock %}'
+    if default_title in template:
+        template = unique_replace(template,default_title,
+                                  '{% block title %}CyberPanel Master{% endblock %}',TEMPLATE)
     return template
 
 
