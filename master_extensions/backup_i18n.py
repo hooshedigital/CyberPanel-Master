@@ -1,6 +1,16 @@
 """Scoped translations for the optional Hoosh Smart Backup panel."""
 LABELS = {
   "en": {
+    "cleanup_heading": "Storage cleanup review",
+    "cleanup_note": "Review-only size estimates from protected telemetry. No cache, backup or server files are deleted.",
+    "cleanup_pending": "No trusted cleanup inventory is available yet.",
+    "cleanup_incomplete": "The scan is incomplete; values are only potential candidates.",
+    "cleanup_size": "Potential space",
+    "clean_apt_download_cache": "APT download cache",
+    "clean_journal_archives": "Archived journal files",
+    "clean_old_temp_files": "Aged temporary files",
+    "clean_application_cache": "Application cache",
+    "clean_unused_build_artifacts": "Build artifacts",
     "title": "Smart Backup · HooshDigital",
     "subtitle": "Secure, resource-conscious, read-only inventory inside CyberPanel",
     "full_backups": "Local daily backups",
@@ -23,6 +33,16 @@ LABELS = {
     "lang": "Language", "snapshot": "Snapshots"
   },
   "fa": {
+    "cleanup_heading": "بررسی پاک‌سازی فضای سرور",
+    "cleanup_note": "فقط تخمین حجم موارد پیشنهادی از گزارش امن؛ هیچ کش، بکاپ یا فایل سرور حذف نمی‌شود.",
+    "cleanup_pending": "هنوز گزارش معتبر پاک‌سازی دریافت نشده است.",
+    "cleanup_incomplete": "اسکن کامل نیست؛ این اعداد فقط موارد احتمالی را نشان می‌دهند.",
+    "cleanup_size": "فضای احتمالی",
+    "clean_apt_download_cache": "کش دانلود APT",
+    "clean_journal_archives": "فایل‌های آرشیوی ژورنال",
+    "clean_old_temp_files": "فایل‌های موقت قدیمی",
+    "clean_application_cache": "کش برنامه‌ها",
+    "clean_unused_build_artifacts": "فایل‌های ساخت بلااستفاده",
     "title": "پشتیبان‌گیری هوشمند · هوش دیجیتال",
     "subtitle": "نمای مدیریتی امن، کم‌مصرف و فقط‌خواندنی در داخل سایبرپنل",
     "full_backups": "بکاپ‌های روزانه محلی",
