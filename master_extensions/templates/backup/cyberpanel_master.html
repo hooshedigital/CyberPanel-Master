@@ -81,7 +81,7 @@
             <div class="cp-tile">
               <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
               <span><div class="cp-tile-title">{{ group.name }}</div>
-              <div class="cp-tile-sub">{{ group.size_gib }} GiB · {% if group.complete %}{{ t.storage_complete }}{% else %}{{ t.storage_partial }}{% endif %}</div></span>
+              <div class="cp-tile-sub">{% if group.measured %}{{ group.size_gib }} GiB{% else %}{{ t.unknown }}{% endif %} · {% if group.complete %}{{ t.storage_complete }}{% else %}{{ t.storage_partial }}{% endif %}</div></span>
             </div>
           {% endfor %}
           </div>
@@ -103,7 +103,7 @@
               <span class="cp-tile-ic"><i class="fas fa-heartbeat" aria-hidden="true"></i></span>
               <span>
                 <div class="cp-tile-title">{% if candidate.id == "apt_archives" %}{{ t.cleanup_apt }}{% else %}{{ t.cleanup_temp }}{% endif %}</div>
-                <div class="cp-tile-sub">{{ t.cleanup_count }}: {{ candidate.count }} · {{ t.cleanup_saved }}: {{ candidate.size_gib }} GiB</div>
+                <div class="cp-tile-sub">{% if candidate.complete %}{{ t.cleanup_count }}: {{ candidate.count }} · {{ t.cleanup_saved }}: {{ candidate.size_gib }} GiB{% else %}{{ t.storage_partial }}{% endif %}</div>
               </span>
             </div>
           {% endfor %}
