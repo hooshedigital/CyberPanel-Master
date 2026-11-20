@@ -63,7 +63,10 @@ def explain_report(report: dict, language: str) -> dict:
             continue
         relative_path = finding.get("relative_path")
         digest = finding.get("evidence_sha256")
-        if not isinstance(relative_path, str) or not 1 <= len(relative_path) <= 180:
+        if (not isinstance(relative_path, str) or not 1 <= len(relative_path) <= 180
+                or relative_path.startswith("/") or "\\\\" in relative_path
+                or any(part in ("", ".", "..") for part in relative_path.split("/"))
+                or any(ord(ch) < 32 or ch in "<>&" for ch in relative_path)):
             continue
         if (not isinstance(digest, str) or len(digest) != 64
                 or any(c not in "0123456789abcdef" for c in digest)):
