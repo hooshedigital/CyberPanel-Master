@@ -3,11 +3,11 @@
 # Generated from native upstream CyberPanel shell strings plus Hoosh Master UI.
 msgid ""
 msgstr ""
-"Project-Id-Version: CyberPanel Master 0.2.0\\n"
-"Content-Type: text/plain; charset=UTF-8\\n"
-"Content-Transfer-Encoding: 8bit\\n"
-"Language: fa\\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\\n"
+"Project-Id-Version: CyberPanel Master 0.2.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fa\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 msgid "Skip to main content"
 msgstr "رفتن به محتوای اصلی"
