@@ -119,8 +119,16 @@ def dashboard(request):
     requested = request.GET.get("lang")
     lang = resolve_language(requested, request.COOKIES.get(COOKIE))
     data = summary()
+    state = data.get("backup", {}).get("state", "not_configured")
+    states = {
+        "en": {"not_configured": "Not configured", "idle": "Idle",
+               "running": "Running", "success": "Completed", "error": "Error"},
+        "fa": {"not_configured": "پیکربندی‌نشده", "idle": "آماده",
+               "running": "در حال اجرا", "success": "تکمیل‌شده", "error": "خطا"},
+    }
     data.update({"backup_lang": lang, "backup_dir": "rtl" if lang == "fa" else "ltr",
-                 "backup_t": BACKUP_LABELS[lang]})
+                 "backup_t": BACKUP_LABELS[lang],
+                 "backup_state_label": states[lang].get(state, states[lang]["not_configured"])})
     response = httpProc(request, "backup/hoosh_smart.html", data, "admin").render()
     if requested in ("en", "fa"):
         response.set_cookie(COOKIE, lang, secure=True, httponly=True, samesite="Lax",
