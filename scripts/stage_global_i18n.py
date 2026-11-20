@@ -44,6 +44,12 @@ if LANGUAGE_CODE != 'en' or not USE_I18N:
 if not any(code == 'fa' for code, _ in LANGUAGES):
     LANGUAGES = tuple(LANGUAGES) + (('fa', _('Persian')),)
 LOCALE_PATHS = (os.path.join(BASE_DIR, 'master_extensions', 'locale'),) + tuple(LOCALE_PATHS)
+# The language preference must follow the same HTTPS and browser isolation
+# policy as session/CSRF cookies; this is not an authentication token.
+LANGUAGE_COOKIE_SECURE = True
+LANGUAGE_COOKIE_HTTPONLY = True
+LANGUAGE_COOKIE_SAMESITE = 'Lax'
+LANGUAGE_COOKIE_PATH = '/'
 # /HOOSH_GLOBAL_I18N_V020
 """
 URL_BLOCK = """    # HOOSH_GLOBAL_I18N_V020: Django's CSRF-guarded official language view
