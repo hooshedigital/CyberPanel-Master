@@ -14,6 +14,7 @@ class CommerceModule(TypedDict):
     description: str
     stage: str
     status: str
+    icon: str
 
 
 # Implementation deliberately contains no API key, credential, URL, server action, or premium code.
@@ -47,6 +48,20 @@ _MODULES = (
      "ظرفیت و چرخه ماشین مجازی با تأمین‌کننده واقعی؛ مستقل از هسته سایبرپنل", "v2"),
 )
 
+# Use only icon classes that are already rendered by the existing native
+# CyberPanel Master tiles. No new icon font/CDN/dependency is introduced.
+_ICONS = {
+    "billing": "fa-project-diagram",
+    "packages": "fa-server",
+    "catalog": "fa-route",
+    "affiliates": "fa-brain",
+    "campaigns": "fa-route",
+    "provisioning": "fa-server",
+    "identity": "fa-project-diagram",
+    "linux": "fa-heartbeat",
+    "vps": "fa-server",
+}
+
 _STATES = {
     "en": ("Planned / not connected", "Draft catalog; no live WHMCS access or provisioning"),
     "fa": ("برنامه‌ریزی‌شده / متصل نیست", "کاتالوگ اولیه؛ بدون دسترسی زنده به WHMCS یا ساخت سرویس"),
@@ -64,6 +79,7 @@ def modules_for(lang: str) -> list[CommerceModule]:
             "description": en_description if lang == "en" else fa_description,
             "stage": stage,
             "status": _STATES[lang][0],
+            "icon": _ICONS[identifier],
         })
     return output
 
