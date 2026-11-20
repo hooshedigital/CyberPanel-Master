@@ -1,0 +1,156 @@
+"""Prepare an explicit, fail-closed Core-wide language overlay for CyberPanel.
+
+The developer MUST run this against the *actual installed version* after source
+parity inspection. No Core file is touched: outputs are written to an empty
+staging directory. Existing CyberPanel middleware, routes, theme and icons
+are preserved. This is the FOUNDATION for full-template/gettext translation,
+not a claim that every old AngularJS string already has a Persian catalog.
+
+Usage:
+  python3 scripts/plan_global_locale.py --core /usr/local/CyberCP \
+      --output /var/tmp/cybermaster-global-locale-preview
+
+Review the manifest, Django check, static HTML/JS coverage, browser EN/FA and
+owner-approved rollback BEFORE deploying any generated Core file.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import re
+import stat
+
+SETTINGS = "CyberCP/settings.py"
+URLS = "CyberCP/urls.py"
+SHELL = "baseTemplate/templates/baseTemplate/index.html"
+TARGETS = (SETTINGS, URLS, SHELL)
+MAX_BYTES = 200000
+
+
+def guarded_read(root: Path, rel: str) -> str:
+    target = root / rel
+    s = target.lstat()
+    if not stat.S_ISREG(s.st_mode) or not 0 < s.st_size <= MAX_BYTES:
+        raise ValueError("invalid_core_target:" + rel)
+    return target.read_text(encoding="utf-8")
+
+
+def replace_once(text: str, original: str, replacement: str, name: str) -> str:
+    if text.count(original) != 1:
+        raise ValueError("unexpected_installed_core_version:" + name)
+    return text.replace(original, replacement, 1)
+
+
+def patch_settings(text: str) -> str:
+    text = replace_once(
+        text,
+        "'django.middleware.locale.LocaleMiddleware'",
+        "'master_extensions.product_locale.EnglishFirstLocaleMiddleware'",
+        "locale_middleware",
+    )
+    if not re.search(r"(?m)^LANGUAGE_CODE\s*=\s*['\"]en['\"]\s*$", text):
+        raise ValueError("English must remain the Core default language")
+    if re.search(r"\(\s*['\"]fa['\"]\s*,", text):
+        raise ValueError("Persian already registered: manual reconciliation required")
+    text = replace_once(text, "LANGUAGES = (\n",
+                        "LANGUAGES = (\n    ('fa', _('Persian')),\n",
+                        "language_registration")
+    if "USE_I18N = True" not in text or "LOCALE_PATHS" not in text:
+        raise ValueError("gettext not configured in current Core")
+    # We deliberately preserve all existing Core languages, database and secrets.
+    return text
+
+
+def patch_urls(text: str) -> str:
+    text = replace_once(
+        text, "urlpatterns = [\n",
+        "from django.views.i18n import set_language as cybermaster_set_language\n\n"
+        "urlpatterns = [\n"
+        "    path('hoosh/language/', cybermaster_set_language, "
+        "name='cybermaster_set_language'),\n",
+        "language_route",
+    )
+    return text
+
+
+LANGUAGE_SWITCH = """    <!-- Global CyberPanel Master language preference: native CSRF-protected POST. -->
+    <form class="cp-product-language" action="{% url 'cybermaster_set_language' %}"
+          method="post" aria-label="{% trans 'Panel language' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path|default:'/' }}">
+        <button class="theme-toggle" type="submit" name="language" value="en"
+                lang="en" dir="ltr" aria-pressed="{% if LANGUAGE_CODE == 'en' %}true{% else %}false{% endif %}">EN</button>
+        <button class="theme-toggle" type="submit" name="language" value="fa"
+                lang="fa" dir="rtl" aria-pressed="{% if LANGUAGE_CODE == 'fa' %}true{% else %}false{% endif %}">فا</button>
+    </form>
+"""
+
+
+def patch_shell(text: str) -> str:
+    if text.count("{% get_current_language as LANGUAGE_CODE %}") != 1:
+        raise ValueError("installed shell lacks canonical Django i18n tag")
+    text = replace_once(
+        text,
+        '<html class="cp-evergreen" lang="en" ng-app="CyberCP">',
+        '<html class="cp-evergreen" lang="{{ LANGUAGE_CODE }}"'
+        ' dir="{% if LANGUAGE_CODE == \'fa\' %}rtl{% else %}ltr{% endif %}" ng-app="CyberCP">',
+        "global_language_and_direction",
+    )
+    anchor = '            <button id="theme-toggle" class="theme-toggle"'
+    text = replace_once(text, anchor, LANGUAGE_SWITCH + anchor,
+                        "native_global_header_language_switch")
+    # Browser text direction follows language, preserving all existing CSS/layout.
+    # Full RTL regression must be approved before live Core shell deployment.
+    return text
+
+
+def plan(root: Path, output: Path) -> dict:
+    root, output = root.resolve(), output.absolute()
+    if not root.is_dir() or output.exists():
+        raise ValueError("invalid core or output already exists")
+    if output == root or root in output.parents:
+        raise ValueError("staging output must be outside Core root")
+    builders = {SETTINGS: patch_settings, URLS: patch_urls, SHELL: patch_shell}
+    originals = {p: guarded_read(root, p) for p in TARGETS}
+    replacements = {p: builders[p](originals[p]) for p in TARGETS}
+    # All preflight checks complete before writing anything.
+    output.mkdir(parents=True, exist_ok=False, mode=0o700)
+    changes = []
+    for path in TARGETS:
+        item = output / path
+        item.parent.mkdir(parents=True, exist_ok=True)
+        item.write_text(replacements[path], encoding="utf-8")
+        changes.append({
+            "path": path,
+            "installed_sha256": hashlib.sha256(originals[path].encode()).hexdigest(),
+            "staged_sha256": hashlib.sha256(replacements[path].encode()).hexdigest(),
+            "source_lines": originals[path].count("\n") + 1,
+            "locale_scope": "Core framework / shell only; catalog completion required",
+        })
+    result = {
+        "product": "CyberPanel Master",
+        "default_language": "en", "additional_language": "fa",
+        "full_translation_complete": False,
+        "production_modified": False,
+        "requires_owner_approval": True,
+        "changes": changes,
+    }
+    (output / "manifest.json").write_text(
+        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    return result
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--core", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    result = plan(args.core, args.output)
+    print(json.dumps(result, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()
