@@ -100,6 +100,13 @@ class OperationsCollectorTests(unittest.TestCase):
             mounts=set())
         self.assertEqual(result["candidates"], [])
 
+    def test_no_delete_or_shell_entrypoint_in_collector(self):
+        import inspect
+        source = inspect.getsource(ops_collector)
+        for forbidden in ("subprocess", "os.system(", ".unlink(", "os.remove(",
+                          "shutil.rmtree(", "os.rename(", "os.replace("):
+            self.assertNotIn(forbidden, source)
+
     def test_untrusted_roots_cannot_be_scanned_as_arbitrary_categories(self):
         self._write("home/x.txt")
         result = ops_collector.collect_disk(
