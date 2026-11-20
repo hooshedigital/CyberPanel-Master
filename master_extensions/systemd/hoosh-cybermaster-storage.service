@@ -1,0 +1,30 @@
+[Unit]
+Description=Hoosh CyberPanel Master bounded disk + cleanup preview publisher
+After=local-fs.target
+ConditionPathExists=/usr/local/CyberCP/master_extensions/storage_publisher.py
+
+[Service]
+Type=oneshot
+User=hooshagent
+Group=hooshagent
+WorkingDirectory=/usr/local/CyberCP
+ExecStart=/usr/bin/python3 -m master_extensions.storage_publisher
+StateDirectory=hoosh-cybermaster
+StateDirectoryMode=0755
+UMask=0022
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryMax=128M
+CPUQuota=5%
+IOWeight=10
+Nice=15
+TimeoutStartSec=30s
+# Never grant write access to /var/log, /home, /var/cache or Docker.
+ReadWritePaths=/var/lib/hoosh-cybermaster
