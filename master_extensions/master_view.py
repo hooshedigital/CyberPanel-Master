@@ -14,9 +14,11 @@ from .i18n import COOKIE,context_for,resolve_language
 from .version import MASTER_VERSION,label
 from .billing_links import trusted_billing_admin_url
 from .commerce_modules import modules_for, status_note
+from .ops_overview import disk_overview, cleanup_candidates, agent_overview
 
 BASE = Path("/var/lib/hoosh-cyber-agent")
-ALLOW = {"health.json","gateway-status.json","server-agent-status.json"}
+ALLOW = {"health.json","gateway-status.json","server-agent-status.json",
+         "disk-inventory.json","cleanup-candidates.json","agent-operations.json"}
 
 def _report(name,max_age=300):
     if name not in ALLOW: return {}
@@ -36,6 +38,9 @@ def display_context(lang):
     health=_report("health.json",600)
     gateway=_report("gateway-status.json")
     agent=_report("server-agent-status.json")
+    disk_report=_report("disk-inventory.json",600)
+    cleanup_report=_report("cleanup-candidates.json",600)
+    ops_report=_report("agent-operations.json",300)
     parsa=health.get("parsa",{})
     if not isinstance(parsa,dict):parsa={}
     checks=health.get("checks",{})
@@ -67,7 +72,10 @@ def display_context(lang):
         "updated":health.get("generated_utc"),
         "billing_admin_url":trusted_billing_admin_url(),
         "commerce_modules":modules_for(lang),
-        "commerce_note":status_note(lang)
+        "commerce_note":status_note(lang),
+        "disk_inventory":disk_overview(disk_report),
+        "cleanup_candidates":cleanup_candidates(cleanup_report),
+        "agent_operations":agent_overview(ops_report)
     }}
 
 @never_cache
