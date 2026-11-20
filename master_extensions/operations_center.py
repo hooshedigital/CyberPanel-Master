@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import os
+import stat
 from pathlib import Path
 import shutil
 
@@ -33,14 +35,14 @@ def _read_bounded_json(path: Path) -> dict:
     """Never follow a symlink. Ignore untrusted oversized, missing or malformed reports."""
     try:
         st = path.lstat()
-        import stat
         if not stat.S_ISREG(st.st_mode) or st.st_size > MAX_REPORT or st.st_size < 2:
             return {}
-        with path.open("rb") as handle:
-            # A different file from a racing rename is not blindly accepted.
-            current = handle.fileno()
-            actual = __import__("os").fstat(current)
-            if (actual.st_ino, actual.st_dev) != (st.st_ino, st.st_dev):
+        # O_NOFOLLOW plus inode comparison prevents symlink swap/race in report reads.
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        with os.fdopen(fd, "rb") as handle:
+            actual = os.fstat(handle.fileno())
+            if (not stat.S_ISREG(actual.st_mode) or
+                    (actual.st_ino, actual.st_dev) != (st.st_ino, st.st_dev)):
                 return {}
             raw = handle.read(MAX_REPORT + 1)
         if len(raw) > MAX_REPORT:
@@ -116,13 +118,27 @@ def agent_summary(*, report: dict | None = None, now: datetime | None = None) ->
     # Source schema must be observed and timestamped; never claim live from file existence.
     stamp = report.get("generated_utc") or report.get("updated_utc") or report.get("at_utc")
     alive = _fresh(stamp, now, seconds=240)
+    # Existing hoosh-cyberagent 0.9.0 publishes updated_at_unix, NOT ISO.
+    epoch = report.get("updated_at_unix")
+    if type(epoch) in (int, float) and 0 < epoch < 2 ** 35:
+        alive = alive or 0 <= now.timestamp() - epoch <= 240
+        if alive and not stamp:
+            stamp = datetime.fromtimestamp(epoch, timezone.utc).isoformat()
+    reported = report.get("status") if alive else None
+    if reported not in ("ok", "warning", "critical", "unknown"):
+        reported = None
+    checks_total = report.get("checks_total")
+    if type(checks_total) is not int or not 0 <= checks_total <= 10000:
+        checks_total = None
     version = report.get("version")
     if not isinstance(version, str) or len(version) > 32 or not version.replace(".", "").replace("-", "").replace("+", "").isalnum():
         version = None
     return {
         "fresh": bool(alive),
-        "version": version,
+        "version": version if alive else None,
         "updated": stamp if alive else None,
+        "status": reported,
+        "checks_total": checks_total if alive else None,
         # A fresh heartbeat is not evidence that command execution is authorized.
         "operations_enabled": False,
     }
