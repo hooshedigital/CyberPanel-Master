@@ -196,7 +196,23 @@ def agent_summary(*, report: dict | None = None, now: datetime | None = None) ->
     version = report.get("version")
     if not isinstance(version, str) or len(version) > 32 or not version.replace(".", "").replace("-", "").replace("+", "").isalnum():
         version = None
+    checks = []
+    if alive:
+        raw_checks = report.get("checks", [])
+        if isinstance(raw_checks, list):
+            for item in raw_checks[:20]:
+                if not isinstance(item, dict):
+                    continue
+                name, check_status = item.get("name"), item.get("status")
+                if (isinstance(name, str) and 1 <= len(name) <= 64
+                        and all(ch.isascii() and (ch.isalnum() or ch in "._:-/")
+                                for ch in name)
+                        and check_status in ("ok", "warning", "critical", "unknown")):
+                    checks.append({"name": name, "status": check_status})
+                if len(checks) >= 12:
+                    break
     return {
+        "checks": checks,
         "fresh": bool(alive),
         "version": version if alive else None,
         "updated": stamp if alive else None,

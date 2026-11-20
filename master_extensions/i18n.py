@@ -1,9 +1,9 @@
-"""English and Persian labels scoped to new modules; never switch core UI globally."""
+"""Operations Center labels; Core-wide localization is handled by Django gettext."""
 LANGUAGES = ("en", "fa")
 COOKIE = "cybermaster_lang"
 LABELS = {
  "en": {
-  "brand":"CyberPanel Master","agent":"Cyber Agent","agent_subtitle":"Hosting intelligence and safe operations",
+  "brand":"Operations Center","agent":"Cyber Agent","agent_subtitle":"Hosting intelligence and safe operations",
   "overview":"Overview","health":"Hosting health","parsa":"PARSA executor",
   "server_agent":"Hoosh CyberAgent","gateway":"AI Gateway","router":"PARSA AI Router","backup":"Smart Backup",
   "issues":"Confirmed incidents","disk":"Disk usage","ram":"Available memory",
@@ -55,9 +55,9 @@ LABELS = {
   "agent_ops_fresh":"Recent agent heartbeat report","agent_ops_stale":"Agent status file unavailable, unrecognized or stale",
   "agent_ops_commands":"Existing supported checks: ops-status, resource-status, ops-once --dry-run",
   "agent_ops_approval":"Execution from this panel is not connected; operator approval and a scoped agent bridge are required.",
-  "agent_ops_checks":"Checks reported","agent_ops_version":"Reported agent version"},
+  "agent_ops_checks":"Checks reported","agent_ops_version":"Reported agent version","agent_ops_warning":"Warning","agent_ops_detail":"Detailed agent monitor","security_heading":"Website security & scanner","security_stage":"Independent scanner in development","security_desc":"A sandboxed WordPress file inspector is under development. The CyberPanel paid cloud AI Scanner is a separate service.","security_scanner":"Local file security audit","security_audit_pending":"Not enabled on production","security_warning":"No site scan has run; no malware-free claim is made. No site files are sent to AI providers."},
  "fa": {
-  "brand":"سایبرپنل مستر","agent":"ایجنت سایبر","agent_subtitle":"هوشمندی میزبانی و عملیات امن",
+  "brand":"مرکز عملیات","agent":"ایجنت سایبر","agent_subtitle":"هوشمندی میزبانی و عملیات امن",
   "overview":"نمای کلی","health":"سلامت میزبانی","parsa":"عامل اجرایی پارسا",
   "server_agent":"ایجنت سرور هوش","gateway":"درگاه هوش مصنوعی","router":"مسیریاب داخلی پارسا","backup":"بکاپ هوشمند",
   "issues":"رخدادهای تأییدشده","disk":"مصرف دیسک","ram":"حافظه آزاد",
@@ -109,7 +109,7 @@ LABELS = {
   "agent_ops_fresh":"گزارش تازه از قلب تپنده ایجنت","agent_ops_stale":"فایل وضعیت ایجنت موجود، شناخته‌شده یا تازه نیست",
   "agent_ops_commands":"بررسی‌های موجود: ops-status، resource-status و ops-once --dry-run",
   "agent_ops_approval":"اجرای عملیات از این بخش هنوز متصل نیست و به پل ارتباطی محدود و تأیید اپراتور نیاز دارد.",
-  "agent_ops_checks":"تعداد بررسی‌های گزارش‌شده","agent_ops_version":"نسخه گزارش‌شده ایجنت"}
+  "agent_ops_checks":"تعداد بررسی‌های گزارش‌شده","agent_ops_version":"نسخه گزارش‌شده ایجنت","agent_ops_warning":"هشدار","agent_ops_detail":"نمای جزئیات ایجنت","security_heading":"امنیت وب‌سایت و اسکنر","security_stage":"اسکنر مستقل در حال توسعه","security_desc":"ابزار مستقل ممیزی فایل‌های وردپرس در حال توسعه است. اسکنر AI ابری پولی CyberPanel یک سرویس جداگانه است.","security_scanner":"ممیزی امنیتی فایل‌ها","security_audit_pending":"روی سرور اصلی فعال نشده","security_warning":"اسکنی اجرا نشده و ادعای پاک بودن سایت وجود ندارد. فایل‌ها به سرویس AI ارسال نمی‌شوند."}
 }
 def resolve_language(query: str | None, cookie: str | None) -> str:
     if query in LANGUAGES: return query

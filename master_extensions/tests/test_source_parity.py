@@ -55,8 +55,8 @@ class NativeUIAndI18NAudit(unittest.TestCase):
         self.assertNotIn("style=", commerce)
         self.assertNotIn("<style", commerce)
         self.assertNotIn("<script", commerce)
-        # The original Master cards also use the same native icon wrapper.
-        self.assertIn('class="cp-tile-ic"', html.split('id="whmcs-center"', 1)[0])
+        # The new Operations Center uses native CyberPanel icon markup for commerce.
+        self.assertIn('class="cp-tile-ic"', commerce)
         self.assertIn('dir="{{ direction }}"', html)
         self.assertNotIn('dir="rtl" lang="en"', html)
 
@@ -64,9 +64,10 @@ class NativeUIAndI18NAudit(unittest.TestCase):
         cards = modules_for("en")
         html = (TEMPLATES / "cyberpanel_master.html").read_text()
         self.assertIn('class="fas {{ module.icon }}"', html)
-        head = html.split('id="whmcs-center"', 1)[0]
+        known = {"fa-project-diagram", "fa-server", "fa-route",
+                 "fa-brain", "fa-heartbeat"}
         for item in cards:
-            self.assertIn(item["icon"], head)
+            self.assertIn(item["icon"], known)
             self.assertNotIn('url', item)
 
     def test_smart_backup_controller_matches_its_real_template(self):

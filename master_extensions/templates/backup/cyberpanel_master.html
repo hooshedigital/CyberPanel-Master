@@ -1,237 +1,239 @@
 {% extends "baseTemplate/index.html" %}
-{% block title %}CyberPanel Master{% endblock %}
+{% block title %}{{ t.brand }} | CyberPanel Master{% endblock %}
 {% block module_scripts %}{% endblock %}
 {% block content %}
-<div class="dashboard-wrapper" dir="{{ direction }}" lang="{{ lang }}">
-  <div class="dashboard-container">
-    <div class="row">
-      <div class="col-md-9"><h2 class="section-title">{{ t.brand }}</h2><p>{{ t.agent_subtitle }}</p></div>
-      <div class="col-md-3" style="text-align:end">
-        {{ t.language }}: <a href="?lang=en" hreflang="en" lang="en" dir="ltr">English</a> · <a href="?lang=fa" hreflang="fa" lang="fa" dir="rtl">فارسی</a>
-      </div>
+<style>
+/* CyberPanel Master v0.2.0: scoped console, inherits native fonts, colors and icons. */
+.hm-root{max-width:1480px;margin:0 auto;padding:18px 20px 64px;color:var(--text-primary,#1f2937)}
+.hm-root *{box-sizing:border-box}
+.hm-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin:0 0 22px}
+.hm-title{font-size:clamp(25px,3vw,32px);font-weight:800;letter-spacing:-.025em;margin:0;color:var(--text-primary,#16253f)}
+.hm-lead{margin:9px 0 0;line-height:1.75;color:var(--text-secondary,#66748a);font-size:14px;max-width:740px}
+.hm-heading-meta{font-size:12px;color:var(--text-secondary,#66748a);margin-top:9px}
+.hm-tag{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;border:1px solid var(--border-primary,#dde4ef);font-size:12px;background:var(--bg-secondary,#f5f7fb);color:var(--text-primary,#28364c);font-weight:650}
+.hm-tag i{font-size:11px}
+.hm-lang{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.hm-lang a{font-size:12px;text-decoration:none;padding:8px 12px;border-radius:8px;border:1px solid var(--border-primary,#dfe5ed);color:var(--text-primary,#253247);background:var(--bg-primary,#fff)}
+.hm-lang a[aria-current="true"]{background:var(--bg-secondary,#edf3ff);border-color:var(--primary,#4066b5);font-weight:800}
+.hm-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.hm-kpi{background:var(--bg-primary,#fff);border:1px solid var(--border-primary,#e2e8f0);border-radius:16px;padding:18px;min-height:144px;min-width:0;box-shadow:0 3px 14px rgba(26,45,71,.025)}
+.hm-kpi-top{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.hm-kpi-title{color:var(--text-secondary,#657388);font-size:12px;font-weight:650}
+.hm-kpi-icon{width:37px;height:37px;display:grid;place-items:center;border-radius:10px;background:var(--bg-secondary,#edf3fc);color:var(--primary,#3b5cb4)}
+.hm-kpi-value{font-size:clamp(21px,2.2vw,27px);font-weight:800;margin-top:11px;line-height:1.25;direction:ltr;unicode-bidi:isolate;text-align:start}
+.hm-kpi-foot{font-size:12px;color:var(--text-secondary,#69788d);line-height:1.5;margin-top:7px}
+.hm-meter{height:6px;border-radius:8px;background:var(--bg-secondary,#e9eef6);overflow:hidden;margin-top:14px}
+.hm-meter-fill{height:100%;background:var(--primary,#4a6cd0);border-radius:8px;max-width:100%;min-width:0}
+.hm-meter-fill.hm-alert{background:#e89f39}
+.hm-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr);gap:16px;align-items:start}
+.hm-panel{background:var(--bg-primary,#fff);border:1px solid var(--border-primary,#dfe7f1);border-radius:16px;padding:20px;margin-bottom:16px;min-width:0;box-shadow:0 4px 17px rgba(26,45,71,.025)}
+.hm-panel-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:0 0 15px}
+.hm-panel-title{margin:0;font-size:17px;font-weight:800;display:flex;align-items:center;gap:10px}
+.hm-panel-title i{font-size:16px;color:var(--primary,#4264bd)}
+.hm-panel-desc{font-size:12px;line-height:1.8;color:var(--text-secondary,#64748b);margin:2px 0 16px}
+.hm-badges{display:flex;flex-wrap:wrap;gap:8px;margin:11px 0}
+.hm-chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:6px 9px;border-radius:9px;background:var(--bg-secondary,#f2f5fa);color:var(--text-primary,#293954);border:1px solid var(--border-primary,#e0e6ef)}
+.hm-ok{color:#14805d}.hm-warning{color:#b97715}.hm-critical{color:#be3546}
+.hm-tile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.hm-tile{display:flex;gap:12px;align-items:flex-start;border-radius:12px;background:var(--bg-secondary,#f8fafc);border:1px solid var(--border-primary,#e7edf3);padding:14px;min-width:0}
+.hm-tile-icon{display:grid;place-items:center;flex:0 0 34px;height:34px;border-radius:9px;background:var(--bg-primary,#fff);color:var(--primary,#486cc3)}
+.hm-tile-label{font-size:12px;color:var(--text-secondary,#63728a);line-height:1.5;overflow-wrap:anywhere}
+.hm-tile-value{font-size:16px;font-weight:800;margin-top:5px;overflow-wrap:anywhere}
+.hm-note{font-size:12px;line-height:1.9;color:var(--text-secondary,#64748b)}
+.hm-alert-line{border-inline-start:3px solid #d59632;background:var(--bg-secondary,#fbf7ed);padding:10px 13px;border-radius:8px;margin:12px 0;font-size:12px;line-height:1.8}
+.hm-actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:14px}
+.hm-link{display:inline-flex;align-items:center;gap:7px;text-decoration:none!important;font-size:12px;font-weight:700;color:var(--primary,#3761bf);border-radius:9px;border:1px solid var(--border-primary,#dce4f0);padding:9px 12px;background:var(--bg-primary,#fff)}
+.hm-link:hover{border-color:var(--primary,#3761bf)}
+.hm-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.hm-check{display:flex;gap:9px;align-items:center;justify-content:space-between;min-width:0;padding:11px 12px;border-radius:10px;border:1px solid var(--border-primary,#e4e8f0)}
+.hm-check-label{font-size:12px;overflow-wrap:anywhere}
+.hm-check-status{font-size:11px;font-weight:700;white-space:nowrap}
+.hm-entry{display:flex;gap:9px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-primary,#e7eaf0);padding:10px 0;min-width:0}
+.hm-entry-name{font-size:13px;overflow-wrap:anywhere}
+.hm-entry-name i{margin-inline-end:7px;color:var(--primary,#4b6cbd)}
+.hm-entry-meta{font-size:11px;color:var(--text-secondary,#64748b)}
+.hm-footer{padding:10px 0;text-align:center;font-size:11px;color:var(--text-secondary,#64748b)}
+.hm-root details{margin-top:10px}
+.hm-root details>summary{cursor:pointer;font-weight:700;font-size:12px;padding:10px 0}
+.hm-root .cp-tile-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.hm-root .cp-tile{min-width:0}
+.hm-root .cp-tile-title{overflow-wrap:anywhere}
+@media(max-width:1200px){.hm-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.hm-root .cp-tile-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:850px){.hm-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.hm-root{padding:12px 10px 35px}.hm-kpis,.hm-tile-grid,.hm-checks,.hm-root .cp-tile-grid{grid-template-columns:minmax(0,1fr)}.hm-panel{padding:15px}.hm-title{font-size:24px}}
+</style>
+<main class="dashboard-wrapper hm-root" dir="{{ direction }}" lang="{{ lang }}" aria-label="{{ t.brand }}">
+  <header class="hm-header">
+    <div>
+      <h1 class="hm-title">{{ t.brand }}</h1>
+      <p class="hm-lead">{{ t.agent_subtitle }}</p>
+      <div class="hm-heading-meta">{{ master.version_label }} · {{ t.read_only }}</div>
     </div>
-    <div class="cp-tile-grid">
-      <div class="cp-tile"><span class="cp-tile-ic"><i class="fas fa-heartbeat"></i></span>
-        <span><div class="cp-tile-title">{{ t.health }}</div><div class="cp-tile-sub">{{ t.issues }}: {{ master.incidents }}</div></span>
-      </div>
-      <div class="cp-tile"><span class="cp-tile-ic"><i class="fas fa-brain"></i></span>
-        <span><div class="cp-tile-title">{{ t.parsa }}</div><div class="cp-tile-sub">{% if master.parsa_connected %}{{ t.connected }} · {{ master.parsa_state }}{% else %}{{ t.waiting }}{% endif %}</div></span>
-      </div>
-      <div class="cp-tile"><span class="cp-tile-ic"><i class="fas fa-server"></i></span>
-        <span><div class="cp-tile-title">{{ t.server_agent }}</div><div class="cp-tile-sub">{% if master.cyberagent_connected %}{{ t.connected }} · {{ master.cyberagent_state }}{% else %}{{ t.agent_unverified }}{% endif %}</div></span>
-      </div>
-      <div class="cp-tile"><span class="cp-tile-ic"><i class="fas fa-project-diagram"></i></span>
-        <span><div class="cp-tile-title">{{ t.gateway }}</div><div class="cp-tile-sub">{% if master.gateway_connected %}{{ t.connected }}{% else %}{{ t.gateway_unverified }}{% endif %}</div></span>
-      </div>
-      <div class="cp-tile"><span class="cp-tile-ic"><i class="fas fa-route"></i></span>
-        <span><div class="cp-tile-title">{{ t.router }}</div><div class="cp-tile-sub">{% if master.router_healthy %}{{ t.connected }}{% else %}{{ t.unknown }}{% endif %}</div></span>
-      </div>
+    <div>
+      <span class="hm-tag"><i class="fas fa-shield-alt" aria-hidden="true"></i>{{ t.read_only }}</span>
+      <nav class="hm-lang" aria-label="{{ t.language }}" style="margin-top:11px">
+        <a href="?lang=en" hreflang="en" aria-current="{% if lang == 'en' %}true{% else %}false{% endif %}" lang="en" dir="ltr">English</a>
+        <a href="?lang=fa" hreflang="fa" aria-current="{% if lang == 'fa' %}true{% else %}false{% endif %}" lang="fa" dir="rtl">فارسی</a>
+      </nav>
     </div>
-    <div class="panel"><div class="panel-body">
-      <h3>{{ t.overview }}</h3>
-      <p><strong>{{ t.parsa }}</strong>: {{ t.parsa_desc }}</p>
-      <p><strong>{{ t.server_agent }}</strong>: {{ t.agent_desc }}</p>
-      <p><strong>{{ t.gateway }}</strong>: {{ t.gateway_desc }}</p>
-      <p><strong>{{ t.router }}</strong>: {{ t.router_desc }}</p>
-      <p>{{ t.no_actions }}</p>
-      <p><a href="{% url 'hooshCyberAgentDashboard' %}">{{ t.health }}</a> ·
-         <a href="{% url 'hooshSmartBackupDashboard' %}">{{ t.backup }}</a></p>
-    </div></div>
+  </header>
 
+  <section class="hm-kpis" aria-label="{{ t.overview }}">
+    <div class="hm-kpi">
+      <div class="hm-kpi-top"><span class="hm-kpi-title">{{ t.storage_used }}</span><span class="hm-kpi-icon"><i class="fas fa-hard-drive" aria-hidden="true"></i></span></div>
+      <div class="hm-kpi-value">{% if master.ops.disk.ready %}{{ master.ops.disk.used_percent }}%{% else %}—{% endif %}</div>
+      <div class="hm-kpi-foot">{% if master.ops.disk.ready %}{{ master.ops.disk.used_gib }} / {{ master.ops.disk.total_gib }} GiB{% else %}{{ t.unknown }}{% endif %}</div>
+      {% if master.ops.disk.ready %}<div class="hm-meter" role="meter" aria-label="{{ t.storage_used }}" aria-valuenow="{{ master.ops.disk.used_percent }}" aria-valuemin="0" aria-valuemax="100"><div class="hm-meter-fill {% if master.ops.disk.used_percent >= 90 %}hm-alert{% endif %}" style="width:{{ master.ops.disk.used_percent }}%"></div></div>{% endif %}
+    </div>
+    <div class="hm-kpi">
+      <div class="hm-kpi-top"><span class="hm-kpi-title">{{ t.storage_free }}</span><span class="hm-kpi-icon"><i class="fas fa-database" aria-hidden="true"></i></span></div>
+      <div class="hm-kpi-value">{% if master.ops.disk.ready %}{{ master.ops.disk.free_gib }} <small>GiB</small>{% else %}—{% endif %}</div>
+      <div class="hm-kpi-foot">{{ t.storage_reserved }}: {{ master.ops.disk.reserved_gib|default_if_none:"—" }} GiB</div>
+    </div>
+    <div class="hm-kpi">
+      <div class="hm-kpi-top"><span class="hm-kpi-title">{{ t.storage_memory }}</span><span class="hm-kpi-icon"><i class="fas fa-memory" aria-hidden="true"></i></span></div>
+      <div class="hm-kpi-value">{% if master.ops.memory.ready %}{{ master.ops.memory.ram_available_gib }} <small>GiB</small>{% else %}—{% endif %}</div>
+      <div class="hm-kpi-foot">{% if master.ops.memory.ready %}{{ master.ops.memory.ram_used_percent }}% {{ t.storage_used }}{% else %}{{ t.unknown }}{% endif %}</div>
+    </div>
+    <div class="hm-kpi">
+      <div class="hm-kpi-top"><span class="hm-kpi-title">{{ t.server_agent }}</span><span class="hm-kpi-icon"><i class="fas fa-robot" aria-hidden="true"></i></span></div>
+      <div class="hm-kpi-value" style="font-size:19px">{% if master.ops.agent.fresh %}{% if master.ops.agent.status == 'ok' %}<span class="hm-ok">{{ t.ok }}</span>{% elif master.ops.agent.status == 'warning' %}<span class="hm-warning">{{ t.agent_ops_warning }}</span>{% elif master.ops.agent.status == 'critical' %}<span class="hm-critical">{{ t.failed }}</span>{% else %}{{ t.unknown }}{% endif %}{% else %}{{ t.unknown }}{% endif %}</div>
+      <div class="hm-kpi-foot">{% if master.ops.agent.fresh %}v{{ master.ops.agent.version|default:"—" }} · {{ master.ops.agent.checks_total|default_if_none:"—" }} {{ t.agent_ops_checks }}{% else %}{{ t.agent_ops_stale }}{% endif %}</div>
+    </div>
+  </section>
 
-    <section class="panel" id="linux-storage" aria-labelledby="linux-storage-heading">
-      <div class="panel-body">
-        <h3 id="linux-storage-heading">{{ t.storage_heading }}</h3>
-        <p>{{ t.storage_desc }}</p>
-        <div class="cp-tile-grid">
-          <div class="cp-tile">
-            <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
-            <span><div class="cp-tile-title">{{ t.storage_used }}</div>
-              <div class="cp-tile-sub">{% if master.ops.disk.ready %}{{ master.ops.disk.used_gib }} GiB · {{ master.ops.disk.used_percent }}%{% else %}{{ t.unknown }}{% endif %}</div>
-            </span>
-          </div>
-          <div class="cp-tile">
-            <span class="cp-tile-ic"><i class="fas fa-heartbeat" aria-hidden="true"></i></span>
-            <span><div class="cp-tile-title">{{ t.storage_free }}</div>
-              <div class="cp-tile-sub">{% if master.ops.disk.ready %}{{ master.ops.disk.free_gib }} GiB{% else %}{{ t.unknown }}{% endif %}</div>
-            </span>
-          </div>
-          {% if master.ops.disk.reserved_gib %}
-          <div class="cp-tile">
-            <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
-            <span><div class="cp-tile-title">{{ t.storage_reserved }}</div>
-              <div class="cp-tile-sub">{{ master.ops.disk.reserved_gib }} GiB</div>
-            </span>
-          </div>
-          {% endif %}
-          <div class="cp-tile">
-            <span class="cp-tile-ic"><i class="fas fa-project-diagram" aria-hidden="true"></i></span>
-            <span><div class="cp-tile-title">{{ t.storage_total }}</div>
-              <div class="cp-tile-sub">{% if master.ops.disk.ready %}{{ master.ops.disk.total_gib }} GiB{% else %}{{ t.unknown }}{% endif %}</div>
-            </span>
-          </div>
-          {% if master.ops.memory.ready %}
-          <div class="cp-tile">
-            <span class="cp-tile-ic"><i class="fas fa-heartbeat" aria-hidden="true"></i></span>
-            <span><div class="cp-tile-title">{{ t.storage_memory }}</div>
-              <div class="cp-tile-sub">{{ master.ops.memory.ram_available_gib }} GiB</div>
-            </span>
-          </div>
-          <div class="cp-tile">
-            <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
-            <span><div class="cp-tile-title">{{ t.storage_swap }}</div>
-              <div class="cp-tile-sub">{{ master.ops.memory.swap_used_gib }} / {{ master.ops.memory.swap_total_gib }} GiB</div>
-            </span>
-          </div>
-          {% endif %}
-          {% if master.ops.disk.inode_used_percent != None %}
-          <div class="cp-tile">
-            <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
-            <span><div class="cp-tile-title">{{ t.storage_inodes }}</div>
-              <div class="cp-tile-sub">{{ master.ops.disk.inode_used_percent }}%</div>
-            </span>
-          </div>
-          {% endif %}
+  {% if master.ops.disk.ready and master.ops.disk.used_percent >= 90 %}
+  <div class="hm-alert-line" role="status"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> {{ t.storage_warning }}</div>
+  {% endif %}
+
+  <div class="hm-grid">
+    <div>
+      <section class="hm-panel" id="agent-operations" aria-labelledby="agent-operations-heading">
+        <div class="hm-panel-head">
+          <h2 class="hm-panel-title" id="agent-operations-heading"><i class="fas fa-robot" aria-hidden="true"></i>{{ t.agent_ops_heading }}</h2>
+          <span class="hm-tag">{% if master.ops.agent.fresh %}<i class="fas fa-circle hm-ok"></i>{{ t.agent_ops_fresh }}{% else %}<i class="fas fa-circle hm-warning"></i>{{ t.agent_ops_stale }}{% endif %}</span>
         </div>
-        {% if master.ops.disk.ready and master.ops.disk.used_percent >= 90 %}
-          <p class="text-muted" role="status">{{ t.storage_warning }}</p>
+        <p class="hm-panel-desc">{{ t.agent_ops_desc }}</p>
+        {% if master.ops.agent.checks %}
+          <div class="hm-checks">
+          {% for check in master.ops.agent.checks %}
+            <div class="hm-check">
+              <span class="hm-check-label" dir="auto"><i class="fas {% if check.status == 'ok' %}fa-circle-check hm-ok{% elif check.status == 'warning' %}fa-triangle-exclamation hm-warning{% else %}fa-circle-exclamation hm-critical{% endif %}" aria-hidden="true"></i> {{ check.name }}</span>
+              <span class="hm-check-status {% if check.status == 'ok' %}hm-ok{% elif check.status == 'warning' %}hm-warning{% else %}hm-critical{% endif %}">{% if check.status == "ok" %}{{ t.ok }}{% elif check.status == "warning" %}{{ t.agent_ops_warning }}{% else %}{{ t.failed }}{% endif %}</span>
+            </div>
+          {% endfor %}
+          </div>
+        {% else %}
+          <p class="hm-note">{{ t.agent_ops_stale }}</p>
         {% endif %}
-        <h4>{{ t.storage_breakdown }}</h4>
+        <div class="hm-badges">
+          <span class="hm-chip"><i class="fas fa-clock"></i>{{ t.last_update }}: {{ master.ops.agent.updated|default:"—" }}</span>
+          <span class="hm-chip"><i class="fas fa-shield-halved"></i>{{ t.agent_ops_approval }}</span>
+        </div>
+        <div class="hm-actions">
+          <a class="hm-link" href="{% url 'hooshCyberAgentDashboard' %}"><i class="fas fa-chart-line"></i>{{ t.agent_ops_detail }}</a>
+          <a class="hm-link" href="{% url 'hooshSmartBackupDashboard' %}"><i class="fas fa-box-archive"></i>{{ t.backup }}</a>
+        </div>
+        <p class="hm-note">{{ t.agent_ops_commands }}</p>
+      </section>
+
+      <section class="hm-panel" id="linux-storage" aria-labelledby="linux-storage-heading">
+        <div class="hm-panel-head">
+          <h2 class="hm-panel-title" id="linux-storage-heading"><i class="fas fa-chart-pie" aria-hidden="true"></i>{{ t.storage_heading }}</h2>
+          <span class="hm-tag">{{ t.storage_scan_only }}</span>
+        </div>
+        <p class="hm-panel-desc">{{ t.storage_desc }}</p>
+        <div class="hm-tile-grid">
+          <div class="hm-tile"><span class="hm-tile-icon"><i class="fas fa-hashtag"></i></span><div><div class="hm-tile-label">{{ t.storage_inodes }}</div><div class="hm-tile-value">{{ master.ops.disk.inode_used_percent|default_if_none:"—" }}%</div></div></div>
+          <div class="hm-tile"><span class="hm-tile-icon"><i class="fas fa-memory"></i></span><div><div class="hm-tile-label">{{ t.storage_swap }}</div><div class="hm-tile-value">{{ master.ops.memory.swap_used_gib|default_if_none:"—" }} / {{ master.ops.memory.swap_total_gib|default_if_none:"—" }} GiB</div></div></div>
+        </div>
+        <h3 style="font-size:14px;font-weight:750;margin:17px 0 10px">{{ t.storage_breakdown }}</h3>
         {% if master.ops.storage.ready %}
-          <div class="cp-tile-grid">
+          <div class="hm-tile-grid">
           {% for group in master.ops.storage.groups %}
-            <div class="cp-tile">
-              <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
-              <span><div class="cp-tile-title">{{ group.name }}</div>
-              <div class="cp-tile-sub">{% if group.measured %}{{ group.size_gib }} GiB{% else %}{{ t.unknown }}{% endif %} · {% if group.complete %}{{ t.storage_complete }}{% else %}{{ t.storage_partial }}{% endif %}</div></span>
-            </div>
+          <div class="hm-tile"><span class="hm-tile-icon"><i class="fas fa-folder"></i></span><div><div class="hm-tile-label">{{ group.name }}</div><div class="hm-tile-value">{% if group.measured %}{{ group.size_gib }} GiB{% else %}{{ t.unknown }}{% endif %}</div><div class="hm-tile-label">{% if group.complete %}{{ t.storage_complete }}{% else %}{{ t.storage_partial }}{% endif %}</div></div></div>
           {% endfor %}
           </div>
-        {% else %}
-          <p class="text-muted">{{ t.storage_pending }}</p>
-        {% endif %}
-        <p class="text-muted">{{ t.storage_scan_only }}</p>
-      </div>
-    </section>
+        {% else %}<p class="hm-note">{{ t.storage_pending }}</p>{% endif %}
+      </section>
 
-    <section class="panel" id="safe-cleanup" aria-labelledby="safe-cleanup-heading">
-      <div class="panel-body">
-        <h3 id="safe-cleanup-heading">{{ t.cleanup_heading }}</h3>
-        <p>{{ t.cleanup_desc }}</p>
-        {% if master.ops.cleanup.ready %}
-          <div class="cp-tile-grid">
-          {% for candidate in master.ops.cleanup.items %}
-            <div class="cp-tile">
-              <span class="cp-tile-ic"><i class="fas fa-heartbeat" aria-hidden="true"></i></span>
-              <span>
-                <div class="cp-tile-title">{% if candidate.id == "apt_archives" %}{{ t.cleanup_apt }}{% else %}{{ t.cleanup_temp }}{% endif %}</div>
-                <div class="cp-tile-sub">{% if candidate.complete %}{{ t.cleanup_count }}: {{ candidate.count }} · {{ t.cleanup_saved }}: {{ candidate.size_gib }} GiB{% else %}{{ t.storage_partial }}{% endif %}</div>
-              </span>
-            </div>
-          {% endfor %}
-          </div>
-        {% else %}
-          <p class="text-muted">{{ t.cleanup_pending }}</p>
-        {% endif %}
-        <p>{{ t.cleanup_approval }}</p>
-        <p><a href="{% url 'hooshSmartBackupDashboard' %}">{{ t.backup }}</a></p>
-      </div>
-    </section>
-
-    <section class="panel" id="managed-files" aria-labelledby="managed-files-heading">
-      <div class="panel-body">
-        <h3 id="managed-files-heading">{{ t.workspace_heading }}</h3>
-        <p>{{ t.workspace_desc }}</p>
+      <section class="hm-panel" id="managed-files" aria-labelledby="managed-files-heading">
+        <div class="hm-panel-head"><h2 class="hm-panel-title" id="managed-files-heading"><i class="fas fa-folder-tree"></i>{{ t.workspace_heading }}</h2><span class="hm-tag">{{ t.read_only }}</span></div>
+        <p class="hm-panel-desc">{{ t.workspace_desc }}</p>
         {% if master.ops.workspace.ready %}
-          <p><strong dir="ltr">{{ master.ops.workspace.current }}</strong></p>
-          {% if master.ops.workspace.parent != None %}
-            <p><a href="?lang={{ lang }}&amp;folder={{ master.ops.workspace.parent }}">{{ t.workspace_parent }}</a></p>
-          {% endif %}
-          <div class="cp-tile-grid">
+          <p class="hm-chip"><i class="fas fa-folder"></i> <span dir="ltr">{{ master.ops.workspace.current|default:"/" }}</span></p>
+          {% if master.ops.workspace.parent != None %}<p><a class="hm-link" href="?lang={{ lang }}&amp;folder={{ master.ops.workspace.parent|urlencode }}"><i class="fas fa-arrow-up"></i>{{ t.workspace_parent }}</a></p>{% endif %}
           {% for entry in master.ops.workspace.items %}
+          <div class="hm-entry">
+            <span class="hm-entry-name" dir="auto">{% if entry.kind == 'folder' %}<i class="fas fa-folder"></i><a href="?lang={{ lang }}&amp;folder={{ entry.href|urlencode }}">{{ entry.name }}</a>{% elif entry.kind == 'file' %}<i class="fas fa-file"></i>{{ entry.name }}{% else %}<i class="fas fa-lock"></i>{{ t.workspace_blocked }}{% endif %}</span>
+            <span class="hm-entry-meta">{% if entry.kind == 'file' %}{{ entry.size_bytes }} B{% else %}{{ t.workspace_folder }}{% endif %}</span>
+          </div>
+          {% empty %}<p class="hm-note">{{ t.workspace_empty }}</p>{% endfor %}
+          {% if master.ops.workspace.truncated %}<p class="hm-note">{{ t.workspace_truncated }}</p>{% endif %}
+        {% else %}<p class="hm-note">{{ t.workspace_pending }}</p>{% endif %}
+        <p class="hm-note">{{ t.workspace_move }}</p>
+      </section>
+    </div>
+
+    <div>
+      <section class="hm-panel" id="safe-cleanup" aria-labelledby="safe-cleanup-heading">
+        <div class="hm-panel-head"><h2 class="hm-panel-title" id="safe-cleanup-heading"><i class="fas fa-broom"></i>{{ t.cleanup_heading }}</h2></div>
+        <p class="hm-panel-desc">{{ t.cleanup_desc }}</p>
+        {% if master.ops.cleanup.ready %}
+          {% for candidate in master.ops.cleanup.items %}
+          <div class="hm-entry">
+            <span class="hm-entry-name">{% if candidate.id == 'apt_archives' %}{{ t.cleanup_apt }}{% else %}{{ t.cleanup_temp }}{% endif %}</span>
+            <span class="hm-entry-meta">{% if candidate.complete %}{{ candidate.count }} · {{ candidate.size_gib }} GiB{% else %}{{ t.storage_partial }}{% endif %}</span>
+          </div>
+          {% endfor %}
+        {% else %}<p class="hm-note">{{ t.cleanup_pending }}</p>{% endif %}
+        <div class="hm-alert-line"><i class="fas fa-lock"></i> {{ t.cleanup_approval }}</div>
+        <a class="hm-link" href="{% url 'hooshSmartBackupDashboard' %}"><i class="fas fa-shield"></i>{{ t.backup }}</a>
+      </section>
+
+      <section class="hm-panel" id="security-inspector" aria-labelledby="security-inspector-heading">
+        <div class="hm-panel-head"><h2 class="hm-panel-title" id="security-inspector-heading"><i class="fas fa-shield-virus"></i>{{ t.security_heading }}</h2><span class="hm-tag">{{ t.security_stage }}</span></div>
+        <p class="hm-panel-desc">{{ t.security_desc }}</p>
+        <div class="hm-tile"><span class="hm-tile-icon"><i class="fas fa-magnifying-glass"></i></span><div><div class="hm-tile-label">{{ t.security_scanner }}</div><div class="hm-tile-value">{{ t.security_audit_pending }}</div></div></div>
+        <p class="hm-note">{{ t.security_warning }}</p>
+      </section>
+
+      <section class="hm-panel" id="whmcs-center" aria-labelledby="whmcs-center-heading">
+        <div class="hm-panel-head"><h2 class="hm-panel-title" id="whmcs-center-heading"><i class="fas fa-credit-card"></i>{{ t.commerce_heading }}</h2></div>
+        <p class="hm-panel-desc">{{ t.commerce_intro }}</p>
+        {% if master.billing_admin_url %}
+          <a class="hm-link" href="{{ master.billing_admin_url }}" target="_blank" rel="noopener noreferrer"><i class="fas fa-arrow-up-right-from-square"></i>{{ t.billing_open }}</a>
+        {% else %}<p class="hm-note">{{ t.billing_not_ready }}</p>{% endif %}
+        <details>
+          <summary>{{ t.commerce_stage }} · {{ t.commerce_note }}</summary>
+          <p class="hm-note">{{ t.commerce_warning }}</p>
+          <div class="cp-tile-grid">
+            {% for module in master.commerce_modules %}
             <div class="cp-tile">
-              <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
+              <span class="cp-tile-ic"><i class="fas {{ module.icon }}" aria-hidden="true"></i></span>
               <span>
-                <div class="cp-tile-title" dir="auto">
-                  {% if entry.kind == "folder" %}<a href="?lang={{ lang }}&amp;folder={{ entry.href }}">{{ entry.name }}</a>
-                  {% else %}{{ entry.name }}{% endif %}
-                </div>
-                <div class="cp-tile-sub">
-                  {% if entry.kind == "folder" %}{{ t.workspace_folder }}
-                  {% elif entry.kind == "file" %}{{ t.workspace_file }} · {{ entry.size_bytes }} B
-                  {% else %}{{ t.workspace_blocked }}{% endif %}
-                </div>
+                <div class="cp-tile-title">{{ module.name }}</div>
+                <div class="cp-tile-sub">{{ module.description }}</div>
+                <div class="cp-tile-sub">{{ module.stage }} · {{ module.status }}</div>
               </span>
             </div>
-          {% empty %}
-            <p class="text-muted">{{ t.workspace_empty }}</p>
-          {% endfor %}
+            {% endfor %}
           </div>
-          {% if master.ops.workspace.truncated %}<p class="text-muted">{{ t.workspace_truncated }}</p>{% endif %}
-        {% else %}
-          <p class="text-muted">{{ t.workspace_pending }}</p>
-        {% endif %}
-        <p>{{ t.workspace_move }}</p>
-      </div>
-    </section>
+        </details>
+      </section>
 
-    <section class="panel" id="agent-operations" aria-labelledby="agent-operations-heading">
-      <div class="panel-body">
-        <h3 id="agent-operations-heading">{{ t.agent_ops_heading }}</h3>
-        <p>{{ t.agent_ops_desc }}</p>
-        <div class="cp-tile-grid">
-          <div class="cp-tile">
-            <span class="cp-tile-ic"><i class="fas fa-brain" aria-hidden="true"></i></span>
-            <span>
-              <div class="cp-tile-title">{{ t.server_agent }}</div>
-              <div class="cp-tile-sub">{% if master.ops.agent.fresh %}{{ t.agent_ops_fresh }}{% else %}{{ t.agent_ops_stale }}{% endif %}</div>
-              {% if master.ops.agent.version %}<div class="cp-tile-sub">{{ t.agent_ops_version }}: {{ master.ops.agent.version }}</div>{% endif %}
-              {% if master.ops.agent.checks_total != None %}<div class="cp-tile-sub">{{ t.agent_ops_checks }}: {{ master.ops.agent.checks_total }}</div>{% endif %}
-            </span>
-          </div>
+      <section class="hm-panel" id="parsa-center">
+        <div class="hm-panel-head"><h2 class="hm-panel-title"><i class="fas fa-brain"></i>{{ t.parsa }}</h2></div>
+        <div class="hm-badges">
+          <span class="hm-chip">{{ t.status }}: {% if master.parsa_connected %}{{ t.connected }}{% else %}{{ t.waiting }}{% endif %}</span>
+          <span class="hm-chip">{{ t.parsa }}: {{ master.parsa_state }}</span>
+          <span class="hm-chip">{{ t.router }}: {% if master.router_healthy %}{{ t.ok }}{% else %}{{ t.unknown }}{% endif %}</span>
         </div>
-        <p>{{ t.agent_ops_commands }}</p>
-        <p class="text-muted">{{ t.agent_ops_approval }}</p>
-        <p><a href="{% url 'hooshCyberAgentDashboard' %}">{{ t.server_agent }}</a></p>
-      </div>
-    </section>
-
-    <section class="panel" id="whmcs-center" aria-labelledby="whmcs-center-heading">
-      <div class="panel-body">
-        <h3 id="whmcs-center-heading">{{ t.commerce_heading }}</h3>
-        <p>{{ t.commerce_intro }}</p>
-        <p class="text-muted" role="status">{{ t.commerce_warning }}</p>
-        <div class="cp-tile-grid">
-          {% for module in master.commerce_modules %}
-          <div class="cp-tile">
-            <span class="cp-tile-ic"><i class="fas {{ module.icon }}" aria-hidden="true"></i></span>
-            <span>
-              <div class="cp-tile-title">{{ module.name }}</div>
-              <div class="cp-tile-sub">{{ module.description }}</div>
-              <div class="cp-tile-sub">{{ t.commerce_stage }}: {{ module.stage }} · {{ module.status }}</div>
-            </span>
-          </div>
-          {% endfor %}
-        </div>
-        <p class="text-muted">{{ t.commerce_note }}</p>
-      </div>
-    </section>
-    <div class="panel"><div class="panel-body">
-      <h3>{{ t.billing_heading }}</h3>
-      <p>{{ t.billing_desc }}</p>
-      {% if master.billing_admin_url %}
-        <p><a href="{{ master.billing_admin_url }}" target="_blank" rel="noopener noreferrer">{{ t.billing_open }}</a></p>
-      {% else %}
-        <p class="text-muted">{{ t.billing_not_ready }}</p>
-      {% endif %}
-    </div></div>
-    <div class="panel"><div class="panel-body">
-      <h3>{{ t.agent }}</h3>
-      <p>{{ t.parsa }}: {% for state,count in master.parsa_counts.items %}{{ state }} {{ count }} · {% empty %}{{ t.waiting }}{% endfor %}</p>
-      {% if master.disk_used != None %}<p>{{ t.disk }}: {{ master.disk_used }}%</p>{% endif %}
-      <p>{{ t.last_update }}: {{ master.updated|default_if_none:"—" }}</p>
-    </div></div>
-    <p class="text-muted" style="padding:12px 0;font-size:12px">{{ master.version_label }} · HooshDigital</p>
+        <p class="hm-note">{{ t.parsa_desc }}</p>
+        <p class="hm-note">{{ t.gateway }}: {% if master.gateway_connected %}{{ t.connected }}{% else %}{{ t.gateway_unverified }}{% endif %}</p>
+      </section>
+    </div>
   </div>
-</div>
+  <footer class="hm-footer">CyberPanel Master · {{ master.version_label }} · HooshDigital</footer>
+</main>
 {% endblock %}

@@ -1,0 +1,174 @@
+{% extends "baseTemplate/index.html" %}
+{% load i18n %}
+{% block title %}{{ a.title }} | CyberPanel Master{% endblock %}
+{% block module_scripts %}{% endblock %}
+{% block content %}
+<style>
+/* Hoosh CyberAgent v0.2: native theme-aware, responsive monitoring console. */
+.ha-app{width:100%;max-width:1470px;margin:0 auto;padding:20px 22px 60px;color:var(--text-primary,#172336)}
+.ha-app *{box-sizing:border-box}
+.ha-top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:20px}
+.ha-h1{font-size:clamp(24px,3.1vw,31px);margin:0;font-weight:800;letter-spacing:-.025em}
+.ha-sub{color:var(--text-secondary,#67748b);font-size:13px;line-height:1.8;margin:10px 0 0}
+.ha-meta{margin:10px 0 0;font-size:12px;color:var(--text-secondary,#67748b)}
+.ha-language{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ha-language a{display:inline-flex;padding:8px 12px;border:1px solid var(--border-primary,#dce4ef);border-radius:9px;background:var(--bg-primary,#fff);color:var(--text-primary,#29374d);font-size:12px;text-decoration:none}
+.ha-language a[aria-current="true"]{font-weight:800;border-color:var(--primary,#395db6);background:var(--bg-secondary,#edf3ff)}
+.ha-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:0 0 17px}
+.ha-metric,.ha-card{border:1px solid var(--border-primary,#dde4ef);border-radius:15px;background:var(--bg-primary,#fff);box-shadow:0 4px 14px rgba(14,32,54,.025)}
+.ha-metric{padding:17px;min-width:0}
+.ha-metric-head{display:flex;align-items:center;justify-content:space-between;gap:9px}
+.ha-metric-label{font-size:12px;font-weight:650;color:var(--text-secondary,#66748b)}
+.ha-icon{width:36px;height:36px;display:grid;place-items:center;background:var(--bg-secondary,#eef3fa);border-radius:10px;color:var(--primary,#4567be)}
+.ha-value{font-size:clamp(19px,2.1vw,25px);font-weight:800;margin:14px 0 7px;line-height:1.3;overflow-wrap:anywhere}
+.ha-help{font-size:12px;line-height:1.8;color:var(--text-secondary,#617187)}
+.ha-cols{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(290px,1fr);gap:16px;align-items:start}
+.ha-card{padding:20px;margin-bottom:16px;min-width:0}
+.ha-card-header{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+.ha-card-header h2{font-size:17px;font-weight:800;margin:0;display:flex;align-items:center;gap:9px}
+.ha-card-header h2 i{color:var(--primary,#4568bf)}
+.ha-badge{display:inline-flex;align-items:center;gap:6px;background:var(--bg-secondary,#f3f6fb);color:var(--text-primary,#293750);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;border:1px solid var(--border-primary,#e1e6ef)}
+.ha-ok{color:#14805e}.ha-bad{color:#b43d46}.ha-muted{color:var(--text-secondary,#6f7886)}
+.ha-check-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ha-check{border:1px solid var(--border-primary,#e2e7ef);border-radius:11px;padding:12px;background:var(--bg-secondary,#f8fafc);min-width:0}
+.ha-check-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ha-check-title{font-size:13px;font-weight:750;overflow-wrap:anywhere}
+.ha-check-status{font-size:11px;font-weight:700;white-space:nowrap}
+.ha-check-desc{font-size:12px;line-height:1.75;margin:7px 0 0;color:var(--text-secondary,#65748a)}
+.ha-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ha-detail{border:1px solid var(--border-primary,#e2e8f0);border-radius:11px;padding:14px;background:var(--bg-secondary,#f8fafc)}
+.ha-detail-label{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary,#68768a);font-weight:700}
+.ha-detail-label i{color:var(--primary,#446ac0)}
+.ha-detail-value{font-size:18px;font-weight:750;margin-top:10px;overflow-wrap:anywhere}
+.ha-small{font-size:11px;line-height:1.7;color:var(--text-secondary,#6d7b90);margin:7px 0 0}
+.ha-row{padding:9px 0;border-bottom:1px solid var(--border-primary,#e6ebf1);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ha-row:last-child{border:0}
+.ha-row-label{font-size:12px;overflow-wrap:anywhere}
+.ha-row-state{font-size:12px;font-weight:700;overflow-wrap:anywhere}
+.ha-actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 0}
+.ha-link{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--border-primary,#dce5f0);border-radius:9px;padding:10px 12px;text-decoration:none!important;font-size:12px;font-weight:750;color:var(--primary,#355fbd)}
+.ha-note{padding:11px 13px;border-inline-start:3px solid #d7a14a;background:var(--bg-secondary,#fbf8ed);border-radius:8px;font-size:12px;line-height:1.8;margin-top:13px}
+.ha-footer{text-align:center;font-size:11px;color:var(--text-secondary,#6b798e);padding:8px}
+@media(max-width:1150px){.ha-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:820px){.ha-cols{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:590px){.ha-app{padding:12px 9px 36px}.ha-summary,.ha-check-grid,.ha-detail-grid{grid-template-columns:minmax(0,1fr)}.ha-card{padding:15px}}
+</style>
+<main class="dashboard-wrapper ha-app" dir="{{ direction }}" lang="{{ lang }}" aria-label="{{ a.title }}">
+  <header class="ha-top">
+    <div>
+      <h1 class="ha-h1"><i class="fas fa-robot" aria-hidden="true"></i> {{ a.title }}</h1>
+      <p class="ha-sub">{{ a.subtitle }}</p>
+      <p class="ha-meta">{{ a.updated }}: {{ cyber_agent.updated|default_if_none:"—" }} · {{ a.read_only }}</p>
+    </div>
+    <nav class="ha-language" aria-label="{{ a.language }}">
+      <a href="?lang=en" hreflang="en" lang="en" dir="ltr" aria-current="{% if lang == 'en' %}true{% else %}false{% endif %}">English</a>
+      <a href="?lang=fa" hreflang="fa" lang="fa" dir="rtl" aria-current="{% if lang == 'fa' %}true{% else %}false{% endif %}">فارسی</a>
+    </nav>
+  </header>
+
+  <section class="ha-summary" aria-label="{{ a.health }}">
+    <div class="ha-metric">
+      <div class="ha-metric-head"><span class="ha-metric-label">{{ a.incidents }}</span><span class="ha-icon"><i class="fas fa-heart-pulse"></i></span></div>
+      <div class="ha-value">{% if cyber_agent.fresh %}{{ cyber_agent.incident_count }}{% else %}—{% endif %}</div>
+      <div class="ha-help">{% if cyber_agent.fresh %}{{ a.fresh }}{% else %}{{ a.stale }}{% endif %}</div>
+    </div>
+    <div class="ha-metric">
+      <div class="ha-metric-head"><span class="ha-metric-label">{{ a.agent }}</span><span class="ha-icon"><i class="fas fa-microchip"></i></span></div>
+      <div class="ha-value">{% if cyber_agent.monitor_connected %}<span class="ha-ok">{{ a.linked }}</span>{% else %}<span class="ha-muted">{{ a.unverified }}</span>{% endif %}</div>
+      <div class="ha-help">{% if cyber_agent.monitor_connected %}v{{ cyber_agent.monitor_version }} · {{ cyber_agent.monitor_checks }} {{ a.checks }}{% else %}{{ a.live }}{% endif %}</div>
+    </div>
+    <div class="ha-metric">
+      <div class="ha-metric-head"><span class="ha-metric-label">{{ a.parsa }}</span><span class="ha-icon"><i class="fas fa-brain"></i></span></div>
+      <div class="ha-value">{% if cyber_agent.agent_linked %}<span class="ha-ok">{{ a.linked }}</span>{% else %}<span class="ha-muted">{{ a.unverified }}</span>{% endif %}</div>
+      <div class="ha-help">{{ cyber_agent.agent_state|default:"unknown" }}</div>
+    </div>
+    <div class="ha-metric">
+      <div class="ha-metric-head"><span class="ha-metric-label">{{ a.gateway }}</span><span class="ha-icon"><i class="fas fa-network-wired"></i></span></div>
+      <div class="ha-value">{% if cyber_agent.gateway_connected %}<span class="ha-ok">{{ a.linked }}</span>{% else %}<span class="ha-muted">{{ a.unverified }}</span>{% endif %}</div>
+      <div class="ha-help">{{ cyber_agent.gateway_state|default:"—" }}</div>
+    </div>
+  </section>
+
+  <div class="ha-cols">
+    <div>
+      <section class="ha-card" aria-labelledby="ha-checks-heading">
+        <div class="ha-card-header">
+          <h2 id="ha-checks-heading"><i class="fas fa-list-check"></i>{{ a.checks_heading }}</h2>
+          <span class="ha-badge">{% if cyber_agent.fresh %}{{ a.fresh }}{% else %}{{ a.stale }}{% endif %}</span>
+        </div>
+        {% if cyber_agent.checks %}
+        <div class="ha-check-grid">
+          {% for item in cyber_agent.checks %}
+          <article class="ha-check">
+            <div class="ha-check-head">
+              <strong class="ha-check-title">{{ item.display_label|default:item.label }}</strong>
+              <span class="ha-check-status {% if item.state == 'ok' %}ha-ok{% elif item.state == 'failed' %}ha-bad{% else %}ha-muted{% endif %}">
+                {% if item.state == 'ok' %}<i class="fas fa-circle-check"></i> {{ a.ok }}{% elif item.state == 'failed' %}<i class="fas fa-triangle-exclamation"></i> {{ a.failed }}{% else %}{{ a.unknown }}{% endif %}
+              </span>
+            </div>
+            <p class="ha-check-desc">{{ item.display_next|default:item.next_step }}</p>
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}<p class="ha-help">{{ a.all_checks }}</p>{% endif %}
+        <div class="ha-note"><i class="fas fa-shield-halved" aria-hidden="true"></i> {{ a.no_actions }}</div>
+      </section>
+      <section class="ha-card" aria-labelledby="ha-hosting-heading">
+        <div class="ha-card-header"><h2 id="ha-hosting-heading"><i class="fas fa-server"></i>{{ a.diagnostics }}</h2></div>
+        <div class="ha-detail-grid">
+          <article class="ha-detail">
+            <div class="ha-detail-label"><i class="fas fa-globe"></i>{{ a.sites }}</div>
+            <div class="ha-detail-value">{% if cyber_agent.fresh and cyber_agent.hosting.site_health.status and cyber_agent.hosting.site_health.status != 'unknown' %}{{ cyber_agent.hosting.site_health.checked|default_if_none:"—" }}{% else %}—{% endif %}</div>
+            <div class="ha-small">{{ a.site_checked }} · {{ a.site_failed }}: {{ cyber_agent.hosting.site_health.failed|default_if_none:"—" }}</div>
+          </article>
+          <article class="ha-detail">
+            <div class="ha-detail-label"><i class="fas fa-lock"></i>{{ a.ssl }}</div>
+            <div class="ha-detail-value">{% if cyber_agent.fresh and cyber_agent.hosting.ssl_governance.status and cyber_agent.hosting.ssl_governance.status != 'unknown' %}{{ cyber_agent.hosting.ssl_governance.domains|default_if_none:"—" }}{% else %}—{% endif %}</div>
+            <div class="ha-small">{{ a.expiring }}: {{ cyber_agent.hosting.ssl_governance.expiration_30d|default_if_none:"—" }} · {{ a.untrusted }}: {{ cyber_agent.hosting.ssl_governance.untrusted|default_if_none:"—" }}</div>
+          </article>
+          <article class="ha-detail">
+            <div class="ha-detail-label"><i class="fas fa-database"></i>{{ a.database }}</div>
+            <div class="ha-detail-value">{% if cyber_agent.fresh and cyber_agent.hosting.db_auth.status and cyber_agent.hosting.db_auth.status != 'unknown' %}{{ cyber_agent.hosting.db_auth.denied_15min|default_if_none:"—" }}{% else %}—{% endif %}</div>
+            <div class="ha-small">{{ a.denied }}</div>
+          </article>
+          <article class="ha-detail">
+            <div class="ha-detail-label"><i class="fas fa-envelope"></i>{{ a.mail }}</div>
+            <div class="ha-detail-value">{% if cyber_agent.fresh and cyber_agent.hosting.mail_queue.status and cyber_agent.hosting.mail_queue.status != 'unknown' %}{{ cyber_agent.hosting.mail_queue.queued|default_if_none:"—" }}{% else %}—{% endif %}</div>
+            <div class="ha-small">{{ a.queue_deferred }}: {{ cyber_agent.hosting.mail_queue.deferred|default_if_none:"—" }}</div>
+          </article>
+        </div>
+        <p class="ha-help" style="margin-top:12px">{{ a.safe_note }}</p>
+      </section>
+    </div>
+    <div>
+      <section class="ha-card" aria-labelledby="ha-resource-heading">
+        <div class="ha-card-header"><h2 id="ha-resource-heading"><i class="fas fa-gauge-high"></i>{{ a.resources }}</h2></div>
+        <div class="ha-row"><span class="ha-row-label">{{ a.disk }}</span><strong class="ha-row-state">{% if cyber_agent.fresh %}{{ cyber_agent.resources.disk_pct|default_if_none:"—" }}%{% else %}—{% endif %}</strong></div>
+        <div class="ha-row"><span class="ha-row-label">{{ a.ram }}</span><strong class="ha-row-state">{% if cyber_agent.fresh %}{{ cyber_agent.resources.ram_available_mb|default_if_none:"—" }} MB{% else %}—{% endif %}</strong></div>
+        <div class="ha-row"><span class="ha-row-label">{{ a.panel }}</span><strong class="ha-row-state">{% if cyber_agent.fresh %}{{ cyber_agent.panel.ttfb_ms|default_if_none:"—" }} ms{% else %}—{% endif %}</strong></div>
+      </section>
+      <section class="ha-card" aria-labelledby="ha-containers-heading">
+        <div class="ha-card-header"><h2 id="ha-containers-heading"><i class="fas fa-cubes"></i>{{ a.container }}</h2></div>
+        {% if cyber_agent.fresh %}
+          {% for name,state in cyber_agent.containers.items %}
+          <div class="ha-row"><span class="ha-row-label" dir="auto">{{ name }}</span><strong class="ha-row-state {% if state == 'ok' %}ha-ok{% else %}ha-muted{% endif %}">{{ state }}</strong></div>
+          {% empty %}<p class="ha-help">{{ a.unknown }}</p>{% endfor %}
+        {% else %}<p class="ha-help">{{ a.stale }}</p>{% endif %}
+      </section>
+      <section class="ha-card" aria-labelledby="ha-missions-heading">
+        <div class="ha-card-header"><h2 id="ha-missions-heading"><i class="fas fa-brain"></i>{{ a.queue }}</h2></div>
+        {% if cyber_agent.agent_linked %}
+          {% for state,count in cyber_agent.mission_counts.items %}
+          <div class="ha-row"><span class="ha-row-label">{{ state }}</span><strong class="ha-row-state">{{ count }}</strong></div>
+          {% empty %}<p class="ha-help">{{ a.unknown }}</p>{% endfor %}
+        {% else %}<p class="ha-help">{{ a.unverified }}</p>{% endif %}
+        <div class="ha-actions">
+          <a href="{% url 'hooshCyberPanelMaster' %}" class="ha-link"><i class="fas fa-chart-line"></i>{{ a.ops_link }}</a>
+          <a href="{% url 'hooshSmartBackupDashboard' %}" class="ha-link"><i class="fas fa-box-archive"></i>{{ a.backup_link }}</a>
+        </div>
+      </section>
+    </div>
+  </div>
+  <footer class="ha-footer">CyberPanel Master · CyberAgent · {{ a.read_only }} · HooshDigital</footer>
+</main>
+{% endblock %}
