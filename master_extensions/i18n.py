@@ -1,9 +1,9 @@
-"""English and Persian labels scoped to new modules; never switch core UI globally."""
+"""Operations Center labels; Core-wide localization is handled by Django gettext."""
 LANGUAGES = ("en", "fa")
 COOKIE = "cybermaster_lang"
 LABELS = {
  "en": {
-  "brand":"CyberPanel Master","agent":"Cyber Agent","agent_subtitle":"Hosting intelligence and safe operations",
+  "brand":"Operations Center","agent":"Cyber Agent","agent_subtitle":"Hosting intelligence and safe operations",
   "overview":"Overview","health":"Hosting health","parsa":"PARSA executor",
   "server_agent":"Hoosh CyberAgent","gateway":"AI Gateway","router":"PARSA AI Router","backup":"Smart Backup",
   "issues":"Confirmed incidents","disk":"Disk usage","ram":"Available memory",
@@ -55,9 +55,9 @@ LABELS = {
   "agent_ops_fresh":"Recent agent heartbeat report","agent_ops_stale":"Agent status file unavailable, unrecognized or stale",
   "agent_ops_commands":"Existing supported checks: ops-status, resource-status, ops-once --dry-run",
   "agent_ops_approval":"Execution from this panel is not connected; operator approval and a scoped agent bridge are required.",
-  "agent_ops_checks":"Checks reported","agent_ops_version":"Reported agent version"},
+  "agent_ops_checks":"Checks reported","agent_ops_version":"Reported agent version","agent_ops_warning":"Warning","agent_ops_detail":"Detailed agent monitor","security_heading":"Website security & scanner","security_stage":"Independent scanner in development","security_desc":"A sandboxed WordPress file inspector is under development. The CyberPanel paid cloud AI Scanner is a separate service.","security_scanner":"Local file security audit","security_audit_pending":"Not enabled on production","security_warning":"No site scan has run; no malware-free claim is made. No site files are sent to AI providers."},
  "fa": {
-  "brand":"سایبرپنل مستر","agent":"ایجنت سایبر","agent_subtitle":"هوشمندی میزبانی و عملیات امن",
+  "brand":"مرکز عملیات","agent":"ایجنت سایبر","agent_subtitle":"هوشمندی میزبانی و عملیات امن",
   "overview":"نمای کلی","health":"سلامت میزبانی","parsa":"عامل اجرایی پارسا",
   "server_agent":"ایجنت سرور هوش","gateway":"درگاه هوش مصنوعی","router":"مسیریاب داخلی پارسا","backup":"بکاپ هوشمند",
   "issues":"رخدادهای تأییدشده","disk":"مصرف دیسک","ram":"حافظه آزاد",
