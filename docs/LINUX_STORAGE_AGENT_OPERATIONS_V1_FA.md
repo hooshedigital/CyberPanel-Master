@@ -25,6 +25,14 @@
 | `agent_workflow.py` | قرارداد اجرای ایجنت واقعی | فرمان‌های موجود Agent را برای worker مستقل با identity `hooshagent` allowlist می‌کند و نتیجه را sanitize می‌کند | **Django آن را اجرا نمی‌کند**؛ تأیید Owner/Bridge اختصاصی پیش از فعال‌سازی لازم است |
 | `master_view.py` / `i18n.py` / `cyberpanel_master.html` | رابط بومی en/fa | استفاده از `cp-tile-grid/cp-tile` و آیکون‌های موجود؛ URLهای قدیمی بدون تغییر | دست‌کاری قالب Core، CSS global و routeهای اصلی |
 
+## Collector آماده برای استقرار آزمایشی (فعلاً غیرفعال)
+
+- `master_extensions/storage_publisher.py` گزارش‌های `storage-report.json` و `cleanup-preview.json` را در دایرکتوری مدیریت‌شده با نگارش اتمیک، `O_NOFOLLOW`، بررسی مالکیت و `fsync` تولید می‌کند.
+- فایل‌های `master_extensions/systemd/hoosh-cybermaster-storage.service` و `.timer` نمونه استقرار غیرروت (`User=hooshagent`) با محدودیت RAM ۱۲۸MB، CPUQuota ۵٪، IOWeight ۱۰ و هر حدود ده دقیقه یک بار هستند.
+- **هیچ سرویسی در این مرحله نصب یا فعال نشده است**. قبل از فعال‌سازی، وجود مفسر `/usr/bin/python3`، UID/GID `hooshagent`، دسترسی به مسیرهای اسکن، SELinux/AppArmor/permissions، دسترسی Django به خروجی، ارتباط mountها و صحت فایل‌های source با نسخه نصب‌شده بررسی شوند.
+- اگر `hooshagent` اجازه خواندن `/var/lib/docker` را نداشته باشد، در UI باید «تأییدنشده / تخمین ناقص» نمایش داده شود؛ به هیچ وجه برای تکمیل نمودار، root غیرضروری یا permission گسترده داده نشود.
+- پیش‌نمایش فقط اعداد و دسته‌ها را منتشر می‌کند. هیچ نام فایل حساس، مسیر کامل، داده مشتری یا فهرست backup در report عمومی قرار نمی‌گیرد.
+
 ## ابزار پاک‌سازی واقعی — برنامه ایمن
 
 1. نمایش درصد دیسک + inode + دسته‌های حجم با بازه زمانی و **وضعیت ناقص/کامل**.
