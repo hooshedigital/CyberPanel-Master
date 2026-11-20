@@ -60,7 +60,7 @@ def dashboard(request):
             self.assertIn('request.session.get("userID")',staged)
             self.assertIn('django_language',staged)
             self.assertIn('localized_check(item, lang)',staged)
-            self.assertIn('csrf',str(manifest).lower() or "csrf")
+            self.assertNotIn('csrf_exempt',staged)
             self.assertEqual(controller.read_text(),source)
             self.assertEqual(template.read_text(),"old agent console")
             with self.assertRaises(ValueError):
