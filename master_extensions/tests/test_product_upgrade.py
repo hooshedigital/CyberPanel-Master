@@ -70,6 +70,43 @@ class FullProductLocaleTests(unittest.TestCase):
         self.assertNotIn("request.META.get('HTTP_ACCEPT_LANGUAGE'", s)
         self.assertIn("EnglishFirstLocaleMiddleware", s)
 
+    def test_gettext_catalog_is_compilable_and_truly_translates_common_nav(self):
+        from scripts.compile_controlled_locale import compile_mo, load_simple_po
+        import gettext
+        import io
+        root = Path(__file__).resolve().parents[2]
+        po = (root / "locale" / "fa" / "LC_MESSAGES" / "django.po").read_text("utf-8")
+        messages = load_simple_po(po)
+        self.assertGreaterEqual(len(messages), 140)
+        catalog = gettext.GNUTranslations(io.BytesIO(compile_mo(messages)))
+        self.assertEqual(catalog.gettext("Dashboard"), "داشبورد")
+        self.assertEqual(catalog.gettext("AI Scanner"), "اسکنر هوشمند")
+        self.assertEqual(catalog.gettext("Manage SSL"), "مدیریت SSL")
+        self.assertEqual(catalog.gettext("Websites"), "وب‌سایت‌ها")
+        self.assertEqual(catalog.gettext("Not a source string"), "Not a source string")
+
+    def test_existing_agent_checks_are_sanitized_bilingual(self):
+        from datetime import datetime, timezone
+        from master_extensions.operations_center import agent_summary
+        now = datetime.now(timezone.utc)
+        report = {"version": "0.9.0", "updated_at_unix": now.timestamp(),
+                  "status": "warning", "checks_total": 3,
+                  "checks": [
+                      {"name": "service:lscpd.service", "status": "ok"},
+                      {"name": "disk:/", "status": "warning"},
+                      {"name": "token_PRIVATE", "status": "critical", "secret": "DO_NOT_LEAK"},
+                      {"name": "disk:/", "status": "warning"},
+                  ]}
+        en = agent_summary(report=report, now=now, lang="en")
+        fa = agent_summary(report=report, now=now, lang="fa")
+        self.assertEqual(len(en["checks"]), 2)
+        self.assertEqual(fa["checks"][0]["label"], "رابط CyberPanel")
+        self.assertEqual(en["check_health"]["warning"], 1)
+        self.assertEqual(en["check_health"]["ok"], 1)
+        self.assertNotIn("PRIVATE", str(en))
+        self.assertNotIn("DO_NOT_LEAK", str(en))
+        self.assertFalse(en["operations_enabled"])
+
     def test_source_tree_audit_is_not_faked_translation_coverage(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
