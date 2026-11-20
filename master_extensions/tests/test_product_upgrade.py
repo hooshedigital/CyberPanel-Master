@@ -118,6 +118,15 @@ class FullProductLocaleTests(unittest.TestCase):
         self.assertNotIn("DO_NOT_LEAK", str(en))
         self.assertFalse(en["operations_enabled"])
 
+    def test_agent_operations_uses_native_accessible_status_tiles(self):
+        root = Path(__file__).resolve().parents[2]
+        ui = (root / "master_extensions/templates/backup/cyberpanel_master.html").read_text()
+        for item in ("cp-master-agent-console", "cp-tile-grid",
+                     "cp-agent-check--{{ check.status }}",
+                     "cp-master-agent-styles", "aria-labelledby"):
+            self.assertIn(item, ui)
+        self.assertNotIn("onclick=\"sudo", ui)
+
     def test_source_tree_audit_is_not_faked_translation_coverage(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
