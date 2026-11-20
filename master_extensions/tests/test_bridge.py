@@ -46,6 +46,12 @@ class BridgeTests(unittest.TestCase):
         with patch.object(bridge.subprocess,"run",return_value=p),patch.object(bridge,"core_version",return_value=None):
             self.assertFalse(bridge.unit_status()["connected"])
 
+    def test_report_emitter_has_strict_filename_allowlist(self):
+        with self.assertRaises(ValueError):
+            bridge.emit("../../etc/shadow", {"schema": 1})
+        with self.assertRaises(ValueError):
+            bridge.emit("agent-operations.json", {"schema": 1})
+
     def test_default_output_safe(self):
         for f in (bridge.gateway_status(),):
             self.assertEqual(f["schema"],1)

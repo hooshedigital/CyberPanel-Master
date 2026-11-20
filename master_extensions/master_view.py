@@ -14,6 +14,8 @@ from .i18n import COOKIE,context_for,resolve_language
 from .version import MASTER_VERSION,label
 from .billing_links import trusted_billing_admin_url
 from .commerce_modules import modules_for, status_note
+from .ops_overview import disk_overview, cleanup_candidates, agent_overview
+from .ops_telemetry import read_fresh_report
 
 BASE = Path("/var/lib/hoosh-cyber-agent")
 ALLOW = {"health.json","gateway-status.json","server-agent-status.json"}
@@ -36,6 +38,10 @@ def display_context(lang):
     health=_report("health.json",600)
     gateway=_report("gateway-status.json")
     agent=_report("server-agent-status.json")
+    # Timer cadence is ~10m with jitter; 30m TTL tolerates bounded delay.
+    disk_report=read_fresh_report("disk-inventory.json",max_age=1800)
+    cleanup_report=read_fresh_report("cleanup-candidates.json",max_age=1800)
+    ops_report=read_fresh_report("agent-operations.json",max_age=300)
     parsa=health.get("parsa",{})
     if not isinstance(parsa,dict):parsa={}
     checks=health.get("checks",{})
@@ -67,7 +73,12 @@ def display_context(lang):
         "updated":health.get("generated_utc"),
         "billing_admin_url":trusted_billing_admin_url(),
         "commerce_modules":modules_for(lang),
-        "commerce_note":status_note(lang)
+        "commerce_note":status_note(lang),
+        "disk_inventory":disk_overview(disk_report),
+        "cleanup_candidates":cleanup_candidates(cleanup_report),
+        "cleanup_verified":cleanup_report.get("schema")==1,
+        "cleanup_complete":cleanup_report.get("analysis_complete") is True,
+        "agent_operations":agent_overview(ops_report)
     }}
 
 @never_cache

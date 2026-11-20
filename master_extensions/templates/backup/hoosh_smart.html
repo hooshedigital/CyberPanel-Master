@@ -37,6 +37,29 @@
 <div style="overflow-x:auto"><table class="hb-table"><thead><tr><th>{{ b.date }}</th><th>{{ b.archive }}</th><th>{{ b.checksum }}</th></tr></thead>
 <tbody>{% for copy in daily %}<tr><td>{{ copy.date }}</td><td>{{ copy.size_gb }} GB</td><td>{% if copy.checksum_recorded %}{{ b.checksum_present }}{% else %}{{ b.checksum_missing }}{% endif %}</td></tr>{% empty %}<tr><td colspan="3">{{ b.none }}</td></tr>{% endfor %}</tbody></table></div>
 </section>
+
+<section class="hb-card hb-section" id="backup-cleanup-review" aria-labelledby="backup-cleanup-heading">
+  <h2 id="backup-cleanup-heading">{{ b.cleanup_heading }}</h2>
+  <p class="hb-note">{{ b.cleanup_note }}</p>
+  {% if not cleanup_verified %}<p class="hb-note" role="status">{{ b.cleanup_pending }}</p>{% endif %}
+  {% if cleanup_verified and not cleanup_complete %}<p class="hb-note" role="status">{{ b.cleanup_incomplete }}</p>{% endif %}
+  {% if cleanup_candidates %}
+    <div style="overflow-x:auto"><table class="hb-table">
+      <thead><tr><th>{{ b.cleanup_heading }}</th><th>{{ b.cleanup_size }}</th></tr></thead>
+      <tbody>
+      {% for candidate in cleanup_candidates %}
+        <tr><td>
+          {% if candidate.kind == "apt_download_cache" %}{{ b.clean_apt_download_cache }}
+          {% elif candidate.kind == "journal_archives" %}{{ b.clean_journal_archives }}
+          {% elif candidate.kind == "old_temp_files" %}{{ b.clean_old_temp_files }}
+          {% elif candidate.kind == "application_cache" %}{{ b.clean_application_cache }}
+          {% else %}{{ b.clean_unused_build_artifacts }}{% endif %}
+        </td><td>{{ candidate.reclaimable_gb }} GB</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  {% endif %}
+</section>
 <div class="hb-actions"><a class="hb-link" href="{% url 'OneClickBackups' %}">{{ b.core_backups }}</a><a class="hb-link hb-link-alt" href="{% url 'scheduleBackup' %}">{{ b.schedule }}</a><a class="hb-link hb-link-alt" href="{% url 'hooshSmartBackupDashboard' %}">{{ b.refresh }}</a></div>
 <p class="hb-warn">{{ b.warning }}</p>
 <p class="hb-note">HooshDigital Smart Backup {{ version }} · {{ b.footer }} · CyberPanel Master v{{ master_version }} · CyberPanel Core {{ core_version }}</p>

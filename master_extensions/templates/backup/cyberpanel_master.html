@@ -38,6 +38,105 @@
          <a href="{% url 'hooshSmartBackupDashboard' %}">{{ t.backup }}</a></p>
     </div></div>
 
+
+    <section class="panel" id="server-operations" aria-labelledby="ops-heading">
+      <div class="panel-body">
+        <h3 id="ops-heading">{{ t.ops_heading }}</h3>
+        <p>{{ t.ops_intro }}</p>
+        <div class="cp-tile-grid">
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
+            <span>
+              <div class="cp-tile-title">{{ t.disk_detail }}</div>
+              <div class="cp-tile-sub">
+                {% if master.disk_inventory.verified %}
+                  {{ t.disk_total }}: {{ master.disk_inventory.total_gb }} GB ·
+                  {{ t.disk_free }}: {{ master.disk_inventory.free_gb }} GB ·
+                  {{ t.disk }}: {{ master.disk_inventory.used_pct }}%
+                  {% if master.disk_inventory.inode_pct != None %} · {{ t.ops_inode }}: {{ master.disk_inventory.inode_pct }}%{% endif %}
+                {% else %}{{ t.waiting }}{% endif %}
+              </div>
+            </span>
+          </div>
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-heartbeat" aria-hidden="true"></i></span>
+            <span>
+              <div class="cp-tile-title">{{ t.cleanup_heading }}</div>
+              <div class="cp-tile-sub">{{ t.cleanup_intro }}</div>
+            </span>
+          </div>
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-brain" aria-hidden="true"></i></span>
+            <span>
+              <div class="cp-tile-title">{{ t.agent_ops_heading }}</div>
+              <div class="cp-tile-sub">{{ t.agent_ops_intro }}</div>
+            </span>
+          </div>
+        </div>
+        {% if master.disk_inventory.verified %}
+          {% if master.disk_inventory.used_pct >= 90 %}
+            <p class="text-muted" role="alert"><strong>{{ t.disk_pressure_warning }}</strong></p>
+          {% endif %}
+          <h4>{{ t.disk_categories }}</h4>
+          {% if master.disk_inventory.partial %}<p class="text-muted">{{ t.ops_partial_scan }}</p>{% endif %}
+          <div class="cp-tile-grid">
+          {% for category in master.disk_inventory.categories %}
+            <div class="cp-tile">
+              <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
+              <span>
+                <div class="cp-tile-title">
+                  {% if category.key == "websites" %}{{ t.ops_cat_websites }}
+                  {% elif category.key == "databases" %}{{ t.ops_cat_databases }}
+                  {% elif category.key == "backups" %}{{ t.ops_cat_backups }}
+                  {% elif category.key == "logs" %}{{ t.ops_cat_logs }}
+                  {% elif category.key == "containers" %}{{ t.ops_cat_containers }}
+                  {% elif category.key == "cache" %}{{ t.ops_cat_cache }}
+                  {% elif category.key == "mail" %}{{ t.ops_cat_mail }}
+                  {% elif category.key == "system" %}{{ t.ops_cat_system }}
+                  {% else %}{{ t.ops_cat_other }}{% endif %}
+                </div>
+                <div class="cp-tile-sub">{{ category.size_gb }} GB
+                  {% if not category.complete %} · {{ t.ops_sampled }}{% endif %}
+                </div>
+              </span>
+            </div>
+          {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted" role="status">{{ t.ops_unverified }}</p>
+        {% endif %}
+        <h4>{{ t.cleanup_heading }}</h4>
+        {% if not master.cleanup_complete %}<p class="text-muted" role="status">{{ t.cleanup_partial }}</p>{% endif %}
+        {% for candidate in master.cleanup_candidates %}
+          <p>
+            {% if candidate.kind == "apt_download_cache" %}{{ t.ops_clean_apt_download_cache }}
+            {% elif candidate.kind == "journal_archives" %}{{ t.ops_clean_journal_archives }}
+            {% elif candidate.kind == "old_temp_files" %}{{ t.ops_clean_old_temp_files }}
+            {% elif candidate.kind == "application_cache" %}{{ t.ops_clean_application_cache }}
+            {% else %}{{ t.ops_clean_unused_build_artifacts }}{% endif %}
+            · {{ candidate.reclaimable_gb }} GB · {{ t.read_only }}
+          </p>
+        {% empty %}
+          <p class="text-muted">{{ t.cleanup_empty }}</p>
+        {% endfor %}
+        <h4>{{ t.agent_ops_heading }}</h4>
+        {% if master.agent_operations.verified %}
+          <p>{{ t.status }}:
+            {% if master.agent_operations.state == "idle" %}{{ t.ops_state_idle }}
+            {% elif master.agent_operations.state == "busy" %}{{ t.ops_state_busy }}
+            {% elif master.agent_operations.state == "waiting_approval" %}{{ t.ops_state_waiting_approval }}
+            {% elif master.agent_operations.state == "offline" %}{{ t.ops_state_offline }}
+            {% else %}{{ t.ops_state_unverified }}{% endif %}
+          </p>
+          <p>{{ t.agent_pending }}: {{ master.agent_operations.pending|default_if_none:"—" }} ·
+             {{ t.agent_completed }}: {{ master.agent_operations.completed|default_if_none:"—" }} ·
+             {{ t.agent_failed }}: {{ master.agent_operations.failed|default_if_none:"—" }}</p>
+        {% else %}
+          <p class="text-muted">{{ t.waiting }}</p>
+        {% endif %}
+        <p class="text-muted">{{ t.ops_readonly }}</p>
+      </div>
+    </section>
     <section class="panel" id="whmcs-center" aria-labelledby="whmcs-center-heading">
       <div class="panel-body">
         <h3 id="whmcs-center-heading">{{ t.commerce_heading }}</h3>

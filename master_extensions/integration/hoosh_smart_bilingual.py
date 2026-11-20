@@ -89,7 +89,8 @@ def summary():
         used,total,free = (None,None,None)
         disk = shutil.disk_usage("/")
         total,used,free = disk.total,disk.used,disk.free
-        disk_used = round(100*used/max(total,1),1)
+        # df(1) denominator excludes reserved filesystem blocks.
+        disk_used = round(100*used/(used+free),1) if used + free else None
         free_gb = round(free/1e9,2)
     except (OSError,ValueError):
         disk_used,free_gb = None,None
@@ -119,9 +120,15 @@ def dashboard(request):
     from master_extensions.backup_i18n import LABELS as BACKUP_VIEW_LABELS
     from master_extensions.version import MASTER_VERSION
     from master_extensions.bridge import core_version
+    from master_extensions.ops_telemetry import read_fresh_report
+    from master_extensions.ops_overview import cleanup_candidates
     requested = request.GET.get("lang")
     lang = resolve_language(requested, request.COOKIES.get(COOKIE))
     data = summary()
+    cleanup_report = read_fresh_report("cleanup-candidates.json", max_age=1800)
+    data["cleanup_verified"] = bool(cleanup_report)
+    data["cleanup_complete"] = cleanup_report.get("analysis_complete") is True
+    data["cleanup_candidates"] = cleanup_candidates(cleanup_report)
     state = data.get("backup", {}).get("state", "not_configured")
     states = {
         "en": {"not_configured": "Not configured", "idle": "Idle",

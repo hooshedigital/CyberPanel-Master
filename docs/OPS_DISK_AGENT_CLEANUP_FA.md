@@ -1,0 +1,77 @@
+# CyberPanel Master — عملیات لینوکس، فضای دیسک، پاک‌سازی و مدیریت Agent
+
+**مرحله ۱ (این PR):** UI فارسی/انگلیسی، مدل نمایش داده‌های پاک‌سازی و دیسک و ایجنت به‌صورت **فقط‌خواندنی**. بدون اجرا، جابه‌جایی، حذف، root یا اتصال SFTP. منبع داده باید telemetry ریشه‌دارِ از پیش تولیدشده باشد؛ در غیاب آن UI باید «تأییدنشده» نشان دهد، نه عدد حدسی.
+
+## اولویت‌های فنی
+
+### ۱. مدیریت فضا
+- نمایش مصرف کل/آزاد، دسته‌بندی websites/databases/backups/logs/containers/cache/mail/system/other، روند ۷/۳۰ روز، inode usage، هشدار threshold.
+- برای مرورگر فایل شبیه SFTP: virtual filesystem **محدود به ریشه‌های صریحاً مجاز**؛ paginated stat/list با max entries، ممنوعیت symlink escape و traversal، RBAC، audit و مالکیت فایل.
+- انتقال فایل **فقط در آینده**: طرح دو مرحله‌ای (dry-run → approval → atomic move/verified copy)، بررسی source/destination، quota، available bytes، checksum، collision، permissions، rollback. جابه‌جایی cross-filesystem باید copy+fsync+verify+rename و پاک‌سازی مبدأ فقط بعد از تأیید مستقل باشد.
+- فایل‌های دیتابیس فعال، docker overlay2/volumes، mail spool، بکاپ‌های لازم، `/etc`، `/var/lib` و هسته CyberPanel خارج از محدوده عملیات مستقیم UI باشند.
+
+### ۲. پاک‌سازی زوائد
+- ابتدا **inventory/dry-run** و تخمین reclaimable bytes؛ هیچ `rm -rf` یا حذف خودکار.
+- کاندیدهای بررسی: apt download cache، journal archives قدیمی با سیاست retention، temp files قدیمی که باز نیستند، application cache با owner شناخته‌شده، build artifacts غیرلازم.
+- **حذف ممنوع پیش‌فرض:** Docker volumes/images in use، دیتابیس، backup snapshots، log جاری، session/cache مرتبط با login، mail، فایل‌های مشتری و systemd state.
+- ثبت علت، backup/rollback، میزان آزادشده واقعی و امکان مشاهده سابقه؛ پاک‌سازی باید approval و scoped executor مستقل داشته باشد.
+- به‌علت مصرف فعلی دیسک **۹۲٪**، حتی تولید بکاپ محلی ممکن است خطرناک باشد؛ اول ظرفیت offsite را بسنجید.
+
+### ۳. مدیریت ایجنت نصب‌شده
+- سه موجودیت را قاطی نکنید: `hoosh-cyberagent.service` (سرویس OS)، Parsa executor (اجرای مأموریت)، AI Gateway (مسیر مدل).
+- صفحه عملیات: status, heartbeat freshness, queue pending/completed/failed, last run, approval requests, policy, audit trail, error categories, safe diagnostics.
+- **عمل واقعی فقط با approval مستقل Auth0/Owner Broker و executor محدود**؛ API web نباید arbitrary command/root shell را بپذیرد.
+- شرایط توقف: stale telemetry، role mismatch، disk pressure، root approval expired، drift config، failed healthcheck.
+- وضعیت اتصال MCP در این جلسه read-only بود و root step-up معتبر نبود؛ کار اجرایی سرور انجام نشده است.
+
+### ۴. ظاهر و تجربه کاربری
+- کلاس‌های `panel`, `panel-body`, `cp-tile-grid`, `cp-tile`, `cp-tile-ic` و آیکون‌های FontAwesome موجود؛ هیچ تغییر CSS هسته یا منوی upstream.
+- برچسب‌های en/fa با RTL/LTR جدا و ثابت؛ هیچ عدد/مسیر جعلی یا placeholder وانمودشده به داده واقعی.
+- تست رگرسیون زبان، مجوز، داده ناقص/قدیمی، mobile viewport و screenshot قبل از انتشار.
+
+## منبع داده و قرارداد امن
+
+سه گزارش JSON جداگانه `disk-inventory.json`، `cleanup-candidates.json`، `agent-operations.json` در مسیر root-owned status از قبل موجود. هر گزارش باید `schema:1` و `generated_utc` داشته باشد؛ `master_view._report` آن‌ها را با سقف حجم، عدم symlink و freshness کنترل می‌کند. **Producer این گزارش‌ها هنوز طراحی/نصب نشده**؛ UI تا آن زمان فقط پیام «در انتظار تله‌متری» نشان می‌دهد. هیچ مرور فایل از web worker و هیچ اجرای فرمانی اضافه نشده است.
+
+## کنترل استقرار
+- PR پیش‌نیاز: #17؛ سپس بررسی Source↔Production، تست مرورگر و بکاپ offsite.
+- استقرار مرحله‌ای فقط پس از مرور مالک و داشتن rollback.
+
+
+## مرحله ۲ — تولیدکننده تله‌متری بدون عملیات تخریبی
+
+فایل `master_extensions/ops_collector.py` با کتابخانه استاندارد Python نوشته شده و تنها metadata فایل‌ها و `statvfs` را می‌خواند. گزارش‌ها با `bridge.emit` به‌صورت اتمیک در مسیر root-owned موجود ذخیره می‌شوند؛ بدون نام فایل/مسیر حساس، محتوای مشتری، subprocess، API ورودی وب یا حذف واقعی. **کد جدید تا نصب و فعال‌سازی آگاهانه، روی سرور اجرا نمی‌شود.**
+
+- `disk-inventory.json`: آمار دقیق پارتیشن اصلی، درصد واقعی مشابه `df` (فضای قابل استفاده بدون reserved blocks)، inode و نمونه محدود دسته‌بندی سایت/دیتابیس/بکاپ/لاگ/Docker/کش/ایمیل/سیستم.
+- `cleanup-candidates.json`: فقط تخمین قابل بررسی از فایل‌های `.deb` در apt cache، آرشیو ژورنال بالای ۳۰ روز و فایل‌های عادی قدیمی در `/var/tmp`. هیچ فایل مبدأ در خروجی منتشر نمی‌شود.
+- بودجه اسکن حداکثر ۶ ثانیه، ۳۰۰۰ مدخل برای هر ریشه دسته‌بندی و ۲۵۰۰ مدخل برای هر گروه پاک‌سازی؛ برخورد با mountpoint و symlink متوقف/رد می‌شود؛ فایل hardlink دوباره حساب نمی‌شود.
+- **مهم:** بخش `coverage=sampled` و `category_scans.complete` یعنی حجم دسته‌بندی‌ها فقط *نمونه* است و حتی `complete=true` به معنی شمارش کل پارتیشن نیست. موجودی کامل یا SFTP مرورگر فایل هنوز پیاده نشده.
+- نمونه‌های پرونده‌های ظاهراً زائد، حتی با سن بالا، مجوز پاک‌سازی نیستند: ممکن است process آن‌ها را باز داشته یا سرویس به آن‌ها نیاز داشته باشد.
+
+برای نصب آینده از unit/timer پیشنهادی `deploy/systemd/hoosh-cybermaster-ops.service` و `deploy/systemd/hoosh-cybermaster-ops.timer` فقط پس از بررسی در staging و انطباق مسیر checkout استفاده شود. فایل سرویس را بدون بررسی و تأیید مالک به production منتقل نکنید.
+
+
+## مرحله ۳ — زیرساخت File Explorer شبیه SFTP (بدون endpoint عمومی)
+
+کد `master_extensions/ops_file_browser.py` یک تابع `list_directory` فقط‌خواندنی و **بدون اتصال HTTP** ارائه می‌دهد. مرور فقط با کلیدهای server-owned برای ریشه‌های `websites`، `backups` و `logs` ممکن است. مسیرهای مطلق دریافتی، `..`، separatorهای نامعتبر، symlink traversal، دستگاه/مونت دیگر و bind mountهای داخلی رد می‌شوند. از `dir_fd` و `O_NOFOLLOW` برای مقاومت در برابر مسابقه تغییر symlink استفاده شده است.
+
+- فهرست نام، نوع، اندازه و زمان تغییر فایل‌ها را ارائه می‌کند؛ محتوای فایل را نمی‌خواند و هیچ جابه‌جایی یا حذف ندارد.
+- سقف ۱۰۰ مدخل در هر صفحه، حداکثر ۵۰۰۰ مدخل بررسی و بودجه زمانی دو ثانیه. اگر فهرست ناقص باشد، `incomplete=true` و cursor بعدی صادر نمی‌شود.
+- هنوز REST/Django endpoint، نمای HTML کامل فایل‌ها، tenant RBAC و approval مربوط به انتقال فایل وجود ندارد؛ نباید تابع از ورودی کاربران بدون لایه ACL استفاده شود.
+- پیش از نمایش اطلاعات فایل‌های مشتری در CyberPanel باید مالکیت حساب/دامنه و سطح دسترسی reseller/admin در Core واقعی بررسی و انطباق نصب تأیید شود.
+- **انتقال فایل آینده:** صرفاً بعد از ساخت `preflight_plan`، بررسی quota و فضای مقصد، مجوز محدود امضا شده، اجرای broker و audit/rollback. پیاده‌سازی ساده `shutil.move` در وب‌سرور ممنوع است.
+
+### وضعیت آزمون
+
+تست‌های امنیتی و سنجش budget در `master_extensions/tests/test_ops_collector.py`، `test_ops_overview.py`، `test_ops_file_browser.py` و `test_bridge.py` به سورس افزوده شده‌اند. Workflow اختصاصی `.github/workflows/ops-collector-ci.yml` برای اجرا در GitHub Actions ثبت شده است. **تا زمانی که خروجی موفق run از GitHub Actions مشاهده نشده، تست‌ها «طراحی و ثبت‌شده» محسوب می‌شوند، نه «پاس‌شده».** هیچ اجرای production از روی این PR تأیید نشده است.
+
+
+## مرحله ۴ — Smart Backup و بازبینی فایل‌های زائد در همان صفحه
+
+دو قالب `backup/hoosh_smart.html` و `backup/hoosh_smart_bilingual.html` اکنون بخش مستقل «بررسی پاک‌سازی فضای سرور» دارند. کنترلر واقعی `master_extensions/integration/hoosh_smart_bilingual.py` پس از تأیید ACL مدیر از `ops_telemetry.read_fresh_report` استفاده می‌کند و فقط خلاصه کاندیدها را با `ops_overview.cleanup_candidates` نمایش می‌دهد. **نسخه نصب‌شده سرور هنوز با این commit منطبق نشده است.**
+
+- گزارش باید root-owned، غیر symlink، دارای schema و timestamp معتبر، با محدودیت اندازه، و تازه‌تر از ۳۰ دقیقه باشد؛ در غیر این صورت صفحه «گزارشی موجود نیست» را نمایش می‌دهد.
+- هیچ نام فایل، مسیر خام، محتوای آرشیو یا فرمان حذف از collector به مرورگر منتقل نمی‌شود؛ `reclaimable_bytes` فقط تخمین است.
+- صفحه بکاپ همان کلاس‌های `hb-card` و `hb-table` موجود را استفاده می‌کند؛ بدون افزودن CSS/JS یا تغییر فرایند backup/restore.
+- هماهنگی en/fa برای قالب‌های Master و هر دو قالب Backup با بررسی ایستای منبع تأیید شد: ۹۵ کلید یکسان Master، ۳۳ کلید یکسان هر نوع Backup، بدون ارجاع قالب به کلید ناموجود. **این آزمون ایستا، جایگزین اجرای واقعی CI و screenshot نیست.**
+- بحران فضای ذخیره‌سازی: در بازرسی فقط‌خواندنی ۲۰ نوامبر، inode حدود ۵٪ و دیسک ۹۲٪ استفاده شده بود. Docker حاوی چندین image OpenHands و مجموعه rollback است؛ جمع اندازه اسمی imageها، فضای آزادشدنی را نشان نمی‌دهد. پیش از حذف باید `docker system df -v` و وابستگی image/volume/container بررسی شود؛ پیگیری در [Issue #30](https://github.com/hooshedigital/CyberPanel-Master/issues/30).

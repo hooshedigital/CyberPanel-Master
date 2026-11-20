@@ -1,0 +1,33 @@
+# STAGING TEMPLATE ONLY. Adjust checkout path after source↔production attestation.
+# DO NOT enable in production from GitHub alone.
+[Unit]
+Description=CyberPanel Master safe disk and cleanup inventory (read-only)
+Documentation=https://github.com/hooshedigital/CyberPanel-Master
+After=local-fs.target
+ConditionPathIsDirectory=/opt/hoosh-cybermaster/master_extensions
+ConditionPathIsDirectory=/var/lib/hoosh-cyber-agent
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+WorkingDirectory=/opt/hoosh-cybermaster
+ExecStart=/usr/bin/python3 -m master_extensions.ops_collector
+TimeoutStartSec=30
+UMask=0077
+Nice=10
+IOSchedulingClass=idle
+CPUQuota=15%
+MemoryMax=192M
+TasksMax=16
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/hoosh-cyber-agent
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+PrivateDevices=yes
+RestrictAddressFamilies=AF_UNIX
+IPAddressDeny=any
