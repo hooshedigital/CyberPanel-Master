@@ -109,7 +109,7 @@ LABELS = {
   "agent_ops_fresh":"گزارش تازه از قلب تپنده ایجنت","agent_ops_stale":"فایل وضعیت ایجنت موجود، شناخته‌شده یا تازه نیست",
   "agent_ops_commands":"بررسی‌های موجود: ops-status، resource-status و ops-once --dry-run",
   "agent_ops_approval":"اجرای عملیات از این بخش هنوز متصل نیست و به پل ارتباطی محدود و تأیید اپراتور نیاز دارد.",
-  "agent_ops_checks":"تعداد بررسی‌های گزارش‌شده","agent_ops_version":"نسخه گزارش‌شده ایجنت"}
+  "agent_ops_checks":"تعداد بررسی‌های گزارش‌شده","agent_ops_version":"نسخه گزارش‌شده ایجنت","agent_ops_warning":"هشدار","agent_ops_detail":"نمای جزئیات ایجنت","security_heading":"امنیت وب‌سایت و اسکنر","security_stage":"اسکنر مستقل در حال توسعه","security_desc":"ابزار مستقل ممیزی فایل‌های وردپرس در حال توسعه است. اسکنر AI ابری پولی CyberPanel یک سرویس جداگانه است.","security_scanner":"ممیزی امنیتی فایل‌ها","security_audit_pending":"روی سرور اصلی فعال نشده","security_warning":"اسکنی اجرا نشده و ادعای پاک بودن سایت وجود ندارد. فایل‌ها به سرویس AI ارسال نمی‌شوند."}
 }
 def resolve_language(query: str | None, cookie: str | None) -> str:
     if query in LANGUAGES: return query
