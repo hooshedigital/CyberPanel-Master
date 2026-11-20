@@ -165,6 +165,34 @@ class OperationsContracts(unittest.TestCase):
             self.assertFalse(cleanup_snapshot(policies=[policy], now=NOW,
                                scan=lambda _: result)["execution_enabled"])
 
+    def test_storage_publisher_atomic_safe_outputs(self):
+        from master_extensions.storage_publisher import publish_document, run_once
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            data = {"schema": 1, "generated_utc": NOW.isoformat(),
+                    "groups": [{"category": "cache", "allocated_bytes": 55, "complete": True}]}
+            cleanup = {"schema": 1, "generated_utc": NOW.isoformat(),
+                       "items": [], "execution_enabled": False}
+            publish_document(root, "storage-report.json", data)
+            self.assertEqual(json.loads((root / "storage-report.json").read_text()), data)
+            outcome = run_once(root, storage=data, cleanup=cleanup)
+            self.assertEqual(outcome["files_deleted"], 0)
+            self.assertEqual(outcome["reports_written"], 2)
+            self.assertEqual(json.loads((root / "cleanup-preview.json").read_text()), cleanup)
+            with self.assertRaises(ValueError):
+                publish_document(root, "passwords.json", data)
+
+    def test_storage_publisher_rejects_symlink_directories(self):
+        from master_extensions.storage_publisher import publish_document
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "safe"
+            root.mkdir()
+            link = Path(temp) / "link"
+            link.symlink_to(root, target_is_directory=True)
+            with self.assertRaises(OSError):
+                publish_document(link, "storage-report.json", {"schema": 1})
+            self.assertFalse((root / "storage-report.json").exists())
+
     def test_agent_worker_plan_is_fixed_and_never_web_root(self):
         from master_extensions.agent_workflow import command_plan
         with self.assertRaises(ValueError):
