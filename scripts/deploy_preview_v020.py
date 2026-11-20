@@ -52,7 +52,8 @@ for view, css in ((master, b"hm-root"), (agent, b"ha-app")):
             response = view(r)
         assert response.status_code == 200, (lang, response.status_code)
         assert css in response.content
-        assert (b'dir="rtl"' in response.content) == (lang == "fa")
+        root_marker = b'class="dashboard-wrapper ' + css + b'" dir="rtl"'
+        assert (root_marker in response.content) == (lang == "fa")
         results.append([css.decode(), lang, response.status_code])
     guest = RequestFactory().get("/backup/master/", secure=True)
     guest.session = {}
