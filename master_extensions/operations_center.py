@@ -31,6 +31,30 @@ LABELS = {
 }
 
 
+AGENT_CHECK_LABELS = {
+    "en": {
+        "memory": "Memory health", "resource_guard": "Resource guard",
+        "disk:/": "Root filesystem", "disk:/var/lib": "Server application storage",
+        "service:lscpd.service": "CyberPanel interface",
+        "service:lshttpd.service": "LiteSpeed web server",
+        "service:pdns.service": "PowerDNS",
+        "service:mariadb.service": "MariaDB",
+        "service:docker.service": "Docker",
+        "service:hooshedigital-mcp-auth0-staging.service": "MCP authorization",
+    },
+    "fa": {
+        "memory": "سلامت حافظه", "resource_guard": "کنترل محدودیت منابع",
+        "disk:/": "دیسک اصلی", "disk:/var/lib": "فضای برنامه‌های سرور",
+        "service:lscpd.service": "رابط CyberPanel",
+        "service:lshttpd.service": "وب‌سرور LiteSpeed",
+        "service:pdns.service": "سرویس PowerDNS",
+        "service:mariadb.service": "پایگاه‌داده MariaDB",
+        "service:docker.service": "سرویس Docker",
+        "service:hooshedigital-mcp-auth0-staging.service": "احراز هویت MCP",
+    },
+}
+
+
 def _read_bounded_json(path: Path) -> dict:
     """Never follow a symlink. Ignore untrusted oversized, missing or malformed reports."""
     try:
@@ -175,7 +199,9 @@ def breakdown(lang: str, *, report: dict | None = None, now: datetime | None = N
     return {"ready": bool(output), "groups": output, "partial": partial}
 
 
-def agent_summary(*, report: dict | None = None, now: datetime | None = None) -> dict:
+def agent_summary(*, report: dict | None = None, now: datetime | None = None, lang: str = 'en') -> dict:
+    if lang not in AGENT_CHECK_LABELS:
+        raise ValueError('unsupported language')
     now = now or datetime.now(timezone.utc)
     report = _read_bounded_json(AGENT_STATUS) if report is None else report
     # Source schema must be observed and timestamped; never claim live from file existence.
@@ -212,7 +238,8 @@ def agent_summary(*, report: dict | None = None, now: datetime | None = None) ->
                 continue
             if any(c["name"] == name for c in safe_checks):
                 continue
-            safe_checks.append({"name": name, "status": state})
+            safe_checks.append({"name": name, "label": AGENT_CHECK_LABELS[lang][name],
+                                "status": state})
     check_health = {
         "ok": sum(c["status"] == "ok" for c in safe_checks),
         "warning": sum(c["status"] == "warning" for c in safe_checks),
@@ -265,6 +292,6 @@ def operations_context(lang: str, *, disk=None, storage=None, agent=None, cleanu
         "disk": disk_summary(disk),
         "memory": memory_summary(),
         "storage": breakdown(lang, report=storage),
-        "agent": agent_summary(report=agent),
+        "agent": agent_summary(report=agent, lang=lang),
         "cleanup": cleanup_summary(report=cleanup),
     }
