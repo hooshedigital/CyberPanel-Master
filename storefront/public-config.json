@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "billingBaseUrl": "",
+  "products": {
+    "hosting": { "pid": null },
+    "vps": { "pid": null }
+  }
+}
