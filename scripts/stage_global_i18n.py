@@ -34,7 +34,7 @@ LANGUAGE_FORM = """<!-- HOOSH_GLOBAL_I18N_V020 -->
 </form>
 <!-- /HOOSH_GLOBAL_I18N_V020 -->"""
 HEAD_CSS = """<!-- HOOSH_GLOBAL_I18N_V020 HEAD -->
-<link rel="stylesheet" href="{% static 'master_extensions/global-shell.css' %}?v=0.2.0">
+<link rel="stylesheet" href="{% static 'baseTemplate/css/hoosh-master-shell.css' %}?v=0.2.0">
 <!-- /HOOSH_GLOBAL_I18N_V020 HEAD -->"""
 SETTINGS_BLOCK = """
 # HOOSH_GLOBAL_I18N_V020
@@ -142,6 +142,26 @@ def build_overlay(root: Path, output: Path) -> dict:
     manifest={"version":"0.2.0-dev","global_language_default":"en",
               "additional_language":"fa","production_changes":0,
               "file_count":len(changes),"files":changes}
+    # Ship the two static/locale resources alongside the three source overlays.
+    from scripts.compile_po import compile_file
+    project = Path(__file__).resolve().parents[1]
+    css_src = project / "master_extensions/static/master_extensions/global-shell.css"
+    css_dest = output / "baseTemplate/static/baseTemplate/css/hoosh-master-shell.css"
+    css_dest.parent.mkdir(parents=True, exist_ok=True)
+    css_dest.write_bytes(css_src.read_bytes())
+    po_src = project / "master_extensions/locale/fa/LC_MESSAGES/django.po"
+    po_dest = output / "master_extensions/locale/fa/LC_MESSAGES/django.po"
+    mo_dest = output / "master_extensions/locale/fa/LC_MESSAGES/django.mo"
+    po_dest.parent.mkdir(parents=True, exist_ok=True)
+    po_dest.write_bytes(po_src.read_bytes())
+    translations_count = compile_file(po_dest, mo_dest)
+    for dest in (css_dest, po_dest, mo_dest):
+        rel = str(dest.relative_to(output))
+        changes.append({"path":rel,"before_sha256":None,
+                        "after_sha256":hashlib.sha256(dest.read_bytes()).hexdigest(),
+                        "status":"staging_only"})
+    manifest["file_count"] = len(changes)
+    manifest["translated_shell_messages"] = translations_count
     (output/"manifest.json").write_text(json.dumps(manifest,indent=2))
     return manifest
 
