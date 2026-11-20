@@ -15,10 +15,10 @@ from .version import MASTER_VERSION,label
 from .billing_links import trusted_billing_admin_url
 from .commerce_modules import modules_for, status_note
 from .ops_overview import disk_overview, cleanup_candidates, agent_overview
+from .ops_telemetry import read_fresh_report
 
 BASE = Path("/var/lib/hoosh-cyber-agent")
-ALLOW = {"health.json","gateway-status.json","server-agent-status.json",
-         "disk-inventory.json","cleanup-candidates.json","agent-operations.json"}
+ALLOW = {"health.json","gateway-status.json","server-agent-status.json"}
 
 def _report(name,max_age=300):
     if name not in ALLOW: return {}
@@ -39,9 +39,9 @@ def display_context(lang):
     gateway=_report("gateway-status.json")
     agent=_report("server-agent-status.json")
     # Timer cadence is ~10m with jitter; 30m TTL tolerates bounded delay.
-    disk_report=_report("disk-inventory.json",1800)
-    cleanup_report=_report("cleanup-candidates.json",1800)
-    ops_report=_report("agent-operations.json",300)
+    disk_report=read_fresh_report("disk-inventory.json",max_age=1800)
+    cleanup_report=read_fresh_report("cleanup-candidates.json",max_age=1800)
+    ops_report=read_fresh_report("agent-operations.json",max_age=300)
     parsa=health.get("parsa",{})
     if not isinstance(parsa,dict):parsa={}
     checks=health.get("checks",{})
