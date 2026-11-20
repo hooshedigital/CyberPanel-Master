@@ -11,6 +11,8 @@ import os
 import stat
 import time
 
+from master_extensions.ops_collector import _mountpoints
+
 # Explicit roots are not user-selectable absolute paths. These are defaults
 # for a future admin-only interface, not a production enablement toggle.
 ROOTS = {
@@ -47,14 +49,24 @@ def _segments(relative: str) -> list[str]:
 
 def _open_beneath(root: str, segments: list[str]) -> int:
     """Open each component relative to the previous FD, never via realpath."""
+    mounts = _mountpoints()
+    if mounts is None:
+        raise FileBrowserError("mount boundaries unavailable")
     fd = os.open(root, DIR_FLAGS)
     try:
         device = os.fstat(fd).st_dev
+        current = os.path.normpath(root)
         for segment in segments:
+            current = os.path.join(current, segment)
+            if current in mounts:
+                raise FileBrowserError("nested mount is not allowed")
             child = os.open(segment, DIR_FLAGS, dir_fd=fd)
-            if os.fstat(child).st_dev != device:
+            try:
+                if os.fstat(child).st_dev != device:
+                    raise FileBrowserError("cross-device directory is not allowed")
+            except BaseException:
                 os.close(child)
-                raise FileBrowserError("cross-device directory is not allowed")
+                raise
             os.close(fd)
             fd = child
         return fd
