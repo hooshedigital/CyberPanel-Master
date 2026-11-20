@@ -37,7 +37,13 @@ class FullProductLocaleTests(unittest.TestCase):
             result = plan(root, out)
             self.assertFalse(result["production_modified"])
             self.assertFalse(result["full_translation_complete"])
-            self.assertEqual(len(result["changes"]), 3)
+            self.assertEqual(len(result["changes"]), 6)
+            self.assertTrue((out / "master_extensions/product_locale.py").is_file())
+            compiled = out / "locale/fa/LC_MESSAGES/django.mo"
+            self.assertTrue(compiled.is_file())
+            import gettext, io
+            translator = gettext.GNUTranslations(io.BytesIO(compiled.read_bytes()))
+            self.assertEqual(translator.gettext("Dashboard"), "داشبورد")
             self.assertEqual((root / "CyberCP/settings.py").read_text().count("EnglishFirstLocaleMiddleware"), 0)
             settings = (out / "CyberCP/settings.py").read_text()
             shell = (out / "baseTemplate/templates/baseTemplate/index.html").read_text()
