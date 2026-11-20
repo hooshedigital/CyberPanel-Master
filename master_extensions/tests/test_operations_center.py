@@ -25,6 +25,20 @@ NOW = datetime(2026, 11, 20, 17, 0, tzinfo=timezone.utc)
 
 
 class OperationsContracts(unittest.TestCase):
+    def test_memory_and_swap_are_real_bounded_proc_counters(self):
+        from master_extensions.operations_center import memory_summary
+        report = "\\n".join([
+            "MemTotal:       4096000 kB",
+            "MemAvailable:   1024000 kB",
+            "SwapTotal:      2048000 kB",
+            "SwapFree:       1024000 kB",
+        ])
+        result = memory_summary(report)
+        self.assertTrue(result["ready"])
+        self.assertEqual(result["ram_available_gib"], round(1024000 / 1024 ** 2, 2))
+        self.assertEqual(result["swap_used_gib"], round(1024000 / 1024 ** 2, 2))
+        self.assertFalse(memory_summary("MemTotal: -1 kB")["ready"])
+
     def test_disk_metrics_not_invented(self):
         g = 1024 ** 3
         got = disk_summary(SimpleNamespace(total=100 * g, used=92 * g, free=8 * g))
