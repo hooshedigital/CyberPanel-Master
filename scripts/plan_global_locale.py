@@ -21,6 +21,7 @@ import json
 from pathlib import Path
 import re
 import stat
+import sys
 
 SETTINGS = "CyberCP/settings.py"
 URLS = "CyberCP/urls.py"
@@ -130,6 +131,23 @@ def plan(root: Path, output: Path) -> dict:
     builders = {SETTINGS: patch_settings, URLS: patch_urls, SHELL: patch_shell}
     originals = {p: guarded_read(root, p) for p in TARGETS}
     replacements = {p: builders[p](originals[p]) for p in TARGETS}
+    # A Core locale middleware patch MUST include its imported module and
+    # compiled translation catalogs, or the login UI can fail on import.
+    repo = Path(__file__).resolve().parents[1]
+    if str(repo) not in sys.path:
+        sys.path.insert(0, str(repo))
+    from scripts.compile_controlled_locale import load_simple_po, compile_mo
+    module = "master_extensions/product_locale.py"
+    catalog_po = "locale/fa/LC_MESSAGES/django.po"
+    catalog_mo = "locale/fa/LC_MESSAGES/django.mo"
+    source_module = guarded_read(repo, module).encode("utf-8")
+    source_catalog = guarded_read(repo, catalog_po).encode("utf-8")
+    compiled_catalog = compile_mo(load_simple_po(source_catalog.decode("utf-8")))
+    dependencies = {module: source_module, catalog_po: source_catalog,
+                    catalog_mo: compiled_catalog}
+    for rel in dependencies:
+        if (root / rel).exists() or (root / rel).is_symlink():
+            raise ValueError("existing installed locale asset needs manual parity review:" + rel)
     # All preflight checks complete before writing anything.
     output.mkdir(parents=True, exist_ok=False, mode=0o700)
     changes = []
@@ -143,6 +161,16 @@ def plan(root: Path, output: Path) -> dict:
             "staged_sha256": hashlib.sha256(replacements[path].encode()).hexdigest(),
             "source_lines": originals[path].count("\n") + 1,
             "locale_scope": "Core framework / shell only; catalog completion required",
+        })
+    for rel, payload in dependencies.items():
+        dest = output / rel
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(payload)
+        changes.append({
+            "path": rel, "installed_sha256": None,
+            "staged_sha256": hashlib.sha256(payload).hexdigest(),
+            "source_lines": None,
+            "locale_scope": "Required Python middleware and compiled Persian catalog",
         })
     result = {
         "product": "CyberPanel Master",
