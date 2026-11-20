@@ -56,6 +56,14 @@
               <div class="cp-tile-sub">{% if master.ops.disk.ready %}{{ master.ops.disk.free_gib }} GiB{% else %}{{ t.unknown }}{% endif %}</div>
             </span>
           </div>
+          {% if master.ops.disk.reserved_gib %}
+          <div class="cp-tile">
+            <span class="cp-tile-ic"><i class="fas fa-server" aria-hidden="true"></i></span>
+            <span><div class="cp-tile-title">{{ t.storage_reserved }}</div>
+              <div class="cp-tile-sub">{{ master.ops.disk.reserved_gib }} GiB</div>
+            </span>
+          </div>
+          {% endif %}
           <div class="cp-tile">
             <span class="cp-tile-ic"><i class="fas fa-project-diagram" aria-hidden="true"></i></span>
             <span><div class="cp-tile-title">{{ t.storage_total }}</div>
