@@ -225,6 +225,17 @@ class OperationsContracts(unittest.TestCase):
             self.assertNotIn("shell", calls[0][1])
             self.assertNotIn("HOOSH_GITHUB_ADMIN_TOKEN", calls[0][1]["env"])
 
+    def test_cleanup_preview_is_really_wired_to_smart_backup_without_delete(self):
+        root = Path(__file__).resolve().parents[2] / "master_extensions"
+        controller = (root / "integration" / "hoosh_smart_bilingual.py").read_text()
+        self.assertIn('data["cleanup_preview"] = cleanup_summary()', controller)
+        for name in ("hoosh_smart.html", "hoosh_smart_bilingual.html"):
+            body = (root / "templates" / "backup" / name).read_text()
+            self.assertIn('id="hb-cleanup-heading"', body)
+            self.assertIn("cleanup_preview.items", body)
+            self.assertNotIn("rm -rf", body)
+            self.assertNotIn("docker prune", body)
+
     def test_language_parity_and_template_scoping(self):
         self.assertEqual(set(LABELS["en"]), set(LABELS["fa"]))
         for key in ("storage_heading", "cleanup_heading", "workspace_heading", "agent_ops_heading"):
