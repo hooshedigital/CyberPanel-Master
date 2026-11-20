@@ -74,6 +74,9 @@
           </div>
         </div>
         {% if master.disk_inventory.verified %}
+          {% if master.disk_inventory.used_pct >= 90 %}
+            <p class="text-muted" role="alert"><strong>{{ t.disk_pressure_warning }}</strong></p>
+          {% endif %}
           <h4>{{ t.disk_categories }}</h4>
           {% if master.disk_inventory.partial %}<p class="text-muted">{{ t.ops_partial_scan }}</p>{% endif %}
           <div class="cp-tile-grid">
@@ -103,6 +106,7 @@
           <p class="text-muted" role="status">{{ t.ops_unverified }}</p>
         {% endif %}
         <h4>{{ t.cleanup_heading }}</h4>
+        {% if not master.cleanup_complete %}<p class="text-muted" role="status">{{ t.cleanup_partial }}</p>{% endif %}
         {% for candidate in master.cleanup_candidates %}
           <p>
             {% if candidate.kind == "apt_download_cache" %}{{ t.ops_clean_apt_download_cache }}
