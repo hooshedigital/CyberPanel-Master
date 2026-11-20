@@ -70,15 +70,27 @@ def _gib(n: int) -> float:
     return round(n / (1024 ** 3), 2)
 
 
-def disk_summary(usage=None):
+def disk_summary(usage=None, *, inode_stat=None):
     try:
         usage = shutil.disk_usage("/") if usage is None else usage
         total, used, free = (usage.total, usage.used, usage.free)
         if not all(type(v) is int and 0 <= v <= 2 ** 63 for v in (total, used, free)) or total == 0:
             return {"ready": False}
+        if inode_stat is None:
+            try:
+                inode_stat = os.statvfs("/")
+            except OSError:
+                inode_stat = None
+        inode_used = None
+        if inode_stat is not None:
+            count = getattr(inode_stat, "f_files", None)
+            free_count = getattr(inode_stat, "f_ffree", None)
+            if (type(count) is int and type(free_count) is int
+                    and count > 0 and 0 <= free_count <= count):
+                inode_used = round(100 * (count - free_count) / count, 1)
         return {"ready": True, "used_percent": round(100 * used / total, 1),
                 "total_gib": _gib(total), "used_gib": _gib(used),
-                "free_gib": _gib(free)}
+                "free_gib": _gib(free), "inode_used_percent": inode_used}
     except (OSError, AttributeError, ValueError):
         return {"ready": False}
 
