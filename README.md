@@ -132,3 +132,8 @@ CyberPanel-Master/
 ## Native operations monitoring (development PR #22)
 
 A staged, **read-only** operations panel now supports typed disk/inode summaries, bounded *sampled* directory categories, potential cleanup review and PARSA/CyberAgent queue status (only where fresh verified telemetry exists), all using native CyberPanel tiles and matching English/Persian labels. `master_extensions/ops_collector.py` is a **separate restricted metadata-only producer** and is not installed on the host. Staging-only systemd service/timer templates are provided; they require review of the actual checkout path and owner approval. Disk navigation, SFTP-like transfer, cleanup, direct mission execution and privileged operations **are not live**. See [Operations implementation and constraints](docs/OPS_DISK_AGENT_CLEANUP_FA.md), [PR #22](https://github.com/hooshedigital/CyberPanel-Master/pull/22) and [issues #18–#21](https://github.com/hooshedigital/CyberPanel-Master/issues).
+
+
+### Smart Backup cleanup review (source only)
+
+The installed-controller source proposal now reads a **root-owned, timestamp-validated** cleanup report and displays read-only apt/journal/old-temp candidates **inside the existing Smart Backup templates**, in addition to the Master Overview. No delete button or file path is exposed, and neither cache clearing nor backup deletion has been enabled. Source parity, CI and a staged browser test remain required before rollout. Docker image/volume reclaim is separately gated by [issue #30](https://github.com/hooshedigital/CyberPanel-Master/issues/30).
