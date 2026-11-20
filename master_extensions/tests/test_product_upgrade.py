@@ -25,7 +25,7 @@ def make_core(root: Path):
         '{% load i18n %}\n{% get_current_language as LANGUAGE_CODE %}\n'
         '<html class="cp-evergreen" lang="en" ng-app="CyberCP">\n'
         '<title>{% block title %}CyberPanel{% endblock %}</title>\n'
-        '<button id="theme-toggle" class="theme-toggle"></button>\n</html>',
+        '            <button id="theme-toggle" class="theme-toggle"></button>\n</html>',
         encoding="utf-8")
 
 
