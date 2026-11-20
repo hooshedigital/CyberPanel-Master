@@ -165,6 +165,38 @@ class OperationsContracts(unittest.TestCase):
             self.assertFalse(cleanup_snapshot(policies=[policy], now=NOW,
                                scan=lambda _: result)["execution_enabled"])
 
+    def test_agent_worker_plan_is_fixed_and_never_web_root(self):
+        from master_extensions.agent_workflow import command_plan
+        with self.assertRaises(ValueError):
+            command_plan("sudo rm -rf /")
+        plan = command_plan("inspect_dry_run")
+        self.assertEqual(plan["argv"][1:3], ["ops-once", "--dry-run"])
+        self.assertTrue(plan["requires_separate_owner_approval"])
+        self.assertFalse(plan["invoked_from_web"])
+
+    def test_agent_worker_refuses_root_missing_approval_and_redacts_output(self):
+        from master_extensions.agent_workflow import run_approved_nonroot
+        from types import SimpleNamespace
+        import unittest.mock as mock
+        with self.assertRaises(PermissionError):
+            run_approved_nonroot("ops_status", worker_approval=True, uid=0)
+        with mock.patch("master_extensions.agent_workflow.pwd.getpwuid",
+                        return_value=SimpleNamespace(pw_name="hooshagent")):
+            with self.assertRaises(PermissionError):
+                run_approved_nonroot("ops_status", worker_approval=False, uid=1001)
+            calls = []
+            def runner(argv, **kwargs):
+                calls.append((argv, kwargs))
+                return SimpleNamespace(returncode=0, stdout='{"status":"ok","version":"0.9.0","token":"SECRET"}')
+            r = run_approved_nonroot("ops_status", worker_approval=True,
+                                     uid=1001, runner=runner)
+            self.assertEqual(r["state"], "ok")
+            self.assertNotIn("SECRET", str(r))
+            self.assertNotIn("token", r)
+            self.assertEqual(calls[0][1]["timeout"], 15)
+            self.assertNotIn("shell", calls[0][1])
+            self.assertNotIn("HOOSH_GITHUB_ADMIN_TOKEN", calls[0][1]["env"])
+
     def test_language_parity_and_template_scoping(self):
         self.assertEqual(set(LABELS["en"]), set(LABELS["fa"]))
         for key in ("storage_heading", "cleanup_heading", "workspace_heading", "agent_ops_heading"):
