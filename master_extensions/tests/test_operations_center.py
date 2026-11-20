@@ -27,7 +27,7 @@ NOW = datetime(2026, 11, 20, 17, 0, tzinfo=timezone.utc)
 class OperationsContracts(unittest.TestCase):
     def test_memory_and_swap_are_real_bounded_proc_counters(self):
         from master_extensions.operations_center import memory_summary
-        report = "\\n".join([
+        report = "\n".join([
             "MemTotal:       4096000 kB",
             "MemAvailable:   1024000 kB",
             "SwapTotal:      2048000 kB",
