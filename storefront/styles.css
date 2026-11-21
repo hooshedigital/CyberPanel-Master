@@ -32,3 +32,13 @@ html{scroll-padding-top:140px}
 a:focus-visible,button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
 @media(max-width:700px){.site-utility{min-height:42px}.locale-option{padding:3px 8px}.nav-wrap{min-height:64px;gap:12px}.nav-actions{margin-right:auto}.nav-actions .text-link{font-size:.75rem}.brand-name{font-size:.89rem}.hero{padding-top:52px}}
 @media(prefers-reduced-motion:reduce){.primary-nav a:after,.hero-panel .flow-unit,.locale-option{transition:none}}
+
+/* English shares the Persian design; logical spacing and text alignment adapt. */
+html[lang="en"] .service-card ul{padding:0 0 0 18px}
+html[lang="en"] .primary-nav a:after{transform-origin:left}
+html[lang="en"] .hero h1{letter-spacing:-1.4px;line-height:1.2}
+html[lang="en"] .hero-copy{line-height:1.85}
+html[lang="en"] .flow-tail{text-align:right}
+html[lang="en"] .step strong{font-family:Arial,sans-serif}
+html[lang="en"] .footer-row{text-align:left}
+@media(max-width:700px){html[lang="en"] .footer-row{text-align:center}}
