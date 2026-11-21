@@ -33,6 +33,7 @@ SAMPLE_SHELL = """{% load i18n %}
 <html class="cp-evergreen" lang="en" ng-app="CyberCP">
 <head>{% block header_scripts %}{% endblock %}</head>
 <body>
+<header class="native-header"><div class="native-tools"><div class="social-icons"><a href="#">Social</a></div></div></header>
 <nav id="sidebar"><div class="sidebar-logo">Brand</div>
 <div class="sidebar-search">Search</div></nav>
 </body></html>
@@ -50,6 +51,17 @@ class GlobalCoreLanguageTests(unittest.TestCase):
         self.assertIn('csrf_token', shell)
         self.assertIn('baseTemplate/css/hoosh-master-shell.css', shell)
         self.assertIn('nav id="sidebar"', shell)
+        self.assertLess(shell.index("hm-global-language"), shell.index('class="social-icons"'))
+        self.assertLess(shell.index('class="social-icons"'), shell.index('nav id="sidebar"'))
+
+    def test_requires_unique_verified_social_header(self):
+        missing = SAMPLE_SHELL.replace('class="social-icons"', 'class="utility-other"')
+        with self.assertRaisesRegex(ValueError, "native social header"):
+            patch_shell(missing)
+        duplicate = SAMPLE_SHELL.replace('</header>',
+            '<div class="social-icons"></div></header>')
+        with self.assertRaisesRegex(ValueError, "native social header"):
+            patch_shell(duplicate)
 
     def test_brand_stays_whole_panel_and_duplicate_menu_becomes_ops_center(self):
         shell = SAMPLE_SHELL.replace(
