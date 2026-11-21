@@ -86,7 +86,7 @@ def dashboard(request):
             return HttpResponseForbidden("Administrator access required")
     except Exception:
         return HttpResponseForbidden("Access denied")
-    lang=resolve_language(request.GET.get("lang"),request.COOKIES.get(COOKIE))
+    lang=resolve_language(request.GET.get("lang"),request.COOKIES.get(COOKIE) or request.COOKIES.get("django_language"))
     result=httpProc(request,"backup/cyberpanel_master.html",display_context(lang,request.GET.get("folder",""),request.GET.get("commerce","billing")),"admin").render()
     if request.GET.get("lang") in ("en","fa"):
         result.set_cookie(COOKIE,lang,max_age=180*86400,secure=True,httponly=True,samesite="Lax",path="/backup/")
