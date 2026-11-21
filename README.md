@@ -140,3 +140,12 @@ CyberPanel-Master/
 ├── tests/
 └── whmcs/
 ```
+
+
+## 2026-11-21 — Native UI/UX refresh & WHMCS management window (Draft PR #38)
+
+- Site preview: language switch now physically **top-right beside GitHub social icon**, with separate complete \`storefront/index.html\` (fa) and \`storefront/en.html\` (en), responsive theme refinements, and bilingual storefront billing status.
+- Global CyberPanel shell: staged locale form moves **out of the sidebar** and next to an exactly verified native social-header element. If the live markup differs, the overlay refuses installation. Core-wide language coverage still incomplete.
+- Operations Center: a **prominent native WHMCS management workspace** (billing, catalog, packages, provisioning, affiliates, identity) at the top of the page. The secure admin link only appears when server-side \`HOOSH_WHMCS_ADMIN_URL\` passes strict HTTPS/domain validation. WHMCS admin login & 2FA are independent; **there is no live API/SSO, no cross-origin iframe and no fake invoices or provisioning**.
+- Source tests and [Persian audit / deployment gates](docs/UI_WHMCS_NATIVE_INTEGRATION_AUDIT_20261121_FA.md) travel with this PR.
+- **No production deploy**. Preserve installed SSL, login/CAPTCHA, CyberAgent, existing WHMCS installation and customers. PR stacking: #2 → #3 → #12 → #17 → #27 → #34 → #38; parallel #22 requires conflict review.

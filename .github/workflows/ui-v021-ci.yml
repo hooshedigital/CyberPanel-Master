@@ -1,0 +1,44 @@
+name: CyberPanel Master v0.2.1 UI & WHMCS source tests
+
+on:
+  push:
+    branches:
+      - feat/master-v021-native-header-whmcs-ui-20261121
+    paths:
+      - 'master_extensions/**'
+      - 'scripts/**'
+      - 'storefront/**'
+      - '.github/workflows/ui-v021-ci.yml'
+  pull_request:
+    paths:
+      - 'master_extensions/**'
+      - 'scripts/**'
+      - 'storefront/**'
+      - '.github/workflows/ui-v021-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  python-source-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile sources
+        run: python -m compileall -q master_extensions scripts
+      - name: Run source, security, UI and i18n unit tests
+        run: python -m unittest discover -s master_extensions/tests -v
+  storefront-ux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check storefront browser-free contracts
+        run: node --test storefront/tests/*.test.cjs

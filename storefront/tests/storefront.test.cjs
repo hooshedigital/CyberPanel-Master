@@ -8,7 +8,7 @@ const path = require("node:path");
 const script = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
 const defaultConfig = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "public-config.json"), "utf8"));
 
-async function render(config) {
+async function render(config, lang = 'fa') {
   function element(key) {
     return {
       id: key, dataset: { product: key }, attrs: { "aria-disabled": "true" }, href: undefined,
@@ -20,6 +20,7 @@ async function render(config) {
   const nodes = { "integration-state": { textContent: "preview" }, "client-login": element("login"), "domain-order": element("domain") };
   const productLinks = [element("hosting"), element("vps")];
   const document = {
+    documentElement: { lang },
     getElementById(id) { return nodes[id]; },
     querySelectorAll(selector) { return selector === "[data-product]" ? productLinks : []; }
   };
@@ -73,4 +74,41 @@ test("reject invalid product ids; never build arbitrary checkout query", async (
     });
     assert.equal(products[0].href, undefined, String(pid));
   }
+});
+
+
+test("language selection is a real top-right header feature in both site variants", () => {
+  const root = path.join(__dirname, "..");
+  const fa = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const en = fs.readFileSync(path.join(root, "en.html"), "utf8");
+  const css = fs.readFileSync(path.join(root, "styles.css"), "utf8");
+  for (const [html, lang] of [[fa, "fa"], [en, "en"]]) {
+    assert.match(html, new RegExp('<html lang="' + lang + '" dir="' + (lang === "fa" ? "rtl" : "ltr") + '"'));
+    assert.match(html, /class="container site-utility" dir="rtl"/);
+    assert.match(html, /class="locale-switch"/);
+    assert.match(html, /href="\.\/index\.html" lang="fa"/);
+    assert.match(html, /href="\.\/en\.html" lang="en"/);
+    assert.match(html, /https:\/\/github\.com\/hooshedigital/);
+    assert.match(html, /rel="noopener noreferrer"/);
+    assert.ok(html.indexOf("site-utility") < html.indexOf("container nav-wrap"));
+    for (const selector of ['id="services"', 'id="experience"', 'id="how-it-works"', 'id="faq"', 'id="client-login"', 'id="domain-order"']) {
+      assert.ok(html.includes(selector), lang + " missing " + selector);
+    }
+    for (const product of ['data-product="hosting"', 'data-product="vps"']) {
+      assert.ok(html.includes(product), lang + " missing " + product);
+    }
+  }
+  assert.match(css, /\.site-utility/);
+  assert.match(css, /\.locale-option/);
+  assert.match(css, /prefers-reduced-motion/);
+});
+
+test("English WHMCS setup status is localized; no fake payment activation", async () => {
+  const { nodes } = await render({
+    schemaVersion: 1,
+    billingBaseUrl: "https://billing.hooshedigital.ir/",
+    products: { hosting: { pid: 7 } }
+  }, "en");
+  assert.match(nodes["integration-state"].textContent, /WHMCS order links are configured/);
+  assert.match(nodes["integration-state"].textContent, /remain unverified/);
 });

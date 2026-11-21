@@ -47,23 +47,26 @@ class NativeUIAndI18NAudit(unittest.TestCase):
         html = (TEMPLATES / "cyberpanel_master.html").read_text()
         self.assertIn('id="whmcs-center"', html)
         commerce = html.split('id="whmcs-center"', 1)[1].split("</section>", 1)[0]
-        self.assertIn('class="cp-tile-grid"', commerce)
-        self.assertIn('class="cp-tile"', commerce)
-        self.assertIn('class="cp-tile-ic"', commerce)
-        self.assertIn('class="cp-tile-title"', commerce)
-        self.assertIn('class="cp-tile-sub"', commerce)
-        self.assertNotIn("style=", commerce)
-        self.assertNotIn("<style", commerce)
+        self.assertIn('class="hm-billing-body"', commerce)
+        self.assertIn('class="hm-billing-menu"', commerce)
+        self.assertIn('class="hm-billing-detail"', commerce)
+        self.assertIn('class="hm-billing-tab"', commerce)
+        self.assertIn('master.whmcs_workspace.tabs', commerce)
+        self.assertIn('master.billing_admin_url', commerce)
+        self.assertIn('rel="noopener noreferrer"', commerce)
+        self.assertNotIn("<iframe", commerce)
         self.assertNotIn("<script", commerce)
-        # The new Operations Center uses native CyberPanel icon markup for commerce.
-        self.assertIn('class="cp-tile-ic"', commerce)
+        self.assertNotIn('style=', commerce)
+        self.assertIn('class="hm-header-tools"', html)
+        self.assertLess(html.index('class="hm-header-tools"'), html.index('class="hm-title"'))
+        self.assertIn('class="fas {{ section.icon }}"', commerce)
         self.assertIn('dir="{{ direction }}"', html)
         self.assertNotIn('dir="rtl" lang="en"', html)
 
     def test_icons_reuse_existing_classes_only(self):
         cards = modules_for("en")
         html = (TEMPLATES / "cyberpanel_master.html").read_text()
-        self.assertIn('class="fas {{ module.icon }}"', html)
+        self.assertIn('class="fas {{ section.icon }}"', html)
         known = {"fa-project-diagram", "fa-server", "fa-route",
                  "fa-brain", "fa-heartbeat"}
         for item in cards:

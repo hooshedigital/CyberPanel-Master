@@ -14,6 +14,7 @@ from .i18n import COOKIE,context_for,resolve_language
 from .version import MASTER_VERSION,label
 from .billing_links import trusted_billing_admin_url
 from .commerce_modules import modules_for, status_note
+from .whmcs_workspace import whmcs_workspace
 from .operations_center import operations_context
 from .workspace_browser import browse as browse_workspace
 
@@ -34,7 +35,7 @@ def _report(name,max_age=300):
     except (OSError,ValueError,KeyError,TypeError,OverflowError):
         return {}
 
-def display_context(lang, folder=""):
+def display_context(lang, folder="", commerce="billing"):
     health=_report("health.json",600)
     gateway=_report("gateway-status.json")
     agent=_report("server-agent-status.json")
@@ -70,6 +71,7 @@ def display_context(lang, folder=""):
         "billing_admin_url":trusted_billing_admin_url(),
         "commerce_modules":modules_for(lang),
         "commerce_note":status_note(lang),
+        "whmcs_workspace":whmcs_workspace(lang, commerce, trusted_billing_admin_url()),
         "ops":{**operations_context(lang), "workspace": browse_workspace(folder)}
     }}
 
@@ -84,8 +86,8 @@ def dashboard(request):
             return HttpResponseForbidden("Administrator access required")
     except Exception:
         return HttpResponseForbidden("Access denied")
-    lang=resolve_language(request.GET.get("lang"),request.COOKIES.get(COOKIE))
-    result=httpProc(request,"backup/cyberpanel_master.html",display_context(lang,request.GET.get("folder","")),"admin").render()
+    lang=resolve_language(request.GET.get("lang"),request.COOKIES.get(COOKIE) or request.COOKIES.get("django_language"))
+    result=httpProc(request,"backup/cyberpanel_master.html",display_context(lang,request.GET.get("folder",""),request.GET.get("commerce","billing")),"admin").render()
     if request.GET.get("lang") in ("en","fa"):
         result.set_cookie(COOKIE,lang,max_age=180*86400,secure=True,httponly=True,samesite="Lax",path="/backup/")
     return result

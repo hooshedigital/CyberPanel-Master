@@ -2,6 +2,7 @@
 (() => {
   "use strict";
   const warning = document.getElementById("integration-state");
+  const en = document.documentElement?.lang === "en";
   const login = document.getElementById("client-login");
   const domain = document.getElementById("domain-order");
   const orders = Array.from(document.querySelectorAll("[data-product]"));
@@ -48,7 +49,9 @@
       const product = products[link.dataset.product];
       activate(link, orderLink(base, product && product.pid));
     });
-    warning.textContent = "پیش‌نمایش توسعه: لینک‌های سفارش به WHMCS تنظیم شده‌اند؛ پرداخت و تحویل خودکار تنها پس از تأیید آزمون نهایی فعال اعلام می‌شوند.";
+    warning.textContent = en
+      ? "Preview: WHMCS order links are configured; automatic billing and provisioning remain unverified."
+      : "پیش‌نمایش توسعه: لینک‌های سفارش به WHMCS تنظیم شده‌اند؛ پرداخت و تحویل خودکار تنها پس از تأیید آزمون نهایی فعال اعلام می‌شوند.";
   }
 
   fetch("./public-config.json", { cache: "no-store", credentials: "omit" })
@@ -57,5 +60,7 @@
       return response.json();
     })
     .then(configure)
-    .catch(() => { warning.textContent = "پیش‌نمایش سایت؛ پیکربندی فروش هنوز اعمال نشده است."; });
+    .catch(() => { warning.textContent = en
+      ? "Site preview: billing configuration has not been applied."
+      : "پیش‌نمایش سایت؛ پیکربندی فروش هنوز اعمال نشده است."; });
 })();
