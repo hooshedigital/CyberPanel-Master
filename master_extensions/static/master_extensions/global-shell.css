@@ -1,27 +1,11 @@
-/* CyberPanel Master v0.2.0 — additive shell language switch.
-   Native CyberPanel font, icon set, palette and theme are inherited.
-   Scope is deliberately small; existing site workflows remain unchanged. */
-#sidebar .hm-global-language{
- display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:10px 12px 12px;
- padding:10px;border:1px solid var(--border-primary,#dfe6f0);
- border-radius:12px;background:var(--bg-secondary,#f6f8fc);
- font-size:12px;line-height:1.4
-}
-#sidebar .hm-global-language__label{font-weight:700;flex-basis:100%;color:var(--text-secondary,#526073)}
-#sidebar .hm-lang-option{
- appearance:none;cursor:pointer;min-width:64px;min-height:34px;padding:7px 12px;
- border:1px solid var(--border-primary,#cbd5e1);border-radius:8px;
- font-family:inherit;font-size:12px;font-weight:600;
- background:var(--bg-primary,#fff);color:var(--text-primary,#1f2e45);
- transition:box-shadow .12s ease,border-color .12s ease
-}
-#sidebar .hm-lang-option.is-active{background:var(--primary,#2854bb);color:#fff;border-color:transparent}
-#sidebar .hm-lang-option:focus-visible{outline:2px solid var(--primary,#2854bb);outline-offset:2px}
+/* CyberPanel Master native top-right locale control, next to existing social icons. */
+.hm-global-language{display:inline-flex;align-items:center;gap:4px;direction:ltr;vertical-align:middle;margin:0 9px;padding:3px;border:1px solid var(--border-primary,#dfe5ef);border-radius:9px;background:var(--bg-secondary,#f6f8fb);font-size:12px;line-height:1.35;white-space:nowrap}
+.hm-global-language__label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.hm-global-language .hm-lang-option{appearance:none;cursor:pointer;min-width:53px;min-height:32px;padding:5px 9px;border:0;border-radius:6px;font-family:inherit;font-size:12px;font-weight:650;background:transparent;color:var(--text-primary,#273850)}
+.hm-global-language .hm-lang-option.is-active{background:var(--bg-primary,#fff);color:var(--primary,#2854bb);box-shadow:0 1px 5px rgba(25,44,70,.1)}
+.hm-global-language .hm-lang-option:focus-visible{outline:2px solid var(--primary,#2854bb);outline-offset:2px}
 html[dir="rtl"] body{direction:rtl}
-html[dir="rtl"] .hm-global-language{direction:ltr}
-html[dir="rtl"] .hm-global-language__label{direction:rtl;text-align:right}
-html[dir="rtl"] input[type="email"],html[dir="rtl"] input[type="url"],
-html[dir="rtl"] input[type="number"],html[dir="rtl"] input[name*="domain"]{direction:ltr;text-align:left}
+html[dir="rtl"] input[type="email"],html[dir="rtl"] input[type="url"],html[dir="rtl"] input[type="number"],html[dir="rtl"] input[name*="domain"]{direction:ltr;text-align:left}
 html[dir="rtl"] pre,html[dir="rtl"] code,html[dir="rtl"] .ip-value{direction:ltr;unicode-bidi:isolate}
-@media(max-width:600px){#sidebar .hm-global-language{margin:8px;padding:8px}}
-@media(prefers-reduced-motion:reduce){#sidebar .hm-lang-option{transition:none}}
+@media(max-width:600px){.hm-global-language{margin:0 4px;padding:2px}.hm-global-language .hm-lang-option{min-width:45px;padding:5px 6px}}
+@media(prefers-reduced-motion:reduce){.hm-global-language .hm-lang-option{transition:none}}
