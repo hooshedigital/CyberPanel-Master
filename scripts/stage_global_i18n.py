@@ -73,6 +73,11 @@ def unique_replace(src: str, old: str, new: str, path: str) -> str:
     return src.replace(old, new, 1)
 
 
+SOCIAL_ANCHOR = re.compile(
+    r'<(?:div|ul|nav)\b[^>]*\bclass="[^"]*(?:social-icons|social-links|social-media|header-social|navbar-social|topbar-social)[^"]*"[^>]*>',
+    re.I,
+)
+
 def patch_shell(template: str) -> str:
     if STAMP in template:
         raise ValueError("shell already patched; do not double-install")
@@ -86,11 +91,13 @@ def patch_shell(template: str) -> str:
     m=matches[0]
     newer = '<html'+m.group('attrs')+'lang="{{ LANGUAGE_CODE|default:\'en\' }}" dir="{% if LANGUAGE_CODE == \'fa\' %}rtl{% else %}ltr{% endif %}"'+m.group('tail')+'>'
     template = template[:m.start()] + newer + template[m.end():]
-    # Inject form only in the native sidebar, after its existing branding.
-    anchor = '<div class="sidebar-search">'
-    if template.count(anchor) != 1 or '<nav id="sidebar"' not in template:
-        raise ValueError("unexpected sidebar layout")
-    template = unique_replace(template,anchor,LANGUAGE_FORM+'\n'+anchor,TEMPLATE)
+    # The social controls in the original Core header are the only valid
+    # insertion point. If upstream HTML drifts, fail closed (no sidebar form).
+    anchors = list(SOCIAL_ANCHOR.finditer(template))
+    if len(anchors) != 1 or '<nav id="sidebar"' not in template:
+        raise ValueError("unverified native social header; inspect installed template")
+    start = anchors[0].start()
+    template = template[:start] + LANGUAGE_FORM + '\n' + template[start:]
     template = unique_replace(template,'{% block header_scripts %}',HEAD_CSS+'\n{% block header_scripts %}',TEMPLATE)
 
     # CyberPanel Master is already the installed shell brand. The second
