@@ -61,20 +61,54 @@
 @media(max-width:1200px){.hm-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.hm-root .cp-tile-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:850px){.hm-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:600px){.hm-root{padding:12px 10px 35px}.hm-kpis,.hm-tile-grid,.hm-checks,.hm-root .cp-tile-grid{grid-template-columns:minmax(0,1fr)}.hm-panel{padding:15px}.hm-title{font-size:24px}}
+/* Native-inspired V0.2.1 refinements: retain fonts, palette, icons and Core layout. */
+.hm-root{--hm-outline:var(--border-primary,#dfe7ef);padding-top:12px}
+.hm-header{display:flex;flex-direction:column;gap:15px;align-items:stretch;padding:2px 0 13px;margin:0 0 22px;border-bottom:1px solid var(--hm-outline)}
+.hm-intro{max-width:800px}
+.hm-header-tools{order:-1;display:flex;align-items:center;flex-wrap:wrap;gap:9px;direction:rtl;justify-content:flex-start;min-height:40px}
+.hm-header-tools .hm-lang{direction:ltr;flex-wrap:nowrap;background:var(--bg-secondary,#f4f7fb);padding:3px;border:1px solid var(--hm-outline);border-radius:10px}
+.hm-header-tools .hm-lang a{border:0;border-radius:7px;background:transparent;min-height:32px;display:grid;place-items:center;font-size:12px;padding:5px 11px}
+.hm-header-tools .hm-lang a[aria-current="true"]{background:var(--bg-primary,#fff);border:0;color:var(--primary,#2854bb);box-shadow:0 1px 5px rgba(26,45,71,.1)}
+.hm-header-tools .hm-tag{padding:7px 10px;font-weight:500;border-radius:9px}
+.hm-social-link{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 10px;color:var(--text-primary,#35445b);border:1px solid var(--hm-outline);border-radius:9px;background:var(--bg-primary,#fff);font-size:12px;font-weight:650;text-decoration:none!important;min-height:39px}
+.hm-social-link:hover{color:var(--primary,#2e58bd);border-color:var(--primary,#2e58bd)}
+.hm-panel,.hm-kpi{border-radius:12px;box-shadow:0 1px 8px rgba(26,45,71,.03)}
+.hm-panel-title{font-size:16px;font-weight:740}
+.hm-kpi{min-height:127px}
+.hm-root .hm-link:focus-visible,.hm-root .hm-social-link:focus-visible,.hm-root .hm-billing-tab:focus-visible,.hm-root .hm-lang a:focus-visible{outline:2px solid var(--primary,#2854bb);outline-offset:2px}
+.hm-billing-window{padding:0;overflow:hidden;border-color:var(--hm-outline)}
+.hm-billing-top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:21px 23px 15px;border-bottom:1px solid var(--hm-outline)}
+.hm-billing-lead{margin:4px 0 0;color:var(--text-secondary,#63748b);font-size:12px}
+.hm-billing-body{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:250px;direction:ltr}
+.hm-billing-menu{display:flex;flex-direction:column;gap:4px;padding:16px 12px;background:var(--bg-secondary,#f7f9fc);border-inline-end:1px solid var(--hm-outline)}
+.hm-billing-menu-title{font-size:11px;font-weight:800;letter-spacing:.03em;color:var(--text-secondary,#6b7a90);margin:0 9px 7px}
+.hm-billing-tab{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:8px;font-size:12px;font-weight:650;color:var(--text-primary,#36465e);text-decoration:none!important;line-height:1.5}
+.hm-billing-tab:hover{background:var(--bg-primary,#fff);color:var(--primary,#2854bb)}
+.hm-billing-tab[aria-current="page"]{background:var(--bg-primary,#fff);color:var(--primary,#2854bb);box-shadow:inset 3px 0 var(--primary,#2854bb);font-weight:800}
+.hm-billing-detail{padding:23px 24px;direction:rtl;min-width:0}
+.hm-root[lang="en"] .hm-billing-detail{direction:ltr}
+.hm-billing-detail h3{font-size:20px;font-weight:780;margin:0 0 10px;line-height:1.45}
+.hm-billing-detail p{font-size:12px;line-height:2;color:var(--text-secondary,#61738c)}
+.hm-billing-status{display:inline-flex;align-items:center;gap:6px;background:var(--bg-secondary,#f7f8fb);border:1px solid var(--hm-outline);border-radius:999px;padding:5px 10px;color:var(--text-secondary,#66768c);font-size:11px;line-height:1.5}
+.hm-billing-action-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:22px}
+.hm-billing-action-row .hm-link{min-height:40px;padding:10px 14px}
+.hm-billing-policy{margin-top:19px;border-top:1px solid var(--hm-outline);padding-top:13px}
+@media(max-width:690px){.hm-billing-body{grid-template-columns:1fr}.hm-billing-menu{flex-direction:row;overflow-x:auto;flex-wrap:nowrap;gap:6px;border-inline-end:0;border-bottom:1px solid var(--hm-outline);scrollbar-width:thin}.hm-billing-menu-title{display:none}.hm-billing-tab{white-space:nowrap;flex:0 0 auto}.hm-billing-detail{padding:20px 16px}.hm-billing-top{padding:18px 16px}.hm-header-tools{gap:6px}.hm-header-tools .hm-tag{display:none}}
 </style>
 <main class="dashboard-wrapper hm-root" dir="{{ direction }}" lang="{{ lang }}" aria-label="{{ t.brand }}">
   <header class="hm-header">
-    <div>
+    <div class="hm-header-tools">
+      <nav class="hm-lang" aria-label="{{ t.language }}">
+        <a href="?lang=fa" hreflang="fa" aria-current="{% if lang == 'fa' %}true{% else %}false{% endif %}" lang="fa" dir="rtl">فارسی</a>
+        <a href="?lang=en" hreflang="en" aria-current="{% if lang == 'en' %}true{% else %}false{% endif %}" lang="en" dir="ltr">English</a>
+      </nav>
+      <a class="hm-social-link" href="https://github.com/hooshedigital/CyberPanel-Master" target="_blank" rel="noopener noreferrer" aria-label="{{ t.whmcs_repo }}"><i class="fab fa-github" aria-hidden="true"></i> GitHub</a>
+      <span class="hm-tag"><i class="fas fa-shield-alt" aria-hidden="true"></i>{{ t.read_only }}</span>
+    </div>
+    <div class="hm-intro">
       <h1 class="hm-title">{{ t.brand }}</h1>
       <p class="hm-lead">{{ t.agent_subtitle }}</p>
       <div class="hm-heading-meta">{{ master.version_label }} · {{ t.read_only }}</div>
-    </div>
-    <div>
-      <span class="hm-tag"><i class="fas fa-shield-alt" aria-hidden="true"></i>{{ t.read_only }}</span>
-      <nav class="hm-lang" aria-label="{{ t.language }}" style="margin-top:11px">
-        <a href="?lang=en" hreflang="en" aria-current="{% if lang == 'en' %}true{% else %}false{% endif %}" lang="en" dir="ltr">English</a>
-        <a href="?lang=fa" hreflang="fa" aria-current="{% if lang == 'fa' %}true{% else %}false{% endif %}" lang="fa" dir="rtl">فارسی</a>
-      </nav>
     </div>
   </header>
 
@@ -106,6 +140,50 @@
   <div class="hm-alert-line" role="status"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> {{ t.storage_warning }}</div>
   {% endif %}
 
+  <section class="hm-panel hm-billing-window" id="whmcs-center" aria-labelledby="whmcs-center-heading">
+    <div class="hm-billing-top">
+      <div>
+        <h2 class="hm-panel-title" id="whmcs-center-heading"><i class="fas fa-credit-card" aria-hidden="true"></i>{{ t.whmcs_workspace_title }}</h2>
+        <p class="hm-billing-lead">{{ t.whmcs_workspace_subtitle }}</p>
+      </div>
+      <span class="hm-billing-status"><i class="fas fa-circle {% if master.whmcs_workspace.admin_url_configured %}hm-ok{% else %}hm-warning{% endif %}" aria-hidden="true"></i>
+        {% if master.whmcs_workspace.admin_url_configured %}{{ t.whmcs_status_configured }}{% else %}{{ t.whmcs_status_not_configured }}{% endif %}
+      </span>
+    </div>
+    <div class="hm-billing-body">
+      <nav class="hm-billing-menu" aria-label="{{ t.whmcs_navigation }}">
+        <p class="hm-billing-menu-title">{{ t.whmcs_navigation }}</p>
+        {% for section in master.whmcs_workspace.tabs %}
+          <a class="hm-billing-tab" href="?lang={{ lang }}&amp;commerce={{ section.id }}#whmcs-center"
+             aria-current="{% if master.whmcs_workspace.selected_id == section.id %}page{% else %}false{% endif %}">
+            <i class="fas {{ section.icon }}" aria-hidden="true"></i>{{ section.name }}
+          </a>
+        {% endfor %}
+      </nav>
+      <div class="hm-billing-detail">
+        <span class="hm-billing-status">{{ t.whmcs_module_status }} · {{ t.whmcs_module_planned }}</span>
+        <h3>{{ master.whmcs_workspace.selected.name }}</h3>
+        <p>{{ master.whmcs_workspace.selected.description }}</p>
+        <p class="hm-note"><i class="fas fa-info-circle" aria-hidden="true"></i> {{ t.whmcs_no_connection }}</p>
+        <div class="hm-billing-action-row">
+          {% if master.billing_admin_url %}
+            <a class="hm-link" href="{{ master.billing_admin_url }}" target="_blank" rel="noopener noreferrer">
+              <i class="fas fa-external-link-alt" aria-hidden="true"></i>{{ t.whmcs_access_button }}
+            </a>
+          {% else %}
+            <span class="hm-billing-status">{{ t.billing_not_ready }}</span>
+          {% endif %}
+          <a class="hm-social-link" href="https://github.com/hooshedigital/CyberPanel-Master" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-github" aria-hidden="true"></i>{{ t.whmcs_repo }}
+          </a>
+        </div>
+        <div class="hm-billing-policy">
+          <p><strong>{{ t.whmcs_access_title }}.</strong> {{ t.whmcs_access_desc }}</p>
+          <p>{% if not master.billing_admin_url %}{{ t.whmcs_unconfigured_help }}{% else %}{{ t.whmcs_connection_warning }}{% endif %}</p>
+        </div>
+      </div>
+    </div>
+  </section>
   <div class="hm-grid">
     <div>
       <section class="hm-panel" id="agent-operations" aria-labelledby="agent-operations-heading">
@@ -198,29 +276,7 @@
         <p class="hm-note">{{ t.security_warning }}</p>
       </section>
 
-      <section class="hm-panel" id="whmcs-center" aria-labelledby="whmcs-center-heading">
-        <div class="hm-panel-head"><h2 class="hm-panel-title" id="whmcs-center-heading"><i class="fas fa-credit-card"></i>{{ t.commerce_heading }}</h2></div>
-        <p class="hm-panel-desc">{{ t.commerce_intro }}</p>
-        {% if master.billing_admin_url %}
-          <a class="hm-link" href="{{ master.billing_admin_url }}" target="_blank" rel="noopener noreferrer"><i class="fas fa-arrow-up-right-from-square"></i>{{ t.billing_open }}</a>
-        {% else %}<p class="hm-note">{{ t.billing_not_ready }}</p>{% endif %}
-        <details>
-          <summary>{{ t.commerce_stage }} · {{ t.commerce_note }}</summary>
-          <p class="hm-note">{{ t.commerce_warning }}</p>
-          <div class="cp-tile-grid">
-            {% for module in master.commerce_modules %}
-            <div class="cp-tile">
-              <span class="cp-tile-ic"><i class="fas {{ module.icon }}" aria-hidden="true"></i></span>
-              <span>
-                <div class="cp-tile-title">{{ module.name }}</div>
-                <div class="cp-tile-sub">{{ module.description }}</div>
-                <div class="cp-tile-sub">{{ module.stage }} · {{ module.status }}</div>
-              </span>
-            </div>
-            {% endfor %}
-          </div>
-        </details>
-      </section>
+
 
       <section class="hm-panel" id="parsa-center">
         <div class="hm-panel-head"><h2 class="hm-panel-title"><i class="fas fa-brain"></i>{{ t.parsa }}</h2></div>
