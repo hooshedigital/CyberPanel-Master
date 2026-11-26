@@ -40,6 +40,18 @@ def report():
         "mglru": read("/sys/kernel/mm/lru_gen/enabled"),
         "zswap": {k: read("/sys/module/zswap/parameters/" + k, 128)
                   for k in ("enabled", "compressor", "zpool", "max_pool_percent")},
+        "zswap_stats": {k: read("/sys/kernel/debug/zswap/" + k, 128)
+                        for k in ("pool_total_size", "stored_pages",
+                                  "written_back_pages", "pool_limit_hit",
+                                  "reject_alloc_fail")},
+        "versioned_runtimes": {
+            "frankenphp": command(
+                ["/opt/hoosh-runtimes/frankenphp/1.14.0/frankenphp", "version"],
+                r"FrankenPHP v?([0-9.]+)"),
+            "valkey": command(
+                ["/opt/hoosh-runtimes/valkey/8.1.12/valkey-server", "--version"],
+                r"Valkey server v=([0-9.]+)")
+        },
         "memory": memory,
         "disk_available_mib": disk.free // (1024 * 1024),
         "docker": {
