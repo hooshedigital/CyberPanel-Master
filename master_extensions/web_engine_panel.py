@@ -1,7 +1,7 @@
 """Read-only, admin-only resource preview for native Create Website."""
 from pathlib import Path
 import re
-import shutil
+import os
 import stat
 
 FRANKENPHP = Path('/opt/hoosh-runtimes/frankenphp/1.14.0/frankenphp')
@@ -46,7 +46,8 @@ def panel_context(acl):
         text = Path("/proc/meminfo").read_text(encoding="ascii")
         mem = {k: int(re.search(r"(?m)^"+k+r":\s+(\d+)\s+kB$",text).group(1))//1024
                for k in ("MemAvailable","SwapFree")}
-        disk = shutil.disk_usage("/").free//1048576
+        fs = os.statvfs("/")
+        disk = fs.f_bavail * fs.f_frsize // 1048576
         cpu, memory = _psi("cpu"), _psi("memory")
         result.update(available=True, ram=mem["MemAvailable"], swap=mem["SwapFree"],
                       disk=disk, cpu=cpu, memory=memory,

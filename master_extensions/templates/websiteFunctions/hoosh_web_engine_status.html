@@ -14,6 +14,7 @@
     <dt>{{ engine.name }}</dt><dd>{{ engine.state }}</dd>
   {% endfor %}
   </dl>
+  <p><a class="btn btn-outline-primary" href="{% url 'hoosh_private_engine_plan' %}">{% trans "Plan an independent private engine deployment" %}</a></p>
   <small>{% trans "This section does not provision an engine or change existing site creation. Additional engines require a separate approved deployment." %}</small>
 </section>
 {% endif %}
