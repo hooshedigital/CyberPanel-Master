@@ -1,0 +1,46 @@
+name: Export verified GHCR image for offline deployment
+on:
+  push:
+    branches:
+      - release/infra-2027-preview-20261126
+    paths:
+      - .github/workflows/valkey-ghcr-export.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: read
+jobs:
+  export:
+    if: github.ref == 'refs/heads/release/infra-2027-preview-20261126'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Pull exact published digest and export
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+          repo=ghcr.io/hooshedigital/cyberpanel-master/valkey-cache
+          ref="$repo@sha256:cf7969167686deab32a7c005aea6ac1ddf4cc1bedac0371cf1a5bf4d37432913"
+          tag="$repo:8.1.12-jammy-amd64"
+          docker pull --platform linux/amd64 "$ref"
+          test "$(docker image inspect "$ref" --format '{{.Config.User}}')" = 10001:10001
+          docker tag "$ref" "$tag"
+          d="$RUNNER_TEMP/hoosh-valkey-export"
+          mkdir "$d"
+          docker save "$tag" | gzip -n > "$d/image.tar.gz"
+          printf '%s\n' "$ref" > "$d/SOURCE_DIGEST"
+          docker image inspect "$tag" --format '{{.Id}}' > "$d/IMAGE_ID"
+          cd "$d"
+          sha256sum image.tar.gz > SHA256SUMS
+      - name: Upload exact digest export
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: valkey-ghcr-digest-export
+          path: ${{ runner.temp }}/hoosh-valkey-export/
+          retention-days: 7
+          if-no-files-found: error
