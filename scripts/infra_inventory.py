@@ -44,6 +44,7 @@ def report():
         "disk_available_mib": disk.free // (1024 * 1024),
         "docker": {
             "version": command(["docker", "--version"], r"Docker version ([0-9.]+)"),
+            "buildx": command(["docker", "buildx", "version"], r"buildx v?([0-9.]+)"),
             "live_restore": command(["docker", "info", "--format",
                                       "{{.LiveRestoreEnabled}}"], r"(?m)^(true|false)$")
         },
