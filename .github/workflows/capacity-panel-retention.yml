@@ -1,0 +1,17 @@
+name: Capacity panel and retention checks
+on:
+  push:
+    branches: [release/infra-2027-preview-20261126]
+    paths: ["infra/runtime/hoosh-docker-retention*", "master_extensions/capacity_panel.py", "master_extensions/tests/test_capacity_panel_retention.py", "scripts/stage_capacity_panel_overlay.py", ".github/workflows/capacity-panel-retention.yml"]
+  pull_request:
+    paths: ["infra/runtime/hoosh-docker-retention*", "master_extensions/capacity_panel.py", "master_extensions/tests/test_capacity_panel_retention.py", "scripts/stage_capacity_panel_overlay.py", ".github/workflows/capacity-panel-retention.yml"]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m unittest discover -s master_extensions/tests -p test_capacity_panel_retention.py -v
+      - run: python3 -m py_compile scripts/stage_capacity_panel_overlay.py master_extensions/capacity_panel.py

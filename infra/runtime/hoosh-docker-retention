@@ -1,0 +1,81 @@
+#!/usr/bin/python3
+"""Aggregate Docker retention metadata, with no deletion or mutation verbs."""
+import datetime as dt
+import json
+import os
+from pathlib import Path
+import re
+import stat
+import subprocess
+import tempfile
+
+STATE=Path("/var/lib/hoosh-docker-retention")
+ENV={"PATH":"/usr/bin:/bin","HOME":"/nonexistent","LANG":"C","DOCKER_HOST":"unix:///var/run/docker.sock"}
+IMAGE=re.compile(r"sha256:[0-9a-f]{64}")
+CONTAINER=re.compile(r"[0-9a-f]{64}")
+LIMIT=500
+
+def docker(*args):
+    p=subprocess.run(["/usr/bin/docker",*args],env=ENV,capture_output=True,check=True,timeout=18)
+    if len(p.stdout)>2**20:
+        raise ValueError("metadata size exceeded")
+    return p.stdout.decode("utf-8").splitlines()
+
+def classify(rows,refs):
+    images={}
+    for row in rows:
+        ident=row["ID"]
+        if not isinstance(ident,str) or not IMAGE.fullmatch(ident):
+            raise ValueError("invalid image id")
+        entry=images.setdefault(ident,False)
+        repo,tag=row["Repository"],row["Tag"]
+        if not isinstance(repo,str) or not isinstance(tag,str):
+            raise ValueError("invalid tags")
+        images[ident]=entry or (repo!="<none>" and tag!="<none>")
+    if len(images)>LIMIT or not refs.issubset(images):
+        raise ValueError("incomplete inventory")
+    counts={"referenced":0,"tagged_unreferenced":0,"untagged_unreferenced":0}
+    for ident,tagged in images.items():
+        key="referenced" if ident in refs else "tagged_unreferenced" if tagged else "untagged_unreferenced"
+        counts[key]+=1
+    return {"unique_images":len(images),**counts,"deletion_approved":0}
+
+def collect():
+    ids=set(docker("ps","-aq","--no-trunc"))
+    if len(ids)>LIMIT or any(not CONTAINER.fullmatch(x) for x in ids):
+        raise ValueError("invalid container inventory")
+    refs=set()
+    for i in range(0,len(ids),50):
+        batch=sorted(ids)[i:i+50]
+        result=docker("inspect","--type","container","--format","{{.Image}}",*batch)
+        if len(result)!=len(batch) or any(not IMAGE.fullmatch(x) for x in result):
+            raise ValueError("incomplete container refs")
+        refs.update(result)
+    rows=[json.loads(x) for x in docker("image","ls","--all","--no-trunc","--format","{{json .}}")]
+    if len(rows)>LIMIT*4 or ids!=set(docker("ps","-aq","--no-trunc")):
+        raise ValueError("inventory changed or too large")
+    return {"time_utc":dt.datetime.now(dt.timezone.utc).isoformat(),"status":"review_only",
+            "containers":len(ids),**classify(rows,refs),"automatic_actions":False,
+            "execution_authorized":False}
+
+def save(data):
+    s=STATE.lstat()
+    if not stat.S_ISDIR(s.st_mode) or s.st_uid!=0 or s.st_mode & 0o022:
+        raise ValueError("unsafe report directory")
+    fd,p=tempfile.mkstemp(prefix=".latest-",dir=STATE)
+    try:
+        with os.fdopen(fd,"w") as f:
+            os.fchmod(f.fileno(),0o644)
+            json.dump(data,f,sort_keys=True);f.write("\n");f.flush();os.fsync(f.fileno())
+        os.replace(p,STATE/"latest.json")
+    finally:
+        if os.path.exists(p):os.unlink(p)
+
+if __name__=="__main__":
+    if os.geteuid()!=0:raise SystemExit("root required")
+    try:r=collect()
+    except (OSError,ValueError,TypeError,KeyError,subprocess.SubprocessError):
+        r={"time_utc":dt.datetime.now(dt.timezone.utc).isoformat(),"status":"unavailable",
+           "deletion_approved":0,"automatic_actions":False,"execution_authorized":False}
+    save(r)
+    print(r["status"])

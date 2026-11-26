@@ -3,6 +3,7 @@ from pathlib import Path
 import re
 import os
 import stat
+from .capacity_panel import capacity_context
 
 FRANKENPHP = Path('/opt/hoosh-runtimes/frankenphp/1.14.0/frankenphp')
 FPM = Path('/opt/hoosh-runtimes/php-fpm/8.1.2-1ubuntu2.29/usr/sbin/php-fpm8.1')
@@ -35,7 +36,7 @@ def _psi(name):
 def panel_context(acl):
     if not isinstance(acl, dict) or acl.get("admin") not in (True, 1):
         return None
-    result = {"available": False, "engines": [
+    result = {"available": False, "capacity": capacity_context(), "engines": [
         {"name": "OpenLiteSpeed Native", "state": "Existing site creation"},
         {"name": "OpenLiteSpeed + Apache", "state": _runtime_state(FPM, ("hoosh-apache-fpm@.service", "hoosh-apache-http@.socket", "hoosh-apache-http@.service"), "Private compatibility backend installed; public routing pending")},
         {"name": "FrankenPHP", "state": _runtime_state(FRANKENPHP, ("hoosh-frankenphp@.service",), "Private runtime installed; public routing pending")},

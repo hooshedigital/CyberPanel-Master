@@ -9,6 +9,7 @@
   {% if hoosh_engine_status.capacity_ok %}<p>{% trans "Resource headroom meets preliminary planning thresholds." %}</p>
   {% else %}<p>{% trans "Resource headroom is below preliminary planning thresholds." %}</p>{% endif %}
   {% else %}<p>{% trans "Resource metrics unavailable; no readiness assumed." %}</p>{% endif %}
+  {% include "backup/hoosh_capacity_summary.html" with capacity=hoosh_engine_status.capacity %}
   <dl>
   {% for engine in hoosh_engine_status.engines %}
     <dt>{{ engine.name }}</dt><dd>{{ engine.state }}</dd>

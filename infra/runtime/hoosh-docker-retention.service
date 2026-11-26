@@ -1,0 +1,20 @@
+[Unit]
+Description=Read-only aggregate Docker retention inventory
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/local/libexec/hoosh-docker-retention
+StateDirectory=hoosh-docker-retention
+StateDirectoryMode=0755
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateNetwork=yes
+NoNewPrivileges=yes
+MemoryMax=128M
+TasksMax=32
+CPUWeight=20
+IOWeight=20
+Nice=10
+TimeoutStartSec=90

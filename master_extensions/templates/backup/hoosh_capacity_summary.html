@@ -1,0 +1,17 @@
+{% load i18n %}
+<section class="hm-panel" aria-label="Hoosh Capacity Advisor" style="border:1px solid var(--border-color,#526173);border-radius:8px;padding:14px;margin:12px 0;">
+  <h3 style="font-size:15px;font-weight:700;">Hoosh Capacity Advisor</h3>
+  <p role="status"><strong>{{ capacity.state }}</strong></p>
+  {% if capacity.ready %}
+  <p>RAM {{ capacity.ram|default_if_none:"—" }} MiB · Swap {{ capacity.swap|default_if_none:"—" }} MiB · CPU PSI60 {{ capacity.cpu|default_if_none:"—" }}% · Memory PSI60 {{ capacity.memory|default_if_none:"—" }}%</p>
+  <p>{% if lang == 'fa' %}دیسک آزاد{% else %}Disk free{% endif %}: {{ capacity.disk|default_if_none:"—" }} GiB · {% if lang == 'fa' %}اشغال{% else %}Used{% endif %}: {{ capacity.used|default_if_none:"—" }}%</p>
+  {% if capacity.capacity_reasons %}<ul>{% for reason in capacity.capacity_reasons %}<li>{{ reason }}</li>{% endfor %}</ul>{% endif %}
+  <small>{% if lang == 'fa' %}نمونه‌های ۳۰ دقیقه اخیر{% else %}Samples in last 30 minutes{% endif %}: {{ capacity.samples|default_if_none:"—" }}</small>
+  {% endif %}
+  <h4 style="font-size:14px;font-weight:650;margin-top:12px;">{% if lang == 'fa' %}سیاست نگهداری تصاویر Docker{% else %}Docker image retention{% endif %}</h4>
+  {% if capacity.retention.ready %}
+  <p>{% if lang == 'fa' %}کل تصاویر{% else %}Unique images{% endif %}: {{ capacity.retention.unique_images }} · {% if lang == 'fa' %}دارای ارجاع کانتینر{% else %}Referenced{% endif %}: {{ capacity.retention.referenced }}</p>
+  <p>{% if lang == 'fa' %}بدون ارجاع، دارای برچسب{% else %}Tagged, unreferenced{% endif %}: {{ capacity.retention.tagged_unreferenced }} · {% if lang == 'fa' %}بدون ارجاع و برچسب{% else %}Untagged, unreferenced{% endif %}: {{ capacity.retention.untagged_unreferenced }}</p>
+  {% else %}<p>{% if lang == 'fa' %}گزارش ناموجود یا قدیمی{% else %}Report unavailable or stale{% endif %}</p>{% endif %}
+  <small>{% if lang == 'fa' %}صرفاً بررسی؛ هیچ حذف یا استقراری از پنل مجاز نیست. تصاویر فاقد ارجاع الزاماً قابل حذف نیستند.{% else %}Review only. No deletion or deployment authorized here. Unreferenced images are not necessarily safe to remove.{% endif %}</small>
+</section>

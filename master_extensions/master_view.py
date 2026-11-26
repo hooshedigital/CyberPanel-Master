@@ -16,6 +16,7 @@ from .billing_links import trusted_billing_admin_url
 from .commerce_modules import modules_for, status_note
 from .whmcs_workspace import whmcs_workspace
 from .operations_center import operations_context
+from .capacity_panel import capacity_context
 from .workspace_browser import browse as browse_workspace
 
 BASE = Path("/var/lib/hoosh-cyber-agent")
@@ -59,6 +60,7 @@ def display_context(lang, folder="", commerce="billing"):
     return {**context_for(lang),"master":{
         "version":MASTER_VERSION,"version_label":label(core),
         "health_fresh":bool(health),"incidents":count,
+        "capacity":capacity_context(lang),
         "parsa_connected":parsa.get("connected") is True and parsa.get("brain")=="PARSA",
         "parsa_state":str(parsa.get("executor_state","unknown"))[:24],
         "parsa_counts":{k:v for k,v in counts.items() if isinstance(k,str) and type(v) is int and 0<=v<=100000},
