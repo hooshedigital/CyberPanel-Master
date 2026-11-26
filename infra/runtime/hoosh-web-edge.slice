@@ -1,0 +1,7 @@
+[Unit]
+Description=Bounded private web edge relays
+
+[Slice]
+MemoryMax=48M
+CPUQuota=15%
+TasksMax=16

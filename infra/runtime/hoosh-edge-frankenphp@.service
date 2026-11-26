@@ -1,0 +1,29 @@
+[Unit]
+Description=Private bounded relay to frankenphp (%i)
+Requires=hoosh-frankenphp@%i.service
+After=hoosh-frankenphp@%i.service
+BindsTo=hoosh-frankenphp@%i.service
+ConditionPathExists=/etc/hoosh-runtimes/edge-accounts/frankenphp-%i
+
+[Service]
+User=%i
+ExecCondition=/usr/local/libexec/hoosh-edge-check frankenphp %i
+ExecStart=/lib/systemd/systemd-socket-proxyd --connections-max=8 --exit-idle-time=30s /run/hoosh-frankenphp-%i/http.sock
+NoNewPrivileges=yes
+PrivateNetwork=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX
+CapabilityBoundingSet=
+UMask=0077
+Slice=hoosh-web-edge.slice
+MemoryMax=24M
+CPUQuota=10%
+TasksMax=8
+TimeoutStopSec=5

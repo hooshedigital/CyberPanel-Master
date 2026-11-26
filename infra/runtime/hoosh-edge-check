@@ -1,0 +1,67 @@
+#!/usr/bin/python3
+"""Check explicitly enrolled private edge transport; no commands or writes."""
+import grp
+import os
+from pathlib import Path
+import pwd
+import re
+import stat
+import sys
+
+BASE = Path("/etc/hoosh-runtimes")
+EDGE = "hoosh-web-edge"
+ENGINES = ("apache", "frankenphp")
+DENIED = {"root", "ubuntu", "admin", "nobody", "www-data", "mysql", "redis", "cyberpanel", EDGE}
+
+
+def identity(name):
+    u = pwd.getpwnam(name)
+    g = grp.getgrgid(u.pw_gid)
+    if (u.pw_uid == 0 or u.pw_gid == 0 or g.gr_name != name
+            or u.pw_shell not in ("/usr/sbin/nologin", "/sbin/nologin", "/bin/false")
+            or set(g.gr_mem) - {name}):
+        raise ValueError("identity_not_dedicated")
+    if any(x.pw_name != name and (x.pw_uid == u.pw_uid or x.pw_gid == u.pw_gid)
+           for x in pwd.getpwall()):
+        raise ValueError("shared_identity")
+    if any(x.gr_gid != u.pw_gid and name in x.gr_mem for x in grp.getgrall()):
+        raise ValueError("supplementary_groups")
+    return u
+
+
+def read_marker(path, expected):
+    for p in path.parents:
+        s = p.lstat()
+        if (not stat.S_ISDIR(s.st_mode) or s.st_uid != 0 or s.st_mode & 0o022
+                or set(os.listxattr(p, follow_symlinks=False)) &
+                {"system.posix_acl_access", "system.posix_acl_default"}):
+            return False
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, "rb") as f:
+        s = os.fstat(f.fileno())
+        return (stat.S_ISREG(s.st_mode) and s.st_uid == 0 and not s.st_mode & 0o7022
+                and s.st_nlink == 1 and s.st_size == len(expected)
+                and f.read(len(expected) + 1) == expected)
+
+
+def check(engine, name):
+    if (engine not in ENGINES or not re.fullmatch(r"[a-z][a-z0-9_-]{0,30}", name)
+            or name in DENIED):
+        return False
+    u = identity(name)
+    edge = identity(EDGE)
+    if (not 1000 <= u.pw_uid < 65000 or u.pw_gid < 1000
+            or (os.getuid(), os.getgid()) != (u.pw_uid, u.pw_gid)
+            or edge.pw_uid == u.pw_uid or edge.pw_gid == u.pw_gid):
+        return False
+    backend = f"{name}:{u.pw_uid}:{u.pw_gid}\n".encode("ascii")
+    permit = f"{engine}:{name}:{u.pw_uid}:{u.pw_gid}:{edge.pw_uid}:{edge.pw_gid}\n".encode("ascii")
+    return (read_marker(BASE / (engine + "-accounts") / name, backend)
+            and read_marker(BASE / "edge-accounts" / (engine + "-" + name), permit))
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(0 if len(sys.argv) == 3 and check(sys.argv[1], sys.argv[2]) else 1)
+    except (OSError, KeyError, ValueError, OverflowError):
+        sys.exit(1)

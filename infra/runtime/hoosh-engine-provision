@@ -234,6 +234,13 @@ def remove_enrollment(p, record):
 
 def rollback(path, record):
     p = layout(record["engine"], record["account"])
+    engine, name = record["engine"], record["account"]
+    edge_marker = BASE / "edge-accounts" / (engine + "-" + name)
+    edge_units = [f"hoosh-edge-{engine}@{name}.socket", f"hoosh-edge-{engine}@{name}.service"]
+    if present(edge_marker) or present(Path(f"/run/hoosh-edge-{engine}-{name}.sock")):
+        raise ValueError("revoke_private_edge_first")
+    if any(unit_state(x) not in ("inactive", "failed") for x in edge_units):
+        raise ValueError("stop_private_edge_first")
     # Never remove the account, public files, database or an arbitrary directory.
     for unit in p["units"]:
         want = Path("/etc/systemd/system/multi-user.target.wants") / unit
