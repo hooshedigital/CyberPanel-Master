@@ -1,0 +1,16 @@
+name: Capacity advisor checks
+on:
+  push:
+    branches: [release/infra-2027-preview-20261126]
+    paths: ["infra/runtime/hoosh-capacity-advisor*", "master_extensions/tests/test_capacity_advisor.py", ".github/workflows/capacity-advisor.yml"]
+  pull_request:
+    paths: ["infra/runtime/hoosh-capacity-advisor*", "master_extensions/tests/test_capacity_advisor.py", ".github/workflows/capacity-advisor.yml"]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m unittest discover -s master_extensions/tests -p test_capacity_advisor.py -v
