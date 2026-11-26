@@ -35,5 +35,6 @@ class EdgeTests(unittest.TestCase):
             self.assertIn("User=%i",service)
             self.assertIn("RestrictAddressFamilies=AF_UNIX",service)
             self.assertIn("--connections-max=8",service)
+            self.assertNotIn("--exit-idle-time",service)
             self.assertNotIn("nobody",sock+service)
             self.assertNotIn("[Install]",sock+service)

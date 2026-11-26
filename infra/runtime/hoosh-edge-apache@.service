@@ -8,7 +8,7 @@ ConditionPathExists=/etc/hoosh-runtimes/edge-accounts/apache-%i
 [Service]
 User=%i
 ExecCondition=/usr/local/libexec/hoosh-edge-check apache %i
-ExecStart=/lib/systemd/systemd-socket-proxyd --connections-max=8 --exit-idle-time=30s /run/hoosh-apache-http-%i.sock
+ExecStart=/lib/systemd/systemd-socket-proxyd --connections-max=8 /run/hoosh-apache-http-%i.sock
 NoNewPrivileges=yes
 PrivateNetwork=yes
 ProtectSystem=strict
