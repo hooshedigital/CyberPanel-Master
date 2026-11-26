@@ -42,14 +42,17 @@ def private_project(u, public):
     g = grp.getgrgid(u.pw_gid)
     if g.gr_name != u.pw_name or set(g.gr_mem) - {u.pw_name}:
         return False
-    if any(x.pw_gid == u.pw_gid and x.pw_uid != u.pw_uid for x in pwd.getpwall()):
+    if any(x.pw_name != u.pw_name and (x.pw_gid == u.pw_gid or x.pw_uid == u.pw_uid)
+           for x in pwd.getpwall()):
         return False
     if u.pw_shell not in ("/usr/sbin/nologin", "/sbin/nologin", "/bin/false"):
         return False
     for p in (public, public.parent):
         s = p.lstat()
         if (not stat.S_ISDIR(s.st_mode) or s.st_uid != 0
-                or s.st_gid != u.pw_gid or stat.S_IMODE(s.st_mode) != 0o750):
+                or s.st_gid != u.pw_gid or stat.S_IMODE(s.st_mode) != 0o750
+                or set(os.listxattr(p, follow_symlinks=False)) &
+                {'system.posix_acl_access', 'system.posix_acl_default'}):
             return False
     return True
 
