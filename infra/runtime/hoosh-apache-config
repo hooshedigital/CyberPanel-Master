@@ -78,7 +78,11 @@ def domain_ok(domain):
     return (len(domain) <= 253 and domain.isascii() and len(domain.split(".")) >= 2
             and all(re.fullmatch(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", x) for x in domain.split(".")))
 
-def render(name, domain):
+def render(name, domain, tls_origin=False):
+    if not domain_ok(domain) or not re.fullmatch(r"[a-z][a-z0-9_-]{0,30}", name) or name in DENIED:
+        raise ValueError("invalid renderer input")
+    if type(tls_origin) is not bool:
+        raise ValueError("invalid origin mode")
     r = "/run/hoosh-apache-" + name
     public = str(ROOT / name / "public")
     modules = ("mysqlnd", "mysqli", "pdo", "pdo_mysql", "ctype", "iconv", "mbstring",
@@ -145,9 +149,13 @@ DirectoryIndex index.php index.html
     SetHandler "proxy:unix:{r}/php.sock|fcgi://localhost/"
 </FilesMatch>
 """
+    if tls_origin:
+        # Only for an owner-approved TLS-terminated origin. Never derive
+        # HTTPS from client-controlled forwarding headers.
+        httpd += 'ProxyFCGISetEnvIf "true" HTTPS "on"\nProxyFCGISetEnvIf "true" SERVER_PORT "443"\n'
     return dict(zip(FILES, (ini, fpm, httpd)))
 
-def prepare(name, domain):
+def prepare(name, domain, tls_origin=False):
     if os.geteuid() != 0 or not domain_ok(domain):
         raise ValueError("root and canonical domain required")
     u = account(name)
@@ -162,7 +170,7 @@ def prepare(name, domain):
     d.mkdir(mode=0o755)
     created = []
     try:
-        for f, content in render(name, domain).items():
+        for f, content in render(name, domain, tls_origin).items():
             p = d / f
             fd = os.open(p, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
             created.append(p)
@@ -183,8 +191,8 @@ if __name__ == "__main__":
     try:
         if len(sys.argv) == 3 and sys.argv[1] == "check":
             sys.exit(0 if check(sys.argv[2]) else 1)
-        if len(sys.argv) == 4 and sys.argv[1] == "prepare":
-            prepare(sys.argv[2], sys.argv[3])
+        if sys.argv[1:2] == ["prepare"] and (len(sys.argv) == 4 or (len(sys.argv) == 5 and sys.argv[4] == "--tls-origin")):
+            prepare(sys.argv[2], sys.argv[3], len(sys.argv) == 5)
             print("Prepared private backend; start socket separately.")
             sys.exit(0)
     except (OSError, KeyError, ValueError, OverflowError):

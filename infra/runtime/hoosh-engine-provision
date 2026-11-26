@@ -218,7 +218,9 @@ def load(path, name):
     r = json.loads(path.read_text())
     validate(r["engine"], r["account"], r["domain"])
     if (r["account"] != name or r["state"] not in ("pending", "active")
-            or type(r["persistent"]) is not bool or r["public_routing"] is not False):
+            or type(r["persistent"]) is not bool or r["public_routing"] is not False
+            or type(r.get("tls_origin", False)) is not bool
+            or (r.get("tls_origin", False) and r["engine"] != "apache")):
         raise ValueError("invalid_journal")
     return r
 
@@ -290,7 +292,10 @@ def apply(path, record):
     try:
         name = record["account"]
         if record["engine"] == "apache":
-            run("/usr/local/libexec/hoosh-apache-config", "prepare", name, record["domain"])
+            cmd = ["/usr/local/libexec/hoosh-apache-config", "prepare", name, record["domain"]]
+            if record.get("tls_origin", False):
+                cmd.append("--tls-origin")
+            run(*cmd)
         else:
             fd = os.open(p["enrollment"], os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
             with os.fdopen(fd, "w") as f:
@@ -320,6 +325,7 @@ def main():
     parser.add_argument("--engine", choices=tuple(ENGINE))
     parser.add_argument("--domain")
     parser.add_argument("--persistent", action="store_true")
+    parser.add_argument("--tls-origin", action="store_true", help="Apache only: PHP sees HTTPS on an explicitly TLS-terminated private origin")
     args = parser.parse_args()
     if os.geteuid() != 0:
         parser.error("root required")
@@ -336,7 +342,7 @@ def main():
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         p = STATE / (args.account + ".json")
         if args.operation == "rollback":
-            if args.engine or args.domain or args.persistent:
+            if args.engine or args.domain or args.persistent or args.tls_origin:
                 parser.error("rollback uses existing journal only")
             rollback(p, load(p, args.account))
             print("PRIVATE_ENGINE_ROLLED_BACK")
@@ -345,7 +351,10 @@ def main():
                 parser.error("engine/domain required; existing journal must be recovered first")
             if any(STATE.glob("*.json")):
                 parser.error("existing private deployment journal")
+            if args.tls_origin and args.engine != "apache":
+                parser.error("--tls-origin is Apache only")
             record = preflight(args.engine, args.account, args.domain, args.persistent)
+            record["tls_origin"] = args.tls_origin
             if args.operation == "apply":
                 apply(p, record)
             print(json.dumps(record, sort_keys=True))
