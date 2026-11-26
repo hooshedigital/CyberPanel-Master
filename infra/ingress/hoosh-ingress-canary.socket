@@ -1,0 +1,14 @@
+[Unit]
+Description=Dedicated Unix TLS ingress for Hoosh web engine canary
+Requires=hoosh-web-gateway@hoosh-engine-canary.service
+After=hoosh-web-gateway@hoosh-engine-canary.service
+BindsTo=hoosh-web-gateway@hoosh-engine-canary.service
+
+[Socket]
+ListenStream=/run/hoosh-ingress-canary.sock
+SocketUser=hoosh-ingress-canary
+SocketGroup=hoosh-ingress-canary
+SocketMode=0600
+RemoveOnStop=yes
+Backlog=16
+Service=hoosh-ingress-canary-relay.service

@@ -1,0 +1,7 @@
+# مسیر canary عمومی مستقل
+
+این مسیر فقط برای داده مصنوعی و hostname اختصاصی engine-test.hooshedigital.ir است. برنامه با PHP یک marker ثابت و no-store/noindex برمی‌گرداند؛ اطلاعات درخواست، نسخه نرم‌افزار، محیط یا secret منتشر نمی‌شود. موتور FrankenPHP خصوصی، edge، TLS gateway و relay اختصاصی؛ connector با UID جدا و سوکت 0600 به TLS gateway متصل می‌شود، به کلید TLS یا socket اصلی پروژه دسترسی ندارد. TLS origin با CA مستقل و hostname بررسی می‌شود؛ noTLSVerify=false. هیچ تغییر wildcard DNS یا tunnel MCP، هیچ پورت عمومی جدید یا مجوز به nobody.
+
+سه unit مستقل ingress، بدون [Install]. توکن از LoadCredential و --token-file خوانده می‌شود؛ نه argv خام، نه environment token. فقط برای canary از راه تحویل رمز‌شده RSA-OAEP SHA256 با کلید موقت سرور، سپس حذف کلید موقت؛ root-only token file و systemd credential. CI و آزمون عملی پیش از DNS. دامنه باید دقیقاً بدون رکورد مستقل و mapping موجود باشد، wildcard به معنای نام آزاد نیست؛ فقط رکورد جدید دقیق برای tunnel اختصاصی پس از تأیید origin و connector. هیچ DNS عمومی تا تحقق معیارها.
+
+در صورت شکست: رکورد DNS دقیق متعلق به canary را حذف، connector را stop، tunnel اختصاصی را حذف، سپس relay socket/service، gateway، edge و backend را به ترتیب stop/revoke/rollback. فایل داده و حساب مصنوعی فقط پس از تطبیق هویت و نام حذف. گواهی origin موقت است و renewal خودکار در این نسخه وجود ندارد. persistence پس از آزمون واقعی و lifecycle مجزا؛ بدون وعده uptime دائمی. Feast و سرویس‌های موجود خارج از محدوده.

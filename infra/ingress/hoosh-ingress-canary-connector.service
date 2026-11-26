@@ -1,0 +1,35 @@
+[Unit]
+Description=Dedicated Cloudflare connector for synthetic Hoosh web engine canary
+Requires=hoosh-ingress-canary.socket
+After=network-online.target hoosh-ingress-canary.socket
+Wants=network-online.target
+BindsTo=hoosh-ingress-canary.socket
+
+[Service]
+Type=simple
+User=hoosh-ingress-canary
+Group=hoosh-ingress-canary
+LoadCredential=token:/etc/hoosh-runtimes/ingress-canary/token
+Environment=HOME=/nonexistent
+Environment=GOMAXPROCS=1
+ExecStartPre=/usr/bin/test -S /run/hoosh-ingress-canary.sock
+ExecStartPre=/usr/bin/test -r /etc/hoosh-runtimes/ingress-canary/origin-ca.pem
+ExecStart=/usr/local/bin/cloudflared --no-autoupdate tunnel --protocol http2 --metrics 127.0.0.1:0 run --token-file %d/token
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+UMask=0077
+MemoryMax=128M
+CPUQuota=25%
+TasksMax=32
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=10
