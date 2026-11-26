@@ -1,0 +1,73 @@
+name: Publish Hoosh Valkey cache image
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - release/infra-2027-preview-20261126
+    paths:
+      - .github/workflows/valkey-ghcr.yml
+permissions:
+  contents: read
+  packages: write
+concurrency:
+  group: hoosh-valkey-ghcr-8.1.12
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/release/infra-2027-preview-20261126'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Build official pinned source in OCI image
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/hoosh-valkey-image"
+          mkdir -p "$work"
+          docker pull --platform linux/amd64 ubuntu:22.04
+          base="$(docker image inspect ubuntu:22.04 --format '{{index .RepoDigests 0}}')"
+          case "$base" in ubuntu@sha256:*|docker.io/library/ubuntu@sha256:*) ;; *) exit 1;; esac
+          echo "Base: $base"
+          cat > "$work/Dockerfile" <<'DOCKERFILE'
+          ARG BASE
+          FROM ${BASE} AS build
+          RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates git build-essential pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
+          RUN git init /src && git -C /src remote add origin https://github.com/valkey-io/valkey.git && git -C /src fetch --depth=1 origin 38316e6c481cc6d265ab52482223c68f63f0ac30 && git -C /src checkout --detach FETCH_HEAD && test "$(git -C /src rev-parse HEAD)" = 38316e6c481cc6d265ab52482223c68f63f0ac30 && make -C /src -j2 BUILD_TLS=yes
+          FROM ${BASE}
+          RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libssl3 && rm -rf /var/lib/apt/lists/* && groupadd -g 10001 valkey && useradd -M -u 10001 -g 10001 -s /usr/sbin/nologin valkey
+          COPY --from=build /src/src/valkey-server /src/src/valkey-cli /usr/local/bin/
+          COPY --from=build /src/COPYING /usr/share/doc/valkey/COPYING
+          LABEL org.opencontainers.image.source="https://github.com/hooshedigital/CyberPanel-Master" org.opencontainers.image.version="8.1.12" org.opencontainers.image.description="Independent ephemeral Valkey cache, socket-only by default"
+          USER 10001:10001
+          WORKDIR /tmp
+          ENTRYPOINT ["/usr/local/bin/valkey-server"]
+          CMD ["--port","0","--unixsocket","/tmp/valkey.sock","--unixsocketperm","700","--save","","--appendonly","no","--maxmemory","32mb","--maxmemory-policy","allkeys-lru","--protected-mode","yes"]
+          DOCKERFILE
+          docker buildx build --platform linux/amd64 --load --build-arg "BASE=$base" -t ghcr.io/hooshedigital/cyberpanel-master/valkey-cache:8.1.12-jammy-amd64 "$work"
+      - name: Verify non-root socket-only image
+        shell: bash
+        run: |
+          set -euo pipefail
+          name=hoosh-valkey-check
+          trap 'docker rm -f "$name" >/dev/null 2>&1 || true' EXIT
+          docker run -d --name "$name" --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,nodev,mode=1777,size=16m --memory 96m --cpus 0.2 --cap-drop ALL --security-opt no-new-privileges ghcr.io/hooshedigital/cyberpanel-master/valkey-cache:8.1.12-jammy-amd64
+          for i in 1 2 3 4 5; do
+            if docker exec "$name" valkey-cli -s /tmp/valkey.sock ping | grep -qx PONG; then break; fi
+            sleep 1
+          done
+          test "$(docker exec "$name" valkey-cli -s /tmp/valkey.sock ping)" = PONG
+          test "$(docker exec "$name" valkey-cli -s /tmp/valkey.sock set hoosh_fixture verified)" = OK
+          test "$(docker exec "$name" valkey-cli -s /tmp/valkey.sock get hoosh_fixture)" = verified
+          test "$(docker exec "$name" valkey-cli -s /tmp/valkey.sock config get port | tail -1)" = 0
+      - name: Publish verified image to GHCR
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+          image=ghcr.io/hooshedigital/cyberpanel-master/valkey-cache:8.1.12-jammy-amd64
+          docker push "$image"
+          docker buildx imagetools inspect "$image"
