@@ -87,3 +87,27 @@ class ProvisionTests(unittest.TestCase):
             p.chmod(0o666)
             with self.assertRaises(ValueError):
                 M["trusted_file"](p)
+
+
+    def test_mountinfo_and_same_device_bind(self):
+        points = M["mount_points"](
+            "29 1 8:1 / / rw - ext4 /dev/root rw\n"
+            "30 29 8:1 /elsewhere /srv/hoosh-apache/sample/public/a\\040b rw - ext4 /dev/root rw\n"
+        )
+        self.assertIn(Path("/srv/hoosh-apache/sample/public/a b"), points)
+        with self.assertRaises(ValueError):
+            M["reject_project_mounts"](Path("/srv/hoosh-apache/sample/public"), points)
+        M["reject_project_mounts"](Path("/srv/hoosh-apache/other/public"), points)
+
+    def test_health_ignores_user_curl_configuration(self):
+        calls = []
+        def run(*args, **kwargs):
+            calls.append(args)
+            return M["MARKER"]
+        with patch.dict(G, {"run": run}):
+            M["health"]({"engine": "apache", "account": "sample", "domain": "example.test"})
+        argv = calls[0]
+        self.assertEqual(argv[:5], ("/usr/sbin/runuser", "-u", "sample", "--", "/usr/bin/env"))
+        self.assertIn("-i", argv)
+        self.assertEqual(argv[argv.index("/usr/bin/curl") + 1], "--disable")
+        self.assertIn("=http", argv)

@@ -50,7 +50,8 @@ def layout(engine, name):
 
 def trusted_dir(path):
     s = path.lstat()
-    if not stat.S_ISDIR(s.st_mode) or s.st_uid != 0 or s.st_mode & 0o022:
+    if (not stat.S_ISDIR(s.st_mode) or s.st_uid != 0 or s.st_mode & 0o7022
+            or set(os.listxattr(path, follow_symlinks=False)) & ACL):
         raise ValueError("untrusted_directory")
 
 
@@ -77,7 +78,27 @@ def account(name):
     if any(x.pw_name != name and (x.pw_uid == u.pw_uid or x.pw_gid == u.pw_gid)
            for x in pwd.getpwall()):
         raise ValueError("shared_identity")
+    if any(group.gr_gid != u.pw_gid and name in group.gr_mem for group in grp.getgrall()):
+        raise ValueError("supplementary_groups_not_allowed")
     return u
+
+
+def mount_points(text):
+    # mountinfo encodes whitespace and backslashes with octal escapes.
+    points = set()
+    for line in text.splitlines():
+        fields = line.split(" ")
+        if len(fields) < 10 or " - " not in line:
+            raise ValueError("invalid_mountinfo")
+        point = re.sub(r"\\([0-7]{3})", lambda m: chr(int(m.group(1), 8)), fields[4])
+        points.add(Path(point))
+    return points
+
+
+def reject_project_mounts(public, points):
+    boundary = public.parent
+    if any(p == boundary or boundary in p.parents for p in points):
+        raise ValueError("project_mount_not_allowed")
 
 
 def audit_project(public, u):
@@ -87,6 +108,8 @@ def audit_project(public, u):
         if (s.st_gid != u.pw_gid or stat.S_IMODE(s.st_mode) != 0o750
                 or set(os.listxattr(p, follow_symlinks=False)) & ACL):
             raise ValueError("private_boundary_required")
+    points = mount_points(Path("/proc/self/mountinfo").read_text())
+    reject_project_mounts(public, points)
     device = public.lstat().st_dev
     count = 0
     def fail(exc):
@@ -240,7 +263,9 @@ def rollback(path, record):
 
 def health(record):
     p = layout(record["engine"], record["account"])
-    body = run("/usr/sbin/runuser", "-u", record["account"], "--", "/usr/bin/curl",
+    body = run("/usr/sbin/runuser", "-u", record["account"], "--", "/usr/bin/env", "-i",
+               "PATH=/usr/bin:/bin", "HOME=/nonexistent", "LANG=C",
+               "/usr/bin/curl", "--disable", "--proto", "=http",
                "--noproxy", "*", "--unix-socket", p["socket"], "--max-time", "10",
                "--max-filesize", "1024", "--fail", "--silent", "--show-error",
                "--header", "Host: " + record["domain"], "http://localhost/hoosh-health.txt")
