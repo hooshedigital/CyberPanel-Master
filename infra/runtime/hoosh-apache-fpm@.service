@@ -1,0 +1,34 @@
+[Unit]
+Description=Hoosh private Apache/PHP-FPM backend (%i)
+After=local-fs.target
+ConditionPathExists=/etc/hoosh-runtimes/apache-accounts/%i
+
+[Service]
+Type=simple
+User=%i
+RuntimeDirectory=hoosh-apache-%i
+RuntimeDirectoryMode=0700
+Environment=PHP_INI_SCAN_DIR=
+ExecCondition=/usr/local/libexec/hoosh-apache-config check %i
+ExecStart=/usr/local/libexec/hoosh-apache-run %i
+ExecStartPost=/usr/local/libexec/hoosh-apache-ready %i
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateNetwork=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+CapabilityBoundingSet=
+UMask=0077
+Slice=hoosh-apache.slice
+MemoryMax=256M
+CPUQuota=35%
+TasksMax=48
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=20
+TimeoutStopSec=10

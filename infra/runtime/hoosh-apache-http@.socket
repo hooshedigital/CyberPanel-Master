@@ -1,0 +1,11 @@
+[Unit]
+Description=Private HTTP socket for Hoosh Apache (%i)
+ConditionPathExists=/etc/hoosh-runtimes/apache-accounts/%i
+
+[Socket]
+ListenStream=/run/hoosh-apache-http-%i.sock
+SocketUser=%i
+SocketGroup=%i
+SocketMode=0600
+RemoveOnStop=yes
+Service=hoosh-apache-http@%i.service
