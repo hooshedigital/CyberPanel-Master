@@ -2,6 +2,7 @@
 """Root-approved account and immutable project path; no provisioning."""
 import os
 import pwd
+import grp
 import re
 import stat
 import sys
@@ -12,6 +13,23 @@ BASE = Path("/etc/hoosh-runtimes/frankenphp-accounts")
 def trusted_dir(p):
     s = p.lstat()
     return stat.S_ISDIR(s.st_mode) and s.st_uid == 0 and not s.st_mode & 0o022
+
+def private_project(u, public):
+    # The dedicated account is the sole non-root reader of the project boundary.
+    g = grp.getgrgid(u.pw_gid)
+    if g.gr_name != u.pw_name or set(g.gr_mem) - {u.pw_name}:
+        return False
+    if any(x.pw_gid == u.pw_gid and x.pw_uid != u.pw_uid for x in pwd.getpwall()):
+        return False
+    if u.pw_shell not in ("/usr/sbin/nologin", "/sbin/nologin", "/bin/false"):
+        return False
+    for p in (public, public.parent):
+        s = p.lstat()
+        if (not stat.S_ISDIR(s.st_mode) or s.st_uid != 0
+                or s.st_gid != u.pw_gid or stat.S_IMODE(s.st_mode) != 0o750):
+            return False
+    return True
+
 
 def check(name):
     if not re.fullmatch(r"[a-z][a-z0-9_-]{0,30}", name):
@@ -24,6 +42,8 @@ def check(name):
     if os.getuid() != account.pw_uid or os.getgid() != account.pw_gid:
         return False
     public = Path("/srv/hoosh-frankenphp") / name / "public"
+    if not private_project(account, public):
+        return False
     for p in (BASE, *BASE.parents, public, *public.parents):
         if not trusted_dir(p):
             return False
