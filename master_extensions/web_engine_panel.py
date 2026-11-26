@@ -2,6 +2,24 @@
 from pathlib import Path
 import re
 import shutil
+import stat
+
+FRANKENPHP = Path('/opt/hoosh-runtimes/frankenphp/1.14.0/frankenphp')
+
+def _frankenphp_state():
+    try:
+        for p in (FRANKENPHP, *FRANKENPHP.parents):
+            st = p.lstat()
+            if st.st_uid != 0 or st.st_mode & 0o022 or stat.S_ISLNK(st.st_mode):
+                return 'Installation not verified'
+            if p == FRANKENPHP:
+                if not stat.S_ISREG(st.st_mode) or not st.st_mode & 0o111:
+                    return 'Installation not verified'
+            elif not stat.S_ISDIR(st.st_mode):
+                return 'Installation not verified'
+        return '1.14.0 installed; provisioning pending'
+    except OSError:
+        return 'Not provisioned'
 
 def _psi(name):
     text = Path("/proc/pressure/" + name).read_text(encoding="ascii")
@@ -13,7 +31,7 @@ def panel_context(acl):
     result = {"available": False, "engines": [
         {"name": "OpenLiteSpeed Native", "state": "Existing site creation"},
         {"name": "OpenLiteSpeed + Apache", "state": "Staging only"},
-        {"name": "FrankenPHP", "state": "Not provisioned"},
+        {"name": "FrankenPHP", "state": _frankenphp_state()},
         {"name": "Docker Application", "state": "Separate deployment workflow"},
     ]}
     try:
