@@ -1,0 +1,32 @@
+[Unit]
+Description=Hoosh isolated ephemeral Valkey cache (%i)
+After=local-fs.target
+ConditionPathExists=/etc/hoosh-runtimes/valkey-accounts/%i
+
+[Service]
+Type=simple
+User=%i
+RuntimeDirectory=hoosh-valkey-%i
+RuntimeDirectoryMode=0700
+ExecCondition=/usr/local/libexec/hoosh-valkey-account-check %i
+ExecStart=/opt/hoosh-runtimes/valkey/8.1.12/valkey-server --port 0 --unixsocket /run/hoosh-valkey-%i/cache.sock --unixsocketperm 700 --dir /run/hoosh-valkey-%i --save "" --appendonly no --maxmemory 32mb --maxmemory-policy allkeys-lru --protected-mode yes --daemonize no
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateNetwork=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+UMask=0077
+Slice=hoosh-valkey.slice
+MemoryMax=96M
+CPUQuota=20%
+TasksMax=16
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
