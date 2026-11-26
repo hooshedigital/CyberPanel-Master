@@ -1,0 +1,7 @@
+# Dedicated private TLS gateway
+
+Nginx اختصاصی با UID هوش وب edge روی Unix socket خصوصی، بدون TCP/public listener و بدون تغییر Nginx/OLS موجود. SNI و Host دقیق، TLS 1.2/1.3، header allowlist و بازسازی X-Forwarded-Host/Proto/Port؛ IP و هدرهای forwarding دریافتی اعتماد نمی‌شوند. WebSocket و روش‌های خارج فهرست مجاز نیستند؛ cache غیرفعال؛ محدودیت 8MiB درخواست و cgroup. سازگاری برنامه‌های دارای CSRF header سفارشی یا upload بزرگ باید جداگانه بررسی شود. backend Apache ممکن است هدر forwarded را حذف کند؛ HTTPS awareness اپلیکیشن باید پیش از عمومی‌سازی بررسی شود.
+
+Root مالک ابتدا پروژه و edge را به‌صورت خصوصی provision و warm-up می‌کند. مسیر /etc/hoosh-runtimes/gateway-config/ACCOUNT باید root-owned و غیرقابل‌نوشتن برای گروه/دیگران باشد. فایل route دقیق ENGINE:DOMAIN به‌همراه newline، nginx.conf خروجی دقیق renderer، cert.pem و key.pem با مالک root و گروه هوش وب edge و mode 0640 برای key. گواهی معتبر و SAN مطابق دامنه و مدیریت تمدید جداگانه لازم است؛ nginx -t اعتبار ساختاری و تطابق کلید را بررسی می‌کند. اتصال فقط با هویت اختصاصی و TLS client validation. برای revoke ابتدا gateway stop و حذف config/cert اختصاصی با پشتیبان مناسب، سپس edge و backend؛ provisioner در صورت وجود gateway fail closed است.
+
+هیچ گواهی عمومی، DNS، تونل Cloudflare یا مسیر عمومی خودکار ایجاد نمی‌شود. آزمون با گواهی مصنوعی و حساب آزمایشی است. سایت Feast خارج از محدوده تغییر است. این نسخه گام TLS داخلی است، نه استقرار public یا ایجاد سایت کامل.

@@ -235,6 +235,10 @@ def remove_enrollment(p, record):
 def rollback(path, record):
     p = layout(record["engine"], record["account"])
     engine, name = record["engine"], record["account"]
+    if (present(BASE / "gateway-config" / name) or
+            present(Path(f"/run/hoosh-gateway-{name}")) or
+            unit_state(f"hoosh-web-gateway@{name}.service") not in ("inactive", "failed")):
+        raise ValueError("revoke_private_tls_gateway_first")
     edge_marker = BASE / "edge-accounts" / (engine + "-" + name)
     edge_units = [f"hoosh-edge-{engine}@{name}.socket", f"hoosh-edge-{engine}@{name}.service"]
     if present(edge_marker) or present(Path(f"/run/hoosh-edge-{engine}-{name}.sock")):
