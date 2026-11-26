@@ -1,0 +1,70 @@
+name: Valkey 8.1.12 standalone build
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - feat/master-v021-native-header-whmcs-ui-20261121
+    paths:
+      - .github/workflows/valkey-standalone.yml
+  push:
+    branches:
+      - release/infra-2027-preview-20261126
+    paths:
+      - .github/workflows/valkey-standalone.yml
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Build pinned official source
+        shell: bash
+        run: |
+          set -euo pipefail
+          source="$RUNNER_TEMP/valkey-src"
+          git init "$source"
+          git -C "$source" remote add origin https://github.com/valkey-io/valkey.git
+          git -C "$source" fetch --depth=1 origin 38316e6c481cc6d265ab52482223c68f63f0ac30
+          git -C "$source" checkout --detach FETCH_HEAD
+          test "$(git -C "$source" rev-parse HEAD)" = 38316e6c481cc6d265ab52482223c68f63f0ac30
+          make -C "$source" -j2 BUILD_TLS=yes
+          mkdir -p "$RUNNER_TEMP/valkey-dist"
+          install -m 0755 "$source/src/valkey-server" "$source/src/valkey-cli" "$RUNNER_TEMP/valkey-dist/"
+          cp "$source/COPYING" "$RUNNER_TEMP/valkey-dist/"
+          printf '%s\n' 38316e6c481cc6d265ab52482223c68f63f0ac30 > "$RUNNER_TEMP/valkey-dist/SOURCE_COMMIT"
+          "$RUNNER_TEMP/valkey-dist/valkey-server" --version
+      - name: Isolated local socket smoke check
+        shell: bash
+        run: |
+          set -euo pipefail
+          bin="$RUNNER_TEMP/valkey-dist"
+          tmp=$(mktemp -d)
+          trap '"$bin/valkey-cli" -s "$tmp/s" shutdown nosave >/dev/null 2>&1 || true; rm -rf -- "$tmp"' EXIT
+          "$bin/valkey-server" --port 0 --unixsocket "$tmp/s" --unixsocketperm 700 --daemonize yes --pidfile "$tmp/pid" --logfile "$tmp/log" --dir "$tmp" --save "" --appendonly no --maxmemory 32mb
+          for i in 1 2 3 4 5; do
+            if test -S "$tmp/s"; then break; fi
+            sleep 1
+          done
+          test "$("$bin/valkey-cli" -s "$tmp/s" ping)" = PONG
+          test "$("$bin/valkey-cli" -s "$tmp/s" set hoosh_fixture verified)" = OK
+          test "$("$bin/valkey-cli" -s "$tmp/s" get hoosh_fixture)" = verified
+          "$bin/valkey-cli" -s "$tmp/s" shutdown nosave
+      - name: Package candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/valkey-dist"
+          sha256sum valkey-server valkey-cli > SHA256SUMS
+          tar -czf "$RUNNER_TEMP/valkey-8.1.12-jammy-amd64.tar.gz" valkey-server valkey-cli COPYING SOURCE_COMMIT SHA256SUMS
+          cd "$RUNNER_TEMP"
+          sha256sum valkey-8.1.12-jammy-amd64.tar.gz > valkey-8.1.12-jammy-amd64.tar.gz.sha256
+      - name: Upload build candidate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: valkey-8.1.12-jammy-amd64
+          path: |
+            ${{ runner.temp }}/valkey-8.1.12-jammy-amd64.tar.gz
+            ${{ runner.temp }}/valkey-8.1.12-jammy-amd64.tar.gz.sha256
+          retention-days: 7
+          if-no-files-found: error
