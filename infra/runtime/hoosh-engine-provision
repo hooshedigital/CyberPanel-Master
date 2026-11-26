@@ -1,0 +1,325 @@
+#!/usr/bin/python3
+"""Root-only private-engine enrollment. Never creates public routes or accounts."""
+import argparse
+import fcntl
+import grp
+import json
+import os
+from pathlib import Path
+import pwd
+import re
+import stat
+import subprocess
+import tempfile
+
+BASE = Path("/etc/hoosh-runtimes")
+STATE = Path("/var/lib/hoosh-private-engine")
+ENGINE = {"apache": "hoosh-apache", "frankenphp": "hoosh-frankenphp"}
+DENIED = {"root", "ubuntu", "admin", "nobody", "www-data", "mysql", "redis"}
+MARKER = b"HOOSH_ENGINE_READY\n"
+CONFIG_FILES = ("php.ini", "fpm.conf", "httpd.conf")
+ACL = {"system.posix_acl_access", "system.posix_acl_default"}
+
+
+def validate(engine, name, domain):
+    if engine not in ENGINE or not re.fullmatch(r"[a-z][a-z0-9_-]{0,30}", name) or name in DENIED:
+        raise ValueError("invalid_engine_or_account")
+    if len(domain) > 253 or not domain.isascii():
+        raise ValueError("invalid_domain")
+    labels = domain.split(".")
+    if len(labels) < 2 or not re.fullmatch(r"[a-z][a-z0-9-]{0,62}", labels[-1]):
+        raise ValueError("invalid_domain")
+    if any(not re.fullmatch(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", x) for x in labels):
+        raise ValueError("invalid_domain")
+
+
+def layout(engine, name):
+    prefix = ENGINE[engine]
+    units = ([f"{prefix}-http@{name}.socket", f"{prefix}-http@{name}.service",
+              f"{prefix}-fpm@{name}.service"] if engine == "apache"
+             else [f"{prefix}@{name}.service"])
+    return {
+        "public": Path("/srv") / prefix / name / "public",
+        "enrollment": BASE / (engine + "-accounts") / name,
+        "config": BASE / "apache-config" / name if engine == "apache" else None,
+        "units": units,
+        "socket": (f"/run/{prefix}-http-{name}.sock" if engine == "apache"
+                   else f"/run/{prefix}-{name}/http.sock"),
+    }
+
+
+def trusted_dir(path):
+    s = path.lstat()
+    if not stat.S_ISDIR(s.st_mode) or s.st_uid != 0 or s.st_mode & 0o022:
+        raise ValueError("untrusted_directory")
+
+
+def parents(path):
+    for p in reversed((path, *path.parents)):
+        trusted_dir(p)
+
+
+def trusted_file(path):
+    s = path.lstat()
+    if (not stat.S_ISREG(s.st_mode) or s.st_uid != 0 or s.st_mode & 0o7022
+            or s.st_nlink != 1 or set(os.listxattr(path, follow_symlinks=False)) & ACL):
+        raise ValueError("untrusted_file")
+    return s
+
+
+def account(name):
+    u = pwd.getpwnam(name)
+    g = grp.getgrgid(u.pw_gid)
+    if (not 1000 <= u.pw_uid < 65000 or u.pw_gid < 1000 or g.gr_name != name
+            or set(g.gr_mem) - {name} or u.pw_shell not in
+            ("/usr/sbin/nologin", "/sbin/nologin", "/bin/false")):
+        raise ValueError("dedicated_account_required")
+    if any(x.pw_name != name and (x.pw_uid == u.pw_uid or x.pw_gid == u.pw_gid)
+           for x in pwd.getpwall()):
+        raise ValueError("shared_identity")
+    return u
+
+
+def audit_project(public, u):
+    parents(public)
+    for p in (public, public.parent):
+        s = p.lstat()
+        if (s.st_gid != u.pw_gid or stat.S_IMODE(s.st_mode) != 0o750
+                or set(os.listxattr(p, follow_symlinks=False)) & ACL):
+            raise ValueError("private_boundary_required")
+    device = public.lstat().st_dev
+    count = 0
+    def fail(exc):
+        raise exc
+    for root, dirs, files in os.walk(public, followlinks=False, onerror=fail):
+        for n in dirs + files:
+            count += 1
+            if count > 20000:
+                raise ValueError("project_audit_limit")
+            p = Path(root) / n
+            s = p.lstat()
+            if s.st_dev != device or os.path.ismount(p):
+                raise ValueError("mount_not_allowed")
+            if stat.S_ISDIR(s.st_mode):
+                trusted_dir(p)
+                if set(os.listxattr(p, follow_symlinks=False)) & ACL:
+                    raise ValueError("directory_acl")
+            else:
+                trusted_file(p)
+    marker = public / "hoosh-health.txt"
+    if trusted_file(marker).st_size != len(MARKER) or marker.read_bytes() != MARKER:
+        raise ValueError("health_marker_required")
+
+
+def run(*argv, timeout=20):
+    return subprocess.run(argv, check=True, timeout=timeout, stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE).stdout
+
+
+def unit_state(unit):
+    return run("/usr/bin/systemctl", "show", unit, "-p", "ActiveState", "--value").decode().strip()
+
+
+def capacity():
+    s = Path("/proc/meminfo").read_text()
+    def mem(k):
+        return int(re.search(r"(?m)^" + k + r":\s+(\d+) kB$", s).group(1))
+    def pressure(k):
+        return float(re.search(r"(?m)^some .*?avg60=([0-9.]+)",
+                     Path("/proc/pressure/" + k).read_text()).group(1))
+    fs = os.statvfs("/")
+    if (mem("MemAvailable") < 1536 * 1024 or mem("SwapFree") < 1024 * 1024
+            or fs.f_bavail * fs.f_frsize < 8192 * 1048576
+            or pressure("cpu") >= 40 or pressure("memory") >= 5):
+        raise ValueError("resource_headroom")
+
+
+def present(p):
+    return p is not None and os.path.lexists(p)
+
+
+def preflight(engine, name, domain, persistent):
+    validate(engine, name, domain)
+    u = account(name)
+    p = layout(engine, name)
+    audit_project(p["public"], u)
+    capacity()
+    # On this small server only one enrolled private web engine at a time.
+    for e in ENGINE:
+        d = BASE / (e + "-accounts")
+        parents(d)
+        if any(d.iterdir()):
+            raise ValueError("private_engine_capacity_or_existing_enrollment")
+    if p["config"] is not None:
+        parents(p["config"].parent)
+    for item in (p["enrollment"], p["config"], Path(p["socket"])):
+        if present(item):
+            raise ValueError("existing_configuration")
+    for unit in p["units"]:
+        if unit_state(unit) != "inactive":
+            raise ValueError("unit_not_inactive")
+    for unit in p["units"]:
+        if present(Path("/etc/systemd/system/multi-user.target.wants") / unit):
+            raise ValueError("existing_boot_dependency")
+    return {"engine": engine, "account": name, "domain": domain,
+            "uid": u.pw_uid, "gid": u.pw_gid, "persistent": persistent,
+            "state": "pending", "public_routing": False}
+
+
+def save(path, record):
+    fd, tmp = tempfile.mkstemp(prefix=".state-", dir=STATE)
+    try:
+        with os.fdopen(fd, "w") as f:
+            json.dump(record, f, sort_keys=True)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+        sync_state()
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+
+
+def sync_state():
+    fd = os.open(STATE, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+def load(path, name):
+    trusted_file(path)
+    if path.stat().st_size > 4096:
+        raise ValueError("invalid_journal")
+    r = json.loads(path.read_text())
+    validate(r["engine"], r["account"], r["domain"])
+    if (r["account"] != name or r["state"] not in ("pending", "active")
+            or type(r["persistent"]) is not bool or r["public_routing"] is not False):
+        raise ValueError("invalid_journal")
+    return r
+
+
+def remove_enrollment(p, record):
+    if present(p):
+        trusted_file(p)
+        expected = f"{record['account']}:{record['uid']}:{record['gid']}\n".encode()
+        if p.read_bytes() != expected:
+            raise ValueError("enrollment_changed")
+        p.unlink()
+
+
+def rollback(path, record):
+    p = layout(record["engine"], record["account"])
+    # Never remove the account, public files, database or an arbitrary directory.
+    for unit in p["units"]:
+        want = Path("/etc/systemd/system/multi-user.target.wants") / unit
+        if present(want):
+            template = unit.split("@", 1)[0] + "@." + unit.rsplit(".", 1)[1]
+            if not want.is_symlink() or want.resolve() != Path("/etc/systemd/system") / template:
+                raise ValueError("unexpected_boot_dependency")
+            want.unlink()
+    run("/usr/bin/systemctl", "daemon-reload")
+    run("/usr/bin/systemctl", "stop", *p["units"], timeout=45)
+    if any(unit_state(x) not in ("inactive", "failed") for x in p["units"]):
+        raise ValueError("stop_not_confirmed")
+    remove_enrollment(p["enrollment"], record)
+    d = p["config"]
+    if present(d):
+        parents(d)
+        if set(x.name for x in d.iterdir()) - set(CONFIG_FILES):
+            raise ValueError("unexpected_config_files")
+        for f in d.iterdir():
+            trusted_file(f)
+        for f in d.iterdir():
+            f.unlink()
+        d.rmdir()
+    path.unlink()
+    sync_state()
+
+
+def health(record):
+    p = layout(record["engine"], record["account"])
+    body = run("/usr/sbin/runuser", "-u", record["account"], "--", "/usr/bin/curl",
+               "--noproxy", "*", "--unix-socket", p["socket"], "--max-time", "10",
+               "--max-filesize", "1024", "--fail", "--silent", "--show-error",
+               "--header", "Host: " + record["domain"], "http://localhost/hoosh-health.txt")
+    if body != MARKER:
+        raise ValueError("private_health_failed")
+
+
+def apply(path, record):
+    p = layout(record["engine"], record["account"])
+    save(path, record)  # Recovery journal exists before any enrollment.
+    try:
+        name = record["account"]
+        if record["engine"] == "apache":
+            run("/usr/local/libexec/hoosh-apache-config", "prepare", name, record["domain"])
+        else:
+            fd = os.open(p["enrollment"], os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
+            with os.fdopen(fd, "w") as f:
+                f.write(f"{name}:{record['uid']}:{record['gid']}\n")
+        run("/usr/bin/systemctl", "start", p["units"][0])
+        if record["engine"] == "frankenphp":
+            import time
+            for _ in range(20):
+                if Path(p["socket"]).is_socket():
+                    break
+                time.sleep(.25)
+        health(record)
+        if record["persistent"]:
+            run("/usr/bin/systemctl", "add-wants", "multi-user.target", p["units"][0])
+        record["state"] = "active"
+        save(path, record)
+    except Exception:
+        # If cleanup itself fails, the journal remains for explicit recovery.
+        rollback(path, record)
+        raise
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("operation", choices=("plan", "apply", "rollback"))
+    parser.add_argument("account")
+    parser.add_argument("--engine", choices=tuple(ENGINE))
+    parser.add_argument("--domain")
+    parser.add_argument("--persistent", action="store_true")
+    args = parser.parse_args()
+    if os.geteuid() != 0:
+        parser.error("root required")
+    if not re.fullmatch(r"[a-z][a-z0-9_-]{0,30}", args.account) or args.account in DENIED:
+        parser.error("invalid account")
+    parents(STATE.parent)
+    STATE.mkdir(mode=0o700, exist_ok=True)
+    parents(STATE)
+    if stat.S_IMODE(STATE.lstat().st_mode) != 0o700:
+        parser.error("private journal directory required")
+    os.umask(0o022)
+    lock = os.open(STATE / ".lock", os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        p = STATE / (args.account + ".json")
+        if args.operation == "rollback":
+            if args.engine or args.domain or args.persistent:
+                parser.error("rollback uses existing journal only")
+            rollback(p, load(p, args.account))
+            print("PRIVATE_ENGINE_ROLLED_BACK")
+        else:
+            if not args.engine or not args.domain or present(p):
+                parser.error("engine/domain required; existing journal must be recovered first")
+            if any(STATE.glob("*.json")):
+                parser.error("existing private deployment journal")
+            record = preflight(args.engine, args.account, args.domain, args.persistent)
+            if args.operation == "apply":
+                apply(p, record)
+            print(json.dumps(record, sort_keys=True))
+    finally:
+        os.close(lock)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (OSError, KeyError, ValueError, TypeError, subprocess.SubprocessError) as exc:
+        # Do not dump command output or application contents.
+        raise SystemExit("Private engine operation failed: " + type(exc).__name__)

@@ -1,0 +1,20 @@
+name: Private web engine enrollment checks
+on:
+  push:
+    branches: [release/infra-2027-preview-20261126]
+    paths: ["infra/runtime/**", "master_extensions/tests/test_private_engine_provision.py", ".github/workflows/private-engine-checks.yml"]
+  pull_request:
+    paths: ["infra/runtime/**", "master_extensions/tests/test_private_engine_provision.py", ".github/workflows/private-engine-checks.yml"]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile and test enrollment contract
+        run: |
+          python3 -m py_compile infra/runtime/hoosh-engine-provision
+          python3 -m unittest discover -s master_extensions/tests -p test_private_engine_provision.py -v
+          sudo python3 -m unittest discover -s master_extensions/tests -p test_private_engine_provision.py -v
