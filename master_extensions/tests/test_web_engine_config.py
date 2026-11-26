@@ -47,7 +47,7 @@ class ConfigTests(unittest.TestCase):
             self.plan(used_uids=[62001])
 
     def test_bad_inputs(self):
-        for t in (Tenant("live.example.com",1,62001), Tenant("a.test\nx",1,62001),
+        for t in (Tenant("live.example.com",1,62001), Tenant("rejected.test",1,62001), Tenant("a.test\nx",1,62001),
                   Tenant("a.test",True,62001), Tenant("a.test",1,0),
                   Tenant("a.test",1,62001,"performance"), Tenant("a.test",1,62001,[])):
             with self.subTest(t=t), self.assertRaises(ValueError):
@@ -60,6 +60,7 @@ class ConfigTests(unittest.TestCase):
         self.assertIn("ServerName rejected.test", a)
         self.assertIn("Require all denied", a)
         self.assertIn("ProxyRequests Off", a)
+        self.assertIn('<FilesMatch "(?i)\\.php$">', a)
         self.assertNotIn("AllowOverride FileInfo", a)
         self.assertIn("Options -Indexes -FollowSymLinks -SymLinksIfOwnerMatch", a)
         for i in (1,2):

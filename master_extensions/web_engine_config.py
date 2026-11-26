@@ -40,7 +40,7 @@ def render(root, tenants, *, role, used_domains=(), used_uids=()):
         if type(t) is not Tenant:
             raise ValueError("invalid_tenant")
         domain = domain_name(t.domain)
-        if not domain.endswith(".test"):
+        if not domain.endswith(".test") or domain == "rejected.test":
             raise ValueError("synthetic_test_domain_required")
         if type(t.slot) is not int or t.slot not in (1, 2) or t.slot in slots:
             raise ValueError("slot_conflict")
@@ -138,7 +138,7 @@ tuning {{
   AllowOverride None
   Require all granted
  </Directory>
- <FilesMatch "\\.php$">
+ <FilesMatch "(?i)\\.php$">
   SetHandler "proxy:unix:{p}/run/php.sock|fcgi://localhost/"
  </FilesMatch>
 </VirtualHost>
