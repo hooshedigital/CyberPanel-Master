@@ -14,7 +14,7 @@ Environment=HOME=/nonexistent
 Environment=GOMAXPROCS=1
 ExecStartPre=/usr/bin/test -S /run/hoosh-ingress-canary.sock
 ExecStartPre=/usr/bin/test -r /etc/hoosh-runtimes/ingress-canary/origin-ca.pem
-ExecStart=/usr/local/bin/cloudflared --no-autoupdate tunnel --protocol http2 --metrics 127.0.0.1:0 run --token-file %d/token
+ExecStart=/usr/local/bin/cloudflared --no-autoupdate tunnel --protocol http2 --metrics 127.0.0.1:0 run --token-file /run/credentials/hoosh-ingress-canary-connector.service/token
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes
