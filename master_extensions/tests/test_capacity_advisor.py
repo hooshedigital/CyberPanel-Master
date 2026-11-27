@@ -24,3 +24,17 @@ class CapacityTests(unittest.TestCase):
         self.assertIn("cpu_pressure_high",self.summarize(self.row(cpu_psi60=41))["blockers"])
     def test_ram(self):
         self.assertIn("ram_below_1536_mib",self.summarize(self.row(ram_mib=1400))["blockers"])
+
+    def test_policy_under_pressure(self):
+        r=self.summarize(disk=9.9,used=90)["workload_policy"]
+        self.assertEqual(r["local_build"],"defer")
+        self.assertEqual(r["new_runtime"],"review")
+        self.assertEqual(r["retention_review"],"prioritize")
+        self.assertEqual(r["existing_services"],"preserve")
+        self.assertEqual(r["backup_and_health"],"preserve")
+        self.assertFalse(r["execution_authorized"])
+    def test_policy_block_and_healthy(self):
+        r=self.summarize(self.row(cpu_psi60=41))["workload_policy"]
+        self.assertEqual(r["new_runtime"],"defer")
+        self.assertEqual(self.summarize()["workload_policy"]["local_build"],"review")
+        self.assertFalse(self.summarize()["workload_policy"]["execution_authorized"])

@@ -29,3 +29,13 @@ class RetentionTests(unittest.TestCase):
             p=P.capacity_context("fa")
             self.assertTrue(p["ready"])
             self.assertTrue(p["retention"]["ready"])
+
+    def test_policy_never_accepts_execution(self):
+        d={"decision":"review_required","warnings":["disk_headroom_warning"],"blockers":[],
+           "workload_policy":{"version":1,"execution_authorized":False,"local_build":"defer","new_runtime":"review",
+                              "retention_review":"prioritize","existing_services":"preserve","backup_and_health":"preserve"}}
+        with patch.object(P,"read_report",side_effect=[d,{}]):
+            self.assertIn("policy",P.capacity_context("fa"))
+        d["workload_policy"]["execution_authorized"]=True
+        with patch.object(P,"read_report",side_effect=[d,{}]):
+            self.assertNotIn("policy",P.capacity_context("fa"))

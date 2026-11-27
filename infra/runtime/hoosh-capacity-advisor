@@ -54,6 +54,21 @@ def extract(row):
     }
 
 
+def workload_policy(reasons, warnings, disk_free):
+    """Advisory only: preserve production, never suppress backup or health checks."""
+    if reasons:
+        build = runtime = "defer"
+    elif warnings:
+        build = "defer"
+        runtime = "review"
+    else:
+        build = runtime = "review"
+    return {"version":1,"local_build":build,"new_runtime":runtime,
+            "retention_review":"prioritize" if disk_free < 12 else "routine",
+            "existing_services":"preserve","backup_and_health":"preserve",
+            "execution_authorized":False}
+
+
 def summarize(latest, history, now, disk_free, disk_use):
     age = (now-latest["ts"]).total_seconds()
     rows = {x["ts"]:x for x in history if 0 <= (now-x["ts"]).total_seconds() <= 21600}
@@ -95,6 +110,7 @@ def summarize(latest, history, now, disk_free, disk_use):
             "disk_free_median_delta_hour_gib":delta,
             "decision":"blocked" if reasons else "review_required" if warnings else "thresholds_met",
             "blockers":reasons,"warnings":warnings,
+            "workload_policy":workload_policy(reasons,warnings,disk_free),
             "execution_authorized":False,"automatic_actions":False}
 
 
@@ -135,6 +151,7 @@ if __name__=="__main__":
     except (OSError,ValueError,TypeError,KeyError,OverflowError):
         r={"time_utc":dt.datetime.now(UTC).isoformat(),"decision":"blocked",
            "blockers":["monitor_data_unavailable"],"warnings":[],
+           "workload_policy":workload_policy(["monitor_data_unavailable"],[],0),
            "execution_authorized":False,"automatic_actions":False}
     save(r)
     print(r["decision"])

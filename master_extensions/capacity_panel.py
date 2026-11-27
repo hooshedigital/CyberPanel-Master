@@ -72,6 +72,17 @@ def capacity_context(lang="en"):
                       disk=metric(d.get("disk_free_gib")),used=metric(d.get("disk_used_percent"),high=100),
                       delta=metric(d.get("disk_free_median_delta_hour_gib"),low=-1000000),
                       samples=metric(d.get("samples_30m"),high=10000),updated=d.get("time_utc"))
+    policy=d.get("workload_policy")
+    if (result["ready"] and isinstance(policy,dict) and type(policy.get("version")) is int
+            and policy["version"]==1 and policy.get("execution_authorized") is False
+            and policy.get("local_build") in ("defer","review")
+            and policy.get("new_runtime") in ("defer","review")
+            and policy.get("retention_review") in ("prioritize","routine")
+            and policy.get("existing_services")=="preserve"
+            and policy.get("backup_and_health")=="preserve"):
+        names={"defer":("Defer","به تعویق بیفتد"),"review":("Review first","ابتدا بازبینی"),
+               "prioritize":("Prioritize review","بازبینی در اولویت"),"routine":("Routine review","بازبینی معمول")}
+        result["policy"]={k:names[policy[k]][fa] for k in ("local_build","new_runtime","retention_review")}
     r=read_report(RETENTION,5400)
     keys=("unique_images","referenced","tagged_unreferenced","untagged_unreferenced","containers")
     if (r.get("status")=="review_only" and r.get("deletion_approved")==0
