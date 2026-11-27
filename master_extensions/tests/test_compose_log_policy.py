@@ -13,7 +13,7 @@ services:
   web:
     image: example:stage
     environment:
-      VALUE: "\${VALUE:-test}"
+      VALUE: "${VALUE:-test}"
   db:
     image: db:stage
 volumes:
