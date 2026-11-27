@@ -2,9 +2,9 @@ name: Capacity panel and retention checks
 on:
   push:
     branches: [release/infra-2027-preview-20261126]
-    paths: ["infra/runtime/hoosh-docker-retention*", "master_extensions/capacity_panel.py", "master_extensions/tests/test_capacity_panel_retention.py", "scripts/stage_capacity_panel_overlay.py", ".github/workflows/capacity-panel-retention.yml"]
+    paths: ["infra/runtime/hoosh-docker-retention*", "master_extensions/capacity_panel.py", "master_extensions/templates/backup/hoosh_capacity_summary.html", "master_extensions/tests/test_capacity_panel_retention.py", "scripts/stage_capacity_panel_overlay.py", ".github/workflows/capacity-panel-retention.yml"]
   pull_request:
-    paths: ["infra/runtime/hoosh-docker-retention*", "master_extensions/capacity_panel.py", "master_extensions/tests/test_capacity_panel_retention.py", "scripts/stage_capacity_panel_overlay.py", ".github/workflows/capacity-panel-retention.yml"]
+    paths: ["infra/runtime/hoosh-docker-retention*", "master_extensions/capacity_panel.py", "master_extensions/templates/backup/hoosh_capacity_summary.html", "master_extensions/tests/test_capacity_panel_retention.py", "scripts/stage_capacity_panel_overlay.py", ".github/workflows/capacity-panel-retention.yml"]
 permissions:
   contents: read
 jobs:
