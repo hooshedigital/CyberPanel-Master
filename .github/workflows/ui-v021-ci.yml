@@ -28,6 +28,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Install pinned YAML test dependency
+        run: python -m pip install PyYAML==6.0.2
       - name: Compile sources
         run: python -m compileall -q master_extensions scripts
       - name: Run source, security, UI and i18n unit tests
