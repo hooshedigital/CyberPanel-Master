@@ -54,6 +54,14 @@ def extract(row):
     }
 
 
+def storage_budget(disk_free):
+    """Fixed operating target for the current 100 GiB host; advice, not a cleanup order."""
+    target = 20.0
+    return {"target_free_gib":target,"gap_gib":round(max(0,target-disk_free),3),
+            "target_met":disk_free>=target,"independent_recovery_required":True,
+            "automatic_actions":False}
+
+
 def workload_policy(reasons, warnings, disk_free):
     """Advisory only: preserve production, never suppress backup or health checks."""
     if reasons:
@@ -110,6 +118,7 @@ def summarize(latest, history, now, disk_free, disk_use):
             "disk_free_median_delta_hour_gib":delta,
             "decision":"blocked" if reasons else "review_required" if warnings else "thresholds_met",
             "blockers":reasons,"warnings":warnings,
+            "storage_budget":storage_budget(disk_free),
             "workload_policy":workload_policy(reasons,warnings,disk_free),
             "execution_authorized":False,"automatic_actions":False}
 

@@ -38,3 +38,11 @@ class CapacityTests(unittest.TestCase):
         self.assertEqual(r["new_runtime"],"defer")
         self.assertEqual(self.summarize()["workload_policy"]["local_build"],"review")
         self.assertFalse(self.summarize()["workload_policy"]["execution_authorized"])
+
+    def test_storage_target_is_advisory(self):
+        s=self.summarize(disk=10.92,used=88)["storage_budget"]
+        self.assertEqual(s["gap_gib"],9.08)
+        self.assertFalse(s["target_met"])
+        self.assertTrue(s["independent_recovery_required"])
+        self.assertFalse(s["automatic_actions"])
+        self.assertTrue(self.summarize(disk=21)["storage_budget"]["target_met"])

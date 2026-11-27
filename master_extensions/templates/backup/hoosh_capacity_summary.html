@@ -8,6 +8,10 @@
   {% if capacity.capacity_reasons %}<ul>{% for reason in capacity.capacity_reasons %}<li>{{ reason }}</li>{% endfor %}</ul>{% endif %}
   <small>{% if lang == 'fa' %}نمونه‌های ۳۰ دقیقه اخیر{% else %}Samples in last 30 minutes{% endif %}: {{ capacity.samples|default_if_none:"—" }}</small>
   {% endif %}
+  {% if capacity.storage_budget %}
+  <p><strong>{% if lang == 'fa' %}هدف فضای آزاد دیسک{% else %}Free disk target{% endif %}: {{ capacity.storage_budget.target }} GiB</strong> · {% if lang == 'fa' %}کسری ظرفیت{% else %}Headroom gap{% endif %}: {{ capacity.storage_budget.gap }} GiB</p>
+  <small>{% if lang == 'fa' %}آزادسازی فضا فقط با بررسی امکان بازیابی مستقل؛ حذف خودکار غیرفعال است.{% else %}Independent recovery verification required; automatic deletion disabled.{% endif %}</small>
+  {% endif %}
   {% if capacity.policy %}
   <h4 style="font-size:14px;font-weight:650;margin-top:12px;">{% if lang == 'fa' %}سیاست اجرای بارهای جدید{% else %}Workload policy{% endif %}</h4>
   <p>{% if lang == 'fa' %}Build محلی{% else %}Local build{% endif %}: {{ capacity.policy.local_build }} · {% if lang == 'fa' %}موتور جدید{% else %}New runtime{% endif %}: {{ capacity.policy.new_runtime }} · {% if lang == 'fa' %}نگهداری دیسک{% else %}Retention{% endif %}: {{ capacity.policy.retention_review }}</p>

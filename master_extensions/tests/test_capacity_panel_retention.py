@@ -39,3 +39,13 @@ class RetentionTests(unittest.TestCase):
         d["workload_policy"]["execution_authorized"]=True
         with patch.object(P,"read_report",side_effect=[d,{}]):
             self.assertNotIn("policy",P.capacity_context("fa"))
+
+    def test_storage_budget_requires_safe_flags(self):
+        d={"decision":"review_required","warnings":[],"blockers":[],
+           "storage_budget":{"target_free_gib":20,"gap_gib":9.08,"target_met":False,
+                             "independent_recovery_required":True,"automatic_actions":False}}
+        with patch.object(P,"read_report",side_effect=[d,{}]):
+            self.assertEqual(P.capacity_context()["storage_budget"]["gap"],9.08)
+        d["storage_budget"]["automatic_actions"]=True
+        with patch.object(P,"read_report",side_effect=[d,{}]):
+            self.assertNotIn("storage_budget",P.capacity_context())

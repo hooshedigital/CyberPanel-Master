@@ -72,6 +72,15 @@ def capacity_context(lang="en"):
                       disk=metric(d.get("disk_free_gib")),used=metric(d.get("disk_used_percent"),high=100),
                       delta=metric(d.get("disk_free_median_delta_hour_gib"),low=-1000000),
                       samples=metric(d.get("samples_30m"),high=10000),updated=d.get("time_utc"))
+    budget=d.get("storage_budget")
+    if (result["ready"] and isinstance(budget,dict)
+            and budget.get("independent_recovery_required") is True
+            and budget.get("automatic_actions") is False
+            and type(budget.get("target_met")) is bool):
+        target=metric(budget.get("target_free_gib"),low=1)
+        gap=metric(budget.get("gap_gib"))
+        if target is not None and gap is not None and gap<=target:
+            result["storage_budget"]={"target":target,"gap":gap,"met":budget["target_met"]}
     policy=d.get("workload_policy")
     if (result["ready"] and isinstance(policy,dict) and type(policy.get("version")) is int
             and policy["version"]==1 and policy.get("execution_authorized") is False
