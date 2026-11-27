@@ -1,0 +1,21 @@
+{% load i18n %}
+{% if admin and hoosh_engine_status %}
+<section id="hoosh-engine-status" class="form-group" aria-label="Hoosh Web Engine Manager" style="border:1px solid var(--border-color,#39465a);border-radius:8px;padding:16px;margin-bottom:16px;">
+  <strong>Hoosh Web Engine Manager</strong>
+  <p>{% trans "Independent engine readiness · read-only preview" %}</p>
+  {% if hoosh_engine_status.available %}
+  <p>RAM: {{ hoosh_engine_status.ram }} MiB · Swap: {{ hoosh_engine_status.swap }} MiB · Disk: {{ hoosh_engine_status.disk }} MiB</p>
+  <p>CPU PSI60: {{ hoosh_engine_status.cpu }}% · Memory PSI60: {{ hoosh_engine_status.memory }}%</p>
+  {% if hoosh_engine_status.capacity_ok %}<p>{% trans "Resource headroom meets preliminary planning thresholds." %}</p>
+  {% else %}<p>{% trans "Resource headroom is below preliminary planning thresholds." %}</p>{% endif %}
+  {% else %}<p>{% trans "Resource metrics unavailable; no readiness assumed." %}</p>{% endif %}
+  {% include "backup/hoosh_capacity_summary.html" with capacity=hoosh_engine_status.capacity %}
+  <dl>
+  {% for engine in hoosh_engine_status.engines %}
+    <dt>{{ engine.name }}</dt><dd>{{ engine.state }}</dd>
+  {% endfor %}
+  </dl>
+  <p><a class="btn btn-outline-primary" href="{% url 'hoosh_private_engine_plan' %}">{% trans "Plan an independent private engine deployment" %}</a></p>
+  <small>{% trans "This section does not provision an engine or change existing site creation. Additional engines require a separate approved deployment." %}</small>
+</section>
+{% endif %}

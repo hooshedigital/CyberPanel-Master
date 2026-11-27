@@ -1,0 +1,110 @@
+#!/usr/bin/python3
+"""Read-only local canary monitoring; no public calls or credential reads."""
+from datetime import datetime, timezone
+import json
+import os
+from pathlib import Path
+import stat
+import subprocess
+import tempfile
+import time
+
+BASE = Path("/etc/hoosh-runtimes/ingress-canary")
+STATE = Path("/var/lib/hoosh-canary-health")
+SOCKET = "/run/hoosh-ingress-canary.sock"
+HOST = "engine-test.hooshedigital.ir"
+MARKER = b"HOOSH_ENGINE_CANARY_V1\n"
+UNITS = ("hoosh-ingress-canary.socket", "hoosh-ingress-canary-relay.service",
+         "hoosh-ingress-canary-connector.service")
+
+
+def run(argv, timeout=12):
+    try:
+        p = subprocess.run(argv, capture_output=True, timeout=timeout, check=False,
+                           env={"PATH": "/usr/bin:/bin", "LANG": "C", "HOME": "/nonexistent"})
+        return p.returncode, p.stdout
+    except (OSError, subprocess.SubprocessError):
+        return 125, b""
+
+
+def service(unit):
+    rc, out = run(["/usr/bin/systemctl", "is-active", unit], 5)
+    value = out.decode("ascii", "replace").strip()
+    return value if value in ("active", "inactive", "failed", "activating", "deactivating") else "unknown"
+
+
+def credential_state():
+    # Deliberately never open or read the token.
+    try:
+        s = (BASE / "token").lstat()
+    except FileNotFoundError:
+        return "absent"
+    except OSError:
+        return "unknown"
+    return ("present" if stat.S_ISREG(s.st_mode) and s.st_uid == 0
+            and stat.S_IMODE(s.st_mode) == 0o600 and s.st_nlink == 1
+            else "invalid_metadata")
+
+
+def probe():
+    start = time.monotonic()
+    rc, out = run(["/usr/sbin/runuser", "-u", "hoosh-ingress-canary", "--",
+                   "/usr/bin/env", "-i", "PATH=/usr/bin:/bin", "HOME=/nonexistent", "LANG=C",
+                   "/usr/bin/curl", "--disable", "--noproxy", "*", "--proto", "=https",
+                   "--unix-socket", SOCKET, "--cacert", str(BASE / "origin-ca.pem"),
+                   "--connect-timeout", "3", "--max-time", "10", "--max-filesize", "1024",
+                   "--fail", "--silent", "--show-error", "--write-out", "\n%{http_code}\n",
+                   "https://" + HOST + "/"], 12)
+    return rc == 0 and out == MARKER + b"\n200\n", round(time.monotonic()-start, 3)
+
+
+def collect():
+    units = {unit: service(unit) for unit in UNITS}
+    token = credential_state()
+    rc, _ = run(["/usr/bin/openssl", "x509", "-in", str(BASE / "origin-ca.pem"),
+                 "-noout", "-checkend", "604800"], 5)
+    cert_ok = rc == 0
+    local_ok, elapsed = probe() if units[UNITS[0]] == "active" else (False, None)
+    if not local_ok:
+        status = "local_not_ready"
+    elif not cert_ok:
+        status = "certificate_review_required"
+    elif token == "absent":
+        status = "local_ready_token_pending"
+    elif token != "present":
+        status = "credential_review_required"
+    elif units[UNITS[2]] != "active":
+        status = "connector_not_running"
+    else:
+        status = "connector_running_external_unverified"
+    return {"time_utc": datetime.now(timezone.utc).isoformat(), "host": HOST,
+            "state": status, "local_https_ok": local_ok, "probe_seconds": elapsed,
+            "certificate_valid_for_seven_more_days": cert_ok,
+            "credential_metadata": token, "services": units,
+            "public_https_verified": False, "dns_changes": False}
+
+
+def save(record):
+    s = STATE.lstat()
+    if not stat.S_ISDIR(s.st_mode) or s.st_uid != 0 or s.st_mode & 0o022:
+        raise ValueError("untrusted state directory")
+    fd, path = tempfile.mkstemp(prefix=".latest-", dir=STATE)
+    try:
+        with os.fdopen(fd, "w") as f:
+            os.fchmod(f.fileno(), 0o644)
+            json.dump(record, f, sort_keys=True)
+            f.write("\n")
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(path, STATE / "latest.json")
+    finally:
+        if os.path.exists(path):
+            os.unlink(path)
+
+
+if __name__ == "__main__":
+    if os.geteuid() != 0:
+        raise SystemExit("root required")
+    result = collect()
+    save(result)
+    print(result["state"])

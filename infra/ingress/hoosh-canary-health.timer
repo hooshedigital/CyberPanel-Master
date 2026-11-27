@@ -1,0 +1,11 @@
+[Unit]
+Description=Check dedicated local HTTPS canary every five minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=30s
+Unit=hoosh-canary-health.service
+
+[Install]
+WantedBy=timers.target

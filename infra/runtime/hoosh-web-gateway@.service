@@ -1,0 +1,30 @@
+[Unit]
+Description=Dedicated private TLS gateway for Hoosh project (%i)
+ConditionPathExists=/etc/hoosh-runtimes/gateway-config/%i/route
+
+[Service]
+Type=simple
+User=hoosh-web-edge
+Group=hoosh-web-edge
+RuntimeDirectory=hoosh-gateway-%i
+RuntimeDirectoryMode=0700
+ExecCondition=/usr/local/libexec/hoosh-gateway-config check %i
+ExecStartPre=/usr/sbin/nginx -t -q -p /run/hoosh-gateway-%i/ -c /etc/hoosh-runtimes/gateway-config/%i/nginx.conf
+ExecStart=/usr/sbin/nginx -g "daemon off;" -p /run/hoosh-gateway-%i/ -c /etc/hoosh-runtimes/gateway-config/%i/nginx.conf
+NoNewPrivileges=yes
+PrivateNetwork=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX
+CapabilityBoundingSet=
+UMask=0077
+MemoryMax=48M
+CPUQuota=20%
+TasksMax=8
+TimeoutStopSec=5

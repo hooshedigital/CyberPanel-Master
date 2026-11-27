@@ -1,0 +1,3 @@
+# Local canary without tunnel credential
+
+Owner has no token currently. Keep the existing private synthetic origin, no public DNS or connector changes. Install bounded read-only health timer for exact canary Unix TLS endpoint, verify fixed marker and status 200, certificate lifetime threshold seven days, and service/credential metadata (never token content). Status JSON at /var/lib/hoosh-canary-health/latest.json. No automatic restart, certificate issuance, network call, or claim of external verification. Timer remains available after reboot, but reports local_not_ready if nonpersistent canary stops; it does not start the origin. No changes to Feast, shared OLS or other sites. Public connection still requires owner-local tunnel credential and external validation.

@@ -1,0 +1,20 @@
+[Unit]
+Description=Read-only Hoosh capacity advisor
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/local/libexec/hoosh-capacity-advisor
+StateDirectory=hoosh-capacity-advisor
+StateDirectoryMode=0755
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateNetwork=yes
+NoNewPrivileges=yes
+MemoryMax=96M
+TasksMax=8
+CPUWeight=20
+IOWeight=20
+Nice=10
+TimeoutStartSec=30

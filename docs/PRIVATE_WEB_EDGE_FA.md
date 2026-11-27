@@ -1,0 +1,7 @@
+# Hoosh dedicated private web edge transport
+
+پل Unix socket مجزا برای Apache و FrankenPHP. ورودی /run/hoosh-edge-ENGINE-ACCOUNT.sock با mode 0600 و هویت اختصاصی hoosh-web-edge؛ backend socket همچنان خصوصی حساب پروژه. relay تحت UID پروژه، PrivateNetwork و AF_UNIX، حداکثر 8 اتصال و محدودیت تجمیعی 48MiB/15% CPU. هیچ TCP listener و هیچ مجوز به nobody/www-data. این transport سطح HTTP را parse یا sanitize نمی‌کند، TLS terminate نمی‌کند و برای frontend عمومی آماده نیست.
+
+Root مالک باید ابتدا private provisioner را اجرا کند، حساب edge مستقل بدون login و گروه اضافی را بررسی کند، سپس marker root-owned 0644 در /etc/hoosh-runtimes/edge-accounts/ENGINE-ACCOUNT با محتوای ENGINE:ACCOUNT:UID:GID:EDGE_UID:EDGE_GID و newline ایجاد کند. فقط socket نمونه را start کند. هیچ boot dependency خودکار نیست. پیش از rollback پروژه، ابتدا socket و service دقیق edge را stop، marker را remove و نبود socket را بررسی کند؛ rollback provisioner باید در صورت وجود marker fail closed باشد. در نسخه فعلی این gate به provisioner افزوده می‌شود. هیچ مسیر عمومی، DNS، TLS، تغییر هویت OLS اصلی یا مجوز خودکار ایجاد نمی‌شود. آزمون باید با frontend اختصاصی و حساب مصنوعی باشد؛ root-only enrollment و بازبینی مستقل ضروری است.
+
+Relay بعد از اولین اتصال موفق در مدت enrollment گرم می‌ماند؛ خروج خودکار پس از ۳۰ ثانیه بیکاری حذف شد، زیرا cold start مشاهده‌شده Apache حدود ۸.۹ ثانیه بود. پیش از اتصال هر frontend واقعی باید warm-up خصوصی و health موفق انجام شود. توقف socket و service هر دو برای revoke ضروری است. محدودیت‌های CPU/RAM و شمار اتصال‌ها تغییر نکردند. این تغییر معیار سرعت تضمین‌شده نیست.

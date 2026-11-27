@@ -1,0 +1,13 @@
+# REVIEW ONLY: substitute approved hostname and dedicated account.
+# Not a deployed tunnel configuration; no credentials.
+ingress:
+  - hostname: engine-canary.example
+    service: unix+tls:/run/hoosh-gateway-hoosh-engine-canary/https.sock
+    originRequest:
+      originServerName: engine-canary.example
+      httpHostHeader: engine-canary.example
+      caPool: /etc/hoosh-runtimes/ingress-ca/engine-canary-ca.pem
+      noTLSVerify: false
+      connectTimeout: 5s
+      tlsTimeout: 5s
+  - service: http_status:404

@@ -1,0 +1,18 @@
+{% load i18n %}
+<fieldset class="form-group" id="hoosh-web-engine-stage-preview">
+  <legend class="form-label">{% trans "Hoosh Web Engine Manager" %}</legend>
+  <p role="status">{% trans "Staging preview only. Existing website creation is unchanged." %}</p>
+  <label for="hoosh-engine-preview">{% trans "Web engine" %}</label>
+  <select class="form-control" id="hoosh-engine-preview" disabled>
+    <option selected>OpenLiteSpeed Native</option>
+    <option>OpenLiteSpeed + Apache — {% trans "Independent backend, pending integration" %}</option>
+    <option>FrankenPHP — {% trans "Pending integration" %}</option>
+    <option>Docker Application — {% trans "Pending integration" %}</option>
+  </select>
+  <label for="hoosh-profile-preview">{% trans "Resource profile" %}</label>
+  <select class="form-control" id="hoosh-profile-preview" disabled>
+    <option>Eco</option><option selected>Balanced</option><option>Performance</option>
+  </select>
+  <p><label><input type="checkbox" disabled> LSCache — {% trans "Requires site-specific cache privacy checks" %}</label></p>
+  <p><label><input type="checkbox" disabled> {% trans "Object cache — requires application integration" %}</label></p>
+</fieldset>

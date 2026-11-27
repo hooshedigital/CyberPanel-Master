@@ -1,0 +1,3 @@
+# Hoosh Capacity Advisor — مرحله اول Resource Manager
+
+تحلیل read-only از مانیتور موجود؛ بدون Docker query، تماس شبکه، حذف یا تنظیم خودکار. نمونه فعلی حداکثر 180s، میانه 30 دقیقه حداقل پنج نمونه، آستانه RAM1536MiB/swap1024MiB/disk12GiB برای بار جدید/CPU PSI60<40/memory PSI60<5. زیر 8GiB کمبود حاد؛ 8 تا کمتر از 12GiB ذخیره ناکافی پشتیبان و منع بار جدید. زیر 12GiB یا اشغال >=85% هشدار. تصمیم صرفا thresholds_met / review_required / blocked است؛ هرگز execution_authorized نیست. تغییر میانه فضای آزاد دو بازه یک‌ساعته در صورت داده کافی، بدون پیش‌بینی خطی نامعتبر. فایل aggregate /var/lib/hoosh-capacity-advisor/latest.json، timer هر 10 دقیقه، سقف 96MiB و 8 task. عدم دسترسی به داده یا تنظیمات Feast. 

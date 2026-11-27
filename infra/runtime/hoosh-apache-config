@@ -1,0 +1,200 @@
+#!/usr/bin/python3
+"""Root-approved configuration for a dedicated, private compatibility backend."""
+import os
+import pwd
+import grp
+import re
+import stat
+import sys
+from pathlib import Path
+
+BASE = Path("/etc/hoosh-runtimes")
+CONF = BASE / "apache-config"
+ACCOUNTS = BASE / "apache-accounts"
+ROOT = Path("/srv/hoosh-apache")
+RUNTIME = "/opt/hoosh-runtimes/php-fpm/8.1.2-1ubuntu2.29"
+FILES = ("php.ini", "fpm.conf", "httpd.conf")
+DENIED = {"root", "ubuntu", "admin", "nobody", "www-data", "mysql", "redis"}
+
+def account(name):
+    if not re.fullmatch(r"[a-z][a-z0-9_-]{0,30}", name) or name in DENIED:
+        raise ValueError("invalid account")
+    u = pwd.getpwnam(name)
+    if not 1000 <= u.pw_uid < 65000 or u.pw_gid < 1000 or grp.getgrgid(u.pw_gid).gr_name != name:
+        raise ValueError("dedicated account/group required")
+    return u
+
+def trusted_dir(p):
+    s = p.lstat()
+    return stat.S_ISDIR(s.st_mode) and s.st_uid == 0 and not s.st_mode & 0o022
+
+def trusted_file(p):
+    s = p.lstat()
+    return stat.S_ISREG(s.st_mode) and s.st_uid == 0 and not s.st_mode & 0o022
+
+def paths(name):
+    d = CONF / name
+    public = ROOT / name / "public"
+    return d, public
+
+def private_project(u, public):
+    # The dedicated account is the sole non-root reader of the project boundary.
+    g = grp.getgrgid(u.pw_gid)
+    if g.gr_name != u.pw_name or set(g.gr_mem) - {u.pw_name}:
+        return False
+    if any(x.pw_name != u.pw_name and (x.pw_gid == u.pw_gid or x.pw_uid == u.pw_uid)
+           for x in pwd.getpwall()):
+        return False
+    if u.pw_shell not in ("/usr/sbin/nologin", "/sbin/nologin", "/bin/false"):
+        return False
+    for p in (public, public.parent):
+        s = p.lstat()
+        if (not stat.S_ISDIR(s.st_mode) or s.st_uid != 0
+                or s.st_gid != u.pw_gid or stat.S_IMODE(s.st_mode) != 0o750
+                or set(os.listxattr(p, follow_symlinks=False)) &
+                {'system.posix_acl_access', 'system.posix_acl_default'}):
+            return False
+    return True
+
+
+def check(name):
+    u = account(name)
+    if os.getuid() != u.pw_uid or os.getgid() != u.pw_gid:
+        return False
+    d, public = paths(name)
+    if not private_project(u, public):
+        return False
+    for p in (ACCOUNTS, *ACCOUNTS.parents, d, *d.parents, public, *public.parents):
+        if not trusted_dir(p):
+            return False
+    if not all(trusted_file(d / f) for f in FILES):
+        return False
+    fd = os.open(ACCOUNTS / name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, "rb") as f:
+        s = os.fstat(f.fileno())
+        return stat.S_ISREG(s.st_mode) and s.st_uid == 0 and not s.st_mode & 0o022 and s.st_size <= 128 and f.read(129) == f"{name}:{u.pw_uid}:{u.pw_gid}\n".encode("ascii")
+
+def domain_ok(domain):
+    return (len(domain) <= 253 and domain.isascii() and len(domain.split(".")) >= 2
+            and all(re.fullmatch(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", x) for x in domain.split(".")))
+
+def render(name, domain, tls_origin=False):
+    if not domain_ok(domain) or not re.fullmatch(r"[a-z][a-z0-9_-]{0,30}", name) or name in DENIED:
+        raise ValueError("invalid renderer input")
+    if type(tls_origin) is not bool:
+        raise ValueError("invalid origin mode")
+    r = "/run/hoosh-apache-" + name
+    public = str(ROOT / name / "public")
+    modules = ("mysqlnd", "mysqli", "pdo", "pdo_mysql", "ctype", "iconv", "mbstring",
+               "fileinfo", "dom", "xml", "simplexml", "xmlreader", "xmlwriter", "curl", "zip", "tokenizer")
+    ini = f"extension_dir={RUNTIME}/usr/lib/php/20210902\n" + "".join(f"extension={x}.so\n" for x in modules)
+    ini += "memory_limit=128M\ndisplay_errors=Off\nlog_errors=On\ncgi.fix_pathinfo=0\nexpose_php=Off\n"
+    fpm = f"""[global]
+pid={r}/fpm.pid
+error_log={r}/fpm.log
+daemonize=no
+[site]
+user={name}
+group={name}
+listen={r}/php.sock
+listen.mode=0600
+pm=ondemand
+pm.max_children=2
+pm.process_idle_timeout=5s
+pm.max_requests=100
+clear_env=yes
+security.limit_extensions=.php
+"""
+    httpd = f"""ServerRoot "/etc/apache2"
+ServerName {domain}
+Listen 127.0.0.1:18883
+DefaultRuntimeDir "{r}"
+PidFile "{r}/httpd.pid"
+ErrorLog "{r}/httpd.log"
+LogLevel warn
+User {name}
+Group {name}
+"""
+    for m in ("mpm_event", "authz_core", "dir", "mime", "proxy", "proxy_fcgi", "rewrite", "headers"):
+        httpd += f"LoadModule {m}_module /usr/lib/apache2/modules/mod_{m}.so\n"
+    httpd += f"""StartServers 1
+ServerLimit 1
+ThreadLimit 16
+ThreadsPerChild 8
+MaxRequestWorkers 8
+MinSpareThreads 2
+MaxSpareThreads 10
+TypesConfig /etc/mime.types
+ProxyRequests Off
+RequestHeader unset X-LSCACHE
+RequestHeader unset X-LSCACHE-VARY-VALUE
+RequestHeader unset X-Forwarded-Host
+RequestHeader unset X-Forwarded-Proto
+DocumentRoot "{public}"
+DirectoryIndex index.php index.html
+<Directory />
+    Require all denied
+    AllowOverride None
+</Directory>
+<Directory "{public}">
+    Require all granted
+    Options -Indexes -FollowSymLinks +SymLinksIfOwnerMatch
+    AllowOverride None
+    AllowOverrideList RewriteEngine RewriteCond RewriteRule RewriteBase
+</Directory>
+<FilesMatch "(?i)(^\\.|^wp-config\\.php$|\\.(bak|old|sql|env|phtml|phar|php[0-9]+)$|\\.php\\.)">
+    Require all denied
+</FilesMatch>
+<FilesMatch "(?i)\\.php$">
+    SetHandler "proxy:unix:{r}/php.sock|fcgi://localhost/"
+</FilesMatch>
+"""
+    if tls_origin:
+        # Only for an owner-approved TLS-terminated origin. Never derive
+        # HTTPS from client-controlled forwarding headers.
+        httpd += 'ProxyFCGISetEnvIf "true" HTTPS "on"\nProxyFCGISetEnvIf "true" SERVER_PORT "443"\n'
+    return dict(zip(FILES, (ini, fpm, httpd)))
+
+def prepare(name, domain, tls_origin=False):
+    if os.geteuid() != 0 or not domain_ok(domain):
+        raise ValueError("root and canonical domain required")
+    u = account(name)
+    d, public = paths(name)
+    if not private_project(u, public):
+        raise ValueError("private project boundary required")
+    for p in (ACCOUNTS, *ACCOUNTS.parents, CONF, *CONF.parents, public, *public.parents):
+        if not trusted_dir(p):
+            raise ValueError("untrusted directory")
+    if (ACCOUNTS / name).exists() or d.exists():
+        raise ValueError("already enrolled")
+    d.mkdir(mode=0o755)
+    created = []
+    try:
+        for f, content in render(name, domain, tls_origin).items():
+            p = d / f
+            fd = os.open(p, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
+            created.append(p)
+            with os.fdopen(fd, "w") as out:
+                out.write(content)
+        p = ACCOUNTS / name
+        fd = os.open(p, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
+        created.append(p)
+        with os.fdopen(fd, "w") as out:
+            out.write(f"{name}:{u.pw_uid}:{u.pw_gid}\n")
+    except Exception:
+        for p in reversed(created):
+            p.unlink()
+        d.rmdir()
+        raise
+
+if __name__ == "__main__":
+    try:
+        if len(sys.argv) == 3 and sys.argv[1] == "check":
+            sys.exit(0 if check(sys.argv[2]) else 1)
+        if sys.argv[1:2] == ["prepare"] and (len(sys.argv) == 4 or (len(sys.argv) == 5 and sys.argv[4] == "--tls-origin")):
+            prepare(sys.argv[2], sys.argv[3], len(sys.argv) == 5)
+            print("Prepared private backend; start socket separately.")
+            sys.exit(0)
+    except (OSError, KeyError, ValueError, OverflowError):
+        pass
+    sys.exit(1)

@@ -1,0 +1,25 @@
+[Unit]
+Description=Socket relay to isolated Hoosh Apache (%i)
+Requires=hoosh-apache-fpm@%i.service
+After=hoosh-apache-fpm@%i.service
+BindsTo=hoosh-apache-fpm@%i.service
+JoinsNamespaceOf=hoosh-apache-fpm@%i.service
+
+[Service]
+User=%i
+ExecStart=/lib/systemd/systemd-socket-proxyd 127.0.0.1:18883
+NoNewPrivileges=yes
+PrivateNetwork=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+CapabilityBoundingSet=
+Slice=hoosh-apache.slice
+MemoryMax=32M
+CPUQuota=10%
+TasksMax=8

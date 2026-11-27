@@ -1,0 +1,15 @@
+[Unit]
+Description=Private dedicated edge transport for apache (%i)
+ConditionPathExists=/etc/hoosh-runtimes/edge-accounts/apache-%i
+Requires=hoosh-apache-http@%i.socket
+After=hoosh-apache-http@%i.socket
+BindsTo=hoosh-apache-http@%i.socket
+
+[Socket]
+ListenStream=/run/hoosh-edge-apache-%i.sock
+SocketUser=hoosh-web-edge
+SocketGroup=hoosh-web-edge
+SocketMode=0600
+RemoveOnStop=yes
+Backlog=16
+Service=hoosh-edge-apache@%i.service

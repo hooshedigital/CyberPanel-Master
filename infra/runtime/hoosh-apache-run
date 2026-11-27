@@ -1,0 +1,13 @@
+#!/bin/bash
+set -eu
+n="$1"
+[[ "$n" =~ ^[a-z][a-z0-9_-]{0,30}$ ]]
+d="/etc/hoosh-runtimes/apache-config/$n"
+f=/opt/hoosh-runtimes/php-fpm/8.1.2-1ubuntu2.29/usr/sbin/php-fpm8.1
+"$f" -F -c "$d/php.ini" -y "$d/fpm.conf" &
+fp=$!
+trap 'kill "$fp" "${ap:-$fp}" 2>/dev/null || true; wait 2>/dev/null || true' EXIT
+/usr/sbin/apache2 -f "$d/httpd.conf" -DFOREGROUND &
+ap=$!
+wait -n "$fp" "$ap"
+exit 1

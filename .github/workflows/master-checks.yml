@@ -1,10 +1,10 @@
 name: CyberPanel Master add-on safety checks
 on:
   push:
-    branches: [feat/master-captcha-i18n-cyberagent-20261118]
-    paths: ["master_extensions/**", ".github/workflows/master-checks.yml"]
+    branches: [feat/master-captcha-i18n-cyberagent-20261118, release/infra-2027-preview-20261126]
+    paths: ["master_extensions/**", "infra/runtime/**", "infra/ingress/**", ".github/workflows/master-checks.yml"]
   pull_request:
-    paths: ["master_extensions/**", ".github/workflows/master-checks.yml"]
+    paths: ["master_extensions/**", "infra/runtime/**", "infra/ingress/**", ".github/workflows/master-checks.yml"]
 permissions:
   contents: read
 jobs:

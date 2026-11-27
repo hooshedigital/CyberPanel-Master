@@ -1,0 +1,17 @@
+name: Compose bounded logging contract
+on:
+  push:
+    branches: [release/infra-2027-preview-20261126, feat/hoosh-web-engine-manager-stage-20261126]
+    paths: ['scripts/compose_log_policy.py', 'master_extensions/tests/test_compose_log_policy.py', '.github/workflows/compose-log-policy.yml']
+  pull_request:
+    paths: ['scripts/compose_log_policy.py', 'master_extensions/tests/test_compose_log_policy.py', '.github/workflows/compose-log-policy.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install PyYAML==6.0.2
+      - run: python3 -m unittest discover -s master_extensions/tests -p test_compose_log_policy.py -v

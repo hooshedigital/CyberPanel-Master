@@ -1,0 +1,15 @@
+[Unit]
+Description=Private dedicated edge transport for frankenphp (%i)
+ConditionPathExists=/etc/hoosh-runtimes/edge-accounts/frankenphp-%i
+Requires=hoosh-frankenphp@%i.service
+After=hoosh-frankenphp@%i.service
+BindsTo=hoosh-frankenphp@%i.service
+
+[Socket]
+ListenStream=/run/hoosh-edge-frankenphp-%i.sock
+SocketUser=hoosh-web-edge
+SocketGroup=hoosh-web-edge
+SocketMode=0600
+RemoveOnStop=yes
+Backlog=16
+Service=hoosh-edge-frankenphp@%i.service

@@ -1,0 +1,16 @@
+{
+	admin off
+	auto_https off
+	persist_config off
+	frankenphp {
+		num_threads 2
+		max_threads 2
+	}
+}
+http:// {
+	bind unix//run/hoosh-frankenphp-{$HOOSH_ACCOUNT}/http.sock
+	root * /srv/hoosh-frankenphp/{$HOOSH_ACCOUNT}/public
+	@blocked path_regexp blocked (?i)(^|/)(\.|wp-config\.php($|/))|(\.bak|\.old|\.sql|\.env|\.phtml|\.phar|\.php[0-9]+)($|/)
+	respond @blocked 403
+	php_server
+}

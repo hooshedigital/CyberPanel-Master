@@ -216,6 +216,7 @@
         <p class="hm-note">{{ t.agent_ops_commands }}</p>
       </section>
 
+      {% include "backup/hoosh_capacity_summary.html" with capacity=master.capacity %}
       <section class="hm-panel" id="linux-storage" aria-labelledby="linux-storage-heading">
         <div class="hm-panel-head">
           <h2 class="hm-panel-title" id="linux-storage-heading"><i class="fas fa-chart-pie" aria-hidden="true"></i>{{ t.storage_heading }}</h2>

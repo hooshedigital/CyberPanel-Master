@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh Docker retention review hourly
+
+[Timer]
+OnBootSec=8min
+OnUnitActiveSec=1h
+AccuracySec=1min
+RandomizedDelaySec=1min
+
+[Install]
+WantedBy=timers.target

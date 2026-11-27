@@ -1,0 +1,9 @@
+[Unit]
+Description=Aggregate budget for Hoosh Apache/FPM backends
+
+[Slice]
+MemoryAccounting=yes
+CPUAccounting=yes
+MemoryMax=384M
+CPUQuota=50%
+TasksMax=80

@@ -1,0 +1,36 @@
+[Unit]
+Description=Hoosh isolated FrankenPHP project (%i)
+After=local-fs.target
+ConditionPathExists=/etc/hoosh-runtimes/frankenphp-accounts/%i
+
+[Service]
+Type=simple
+User=%i
+RuntimeDirectory=hoosh-frankenphp-%i
+RuntimeDirectoryMode=0700
+Environment=HOOSH_ACCOUNT=%i
+Environment=HOME=/run/hoosh-frankenphp-%i
+Environment=XDG_DATA_HOME=/run/hoosh-frankenphp-%i
+Environment=XDG_CONFIG_HOME=/run/hoosh-frankenphp-%i
+Environment=GOMAXPROCS=1
+ExecCondition=/usr/local/libexec/hoosh-frankenphp-account-check %i
+ExecStart=/opt/hoosh-runtimes/frankenphp/1.14.0/frankenphp run --config /etc/hoosh-runtimes/frankenphp.Caddyfile --adapter caddyfile
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateNetwork=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+CapabilityBoundingSet=
+UMask=0077
+Slice=hoosh-frankenphp.slice
+MemoryMax=256M
+CPUQuota=35%
+TasksMax=32
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10

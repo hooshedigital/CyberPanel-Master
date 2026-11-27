@@ -1,0 +1,18 @@
+[Unit]
+Description=Read-only health check of dedicated Hoosh local HTTPS canary
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/local/libexec/hoosh-canary-health
+StateDirectory=hoosh-canary-health
+StateDirectoryMode=0755
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateNetwork=yes
+NoNewPrivileges=yes
+MemoryMax=48M
+CPUWeight=25
+IOWeight=25
+TimeoutStartSec=45

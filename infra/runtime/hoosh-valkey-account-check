@@ -1,0 +1,39 @@
+#!/usr/bin/python3
+"""Fail closed unless a root-owned enrollment matches this dedicated account."""
+import os
+import pwd
+import re
+import stat
+import sys
+from pathlib import Path
+
+BASE = Path("/etc/hoosh-runtimes/valkey-accounts")
+
+def check(name):
+    if not re.fullmatch(r"[a-z][a-z0-9_-]{0,30}", name):
+        return False
+    if name in {"root", "ubuntu", "admin", "nobody", "www-data", "mysql", "redis"}:
+        return False
+    account = pwd.getpwnam(name)
+    if not 1000 <= account.pw_uid < 65000 or account.pw_gid < 1000:
+        return False
+    if os.getuid() != account.pw_uid or os.getgid() != account.pw_gid:
+        return False
+    for parent in (BASE, *BASE.parents):
+        s = parent.lstat()
+        if not stat.S_ISDIR(s.st_mode) or s.st_uid != 0 or s.st_mode & 0o022:
+            return False
+    fd = os.open(BASE / name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, "rb") as f:
+        s = os.fstat(f.fileno())
+        if not stat.S_ISREG(s.st_mode) or s.st_uid != 0 or s.st_mode & 0o022 or s.st_size > 128:
+            return False
+        expected = f"{name}:{account.pw_uid}:{account.pw_gid}\n".encode("ascii")
+        return f.read(129) == expected
+
+if __name__ == "__main__":
+    try:
+        ok = len(sys.argv) == 2 and check(sys.argv[1])
+    except (OSError, KeyError, ValueError, OverflowError):
+        ok = False
+    sys.exit(0 if ok else 1)

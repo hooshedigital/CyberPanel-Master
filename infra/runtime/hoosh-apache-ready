@@ -1,0 +1,9 @@
+#!/bin/bash
+set -eu
+n="$1"
+[[ "$n" =~ ^[a-z][a-z0-9_-]{0,30}$ ]]
+for i in $(seq 1 20); do
+ if test -S "/run/hoosh-apache-$n/php.sock" && (echo >/dev/tcp/127.0.0.1/18883) 2>/dev/null; then exit 0; fi
+ sleep .3
+done
+exit 1

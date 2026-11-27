@@ -1,0 +1,50 @@
+{% load i18n %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hoosh Web Engine Manager</title>
+<style>
+:root{color-scheme:light dark;font-family:system-ui,sans-serif}body{margin:0;background:Canvas;color:CanvasText}
+main{max-width:780px;margin:32px auto;padding:0 20px}section{border:1px solid GrayText;border-radius:12px;padding:20px;margin:18px 0}
+label{display:block;margin:16px 0 5px;font-weight:600}input:not([type=checkbox]),select{box-sizing:border-box;width:100%;padding:10px;border:1px solid GrayText;border-radius:6px;font:inherit}
+button{margin-top:18px;padding:10px 18px;border:1px solid GrayText;border-radius:6px;font:inherit;cursor:pointer}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;border:1px solid GrayText;border-radius:6px}
+small{color:GrayText}a{color:LinkText}
+</style>
+</head>
+<body><main>
+<a href="{% url 'createWebsite' %}">{% trans "Back to Create Website" %}</a>
+<h1>Hoosh Web Engine Manager</h1>
+<p>{% trans "Private engine deployment preflight. This form generates a plan only; it cannot start services, create a public site or grant privileges." %}</p>
+<section>
+<h2>{% trans "Current resource estimate" %}</h2>
+{% if metrics.available %}<p>RAM: {{ metrics.ram }} MiB · Swap: {{ metrics.swap }} MiB · Disk: {{ metrics.disk }} MiB</p>
+<p>CPU PSI60: {{ metrics.cpu }}% · Memory PSI60: {{ metrics.memory }}%</p>{% endif %}
+{% if capacity_ok %}<p>{% trans "Preliminary resource thresholds met." %}</p>{% else %}<p>{% trans "Capacity is below threshold or unavailable. Owner preflight required." %}</p>{% endif %}
+</section>
+<section>
+<form method="post" action="{% url 'hoosh_private_engine_plan' %}">
+{% csrf_token %}
+<label for="engine">{% trans "Engine" %}</label>
+<select id="engine" name="engine"><option value="apache"{% if form.engine == 'apache' %} selected{% endif %}>Apache + PHP-FPM (compatibility)</option><option value="frankenphp"{% if form.engine == 'frankenphp' %} selected{% endif %}>FrankenPHP</option></select>
+<label for="account">{% trans "Existing dedicated Linux account" %}</label>
+<input id="account" name="account" required maxlength="31" value="{{ form.account }}" pattern="[a-z][a-z0-9_-]{0,30}" autocomplete="off">
+<label for="domain">{% trans "Canonical domain" %}</label>
+<input id="domain" name="domain" required maxlength="253" value="{{ form.domain }}" placeholder="example.test" autocomplete="off">
+<label><input type="checkbox" name="persistent"{% if form.persistent %} checked{% endif %}> {% trans "Request start after boot" %}</label>
+<button type="submit">{% trans "Generate private deployment plan" %}</button>
+</form>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+</section>
+{% if plan %}
+<section aria-live="polite">
+<h2>{% trans "Owner review required" %}</h2>
+<p>{{ plan.engine }} · {{ plan.account }} · {{ plan.domain }}</p>
+<p>{% trans "Required immutable project directory" %}: <code>{{ plan.project_root }}</code></p>
+<p>{% trans "Root-only preflight command (not executed)" %}:</p>
+<pre>{{ plan.owner_preflight }}</pre>
+<p>{% trans "Account, project files, mount boundaries, current resources and existing enrollments must pass the independent owner preflight. Public routing and TLS are not configured." %}</p>
+</section>
+{% endif %}
+</main></body></html>

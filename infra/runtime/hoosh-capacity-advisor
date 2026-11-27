@@ -1,0 +1,168 @@
+#!/usr/bin/python3
+"""Read-only capacity advice from the existing resource monitor. No actuators."""
+import datetime as dt
+import json
+import math
+import os
+from pathlib import Path
+import stat
+import statistics
+import tempfile
+
+SOURCE = Path("/var/lib/hoosh-resource-monitor")
+STATE = Path("/var/lib/hoosh-capacity-advisor")
+MIB = 2**20
+GIB = 2**30
+MAX_TAIL = 4 * MIB
+UTC = dt.timezone.utc
+
+
+def read_bytes(path, limit, tail=False):
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, "rb") as f:
+        st = os.fstat(f.fileno())
+        if (not stat.S_ISREG(st.st_mode) or st.st_uid != 0 or st.st_mode & 0o022
+                or st.st_nlink != 1):
+            raise ValueError("untrusted monitor file")
+        if st.st_size > limit:
+            if not tail:
+                raise ValueError("monitor file too large")
+            f.seek(st.st_size - limit)
+            f.readline()
+        return f.read(limit)
+
+
+def number(value):
+    if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
+        raise ValueError("invalid metric")
+    return float(value)
+
+
+def extract(row):
+    stamp = dt.datetime.fromisoformat(row["ts"])
+    if stamp.tzinfo is None:
+        raise ValueError("timestamp without timezone")
+    m = row["memory_kib"]
+    return {
+        "ts": stamp.astimezone(UTC),
+        "ram_mib": number(m["MemAvailable"])/1024,
+        "swap_free_mib": number(m["SwapFree"])/1024,
+        "disk_free_gib": number(row["disk_available_bytes"])/GIB,
+        "cpu_psi60": number(row["psi"]["cpu"]["some"]["avg60"]),
+        "memory_psi60": number(row["psi"]["memory"]["some"]["avg60"]),
+        "io_psi60": number(row["psi"]["io"]["some"]["avg60"]),
+    }
+
+
+def storage_budget(disk_free):
+    """Fixed operating target for the current 100 GiB host; advice, not a cleanup order."""
+    target = 20.0
+    return {"target_free_gib":target,"gap_gib":round(max(0,target-disk_free),3),
+            "target_met":disk_free>=target,"independent_recovery_required":True,
+            "automatic_actions":False}
+
+
+def workload_policy(reasons, warnings, disk_free):
+    """Advisory only: preserve production, never suppress backup or health checks."""
+    if reasons:
+        build = runtime = "defer"
+    elif warnings:
+        build = "defer"
+        runtime = "review"
+    else:
+        build = runtime = "review"
+    return {"version":1,"local_build":build,"new_runtime":runtime,
+            "retention_review":"prioritize" if disk_free < 12 else "routine",
+            "existing_services":"preserve","backup_and_health":"preserve",
+            "execution_authorized":False}
+
+
+def summarize(latest, history, now, disk_free, disk_use):
+    age = (now-latest["ts"]).total_seconds()
+    rows = {x["ts"]:x for x in history if 0 <= (now-x["ts"]).total_seconds() <= 21600}
+    rows[latest["ts"]] = latest
+    recent = [x for t,x in rows.items() if 0 <= (now-t).total_seconds() <= 1800]
+    medians = {k:round(statistics.median(x[k] for x in recent),3)
+               for k in ("ram_mib","swap_free_mib","cpu_psi60","memory_psi60","io_psi60")
+               } if recent else {}
+    reasons=[]; warnings=[]
+    if not 0 <= age <= 180:
+        reasons.append("monitor_stale")
+    if len(recent) < 5:
+        reasons.append("insufficient_samples")
+    if latest["ram_mib"] < 1536:
+        reasons.append("ram_below_1536_mib")
+    if latest["swap_free_mib"] < 1024:
+        reasons.append("swap_below_1024_mib")
+    if disk_free < 8:
+        reasons.append("disk_below_8_gib")
+    elif disk_free < 12:
+        reasons.append("disk_backup_reserve")
+    if latest["cpu_psi60"] >= 40 or medians.get("cpu_psi60",100) >= 40:
+        reasons.append("cpu_pressure_high")
+    if latest["memory_psi60"] >= 5 or medians.get("memory_psi60",100) >= 5:
+        reasons.append("memory_pressure_high")
+    if disk_free < 12 or disk_use >= 85:
+        warnings.append("disk_headroom_warning")
+    if latest["ram_mib"] < 2048:
+        warnings.append("ram_headroom_warning")
+    if medians.get("cpu_psi60",100) >= 25:
+        warnings.append("cpu_contention_warning")
+    if medians.get("io_psi60",0) >= 3:
+        warnings.append("io_contention_warning")
+    # Compare non-overlapping hour windows; no linear extrapolation across deploys.
+    previous = [x["disk_free_gib"] for t,x in rows.items() if 3600 < (now-t).total_seconds() <= 7200]
+    current = [x["disk_free_gib"] for t,x in rows.items() if 0 <= (now-t).total_seconds() <= 3600]
+    delta = round(statistics.median(current)-statistics.median(previous),3) if len(previous)>=10 and len(current)>=10 else None
+    return {"time_utc":now.isoformat(),"monitor_age_seconds":round(age,1),
+            "samples_30m":len(recent),"median_30m":medians,
+            "disk_free_gib":round(disk_free,3),"disk_used_percent":round(disk_use,2),
+            "disk_free_median_delta_hour_gib":delta,
+            "decision":"blocked" if reasons else "review_required" if warnings else "thresholds_met",
+            "blockers":reasons,"warnings":warnings,
+            "storage_budget":storage_budget(disk_free),
+            "workload_policy":workload_policy(reasons,warnings,disk_free),
+            "execution_authorized":False,"automatic_actions":False}
+
+
+def collect():
+    now=dt.datetime.now(UTC)
+    latest=extract(json.loads(read_bytes(SOURCE/"latest.json",256*1024)))
+    rows=[]
+    for day in (now.date()-dt.timedelta(days=1),now.date()):
+        try:raw=read_bytes(SOURCE/(day.isoformat()+".jsonl"),MAX_TAIL,tail=True)
+        except FileNotFoundError:continue
+        for line in raw.splitlines():
+            try:rows.append(extract(json.loads(line)))
+            except (ValueError,KeyError,TypeError,OverflowError):continue
+    fs=os.statvfs("/")
+    used=fs.f_blocks-fs.f_bfree
+    effective=used+fs.f_bavail
+    if effective<=0:raise ValueError("invalid filesystem")
+    return summarize(latest,rows,now,fs.f_bavail*fs.f_frsize/GIB,100*used/effective)
+
+
+def save(data):
+    s=STATE.lstat()
+    if not stat.S_ISDIR(s.st_mode) or s.st_uid!=0 or s.st_mode & 0o022:
+        raise ValueError("untrusted state")
+    fd,p=tempfile.mkstemp(prefix=".latest-",dir=STATE)
+    try:
+        with os.fdopen(fd,"w") as f:
+            os.fchmod(f.fileno(),0o644)
+            json.dump(data,f,sort_keys=True);f.write("\n");f.flush();os.fsync(f.fileno())
+        os.replace(p,STATE/"latest.json")
+    finally:
+        if os.path.exists(p):os.unlink(p)
+
+
+if __name__=="__main__":
+    if os.geteuid()!=0:raise SystemExit("root required")
+    try:r=collect()
+    except (OSError,ValueError,TypeError,KeyError,OverflowError):
+        r={"time_utc":dt.datetime.now(UTC).isoformat(),"decision":"blocked",
+           "blockers":["monitor_data_unavailable"],"warnings":[],
+           "workload_policy":workload_policy(["monitor_data_unavailable"],[],0),
+           "execution_authorized":False,"automatic_actions":False}
+    save(r)
+    print(r["decision"])

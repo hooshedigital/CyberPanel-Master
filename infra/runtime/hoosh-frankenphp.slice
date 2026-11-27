@@ -1,0 +1,9 @@
+[Unit]
+Description=Aggregate limits for Hoosh FrankenPHP projects
+
+[Slice]
+MemoryAccounting=yes
+CPUAccounting=yes
+MemoryMax=384M
+CPUQuota=50%
+TasksMax=64

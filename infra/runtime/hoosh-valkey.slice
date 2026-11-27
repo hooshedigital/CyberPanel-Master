@@ -1,0 +1,9 @@
+[Unit]
+Description=Aggregate limits for Hoosh isolated object caches
+
+[Slice]
+MemoryAccounting=yes
+CPUAccounting=yes
+MemoryMax=192M
+CPUQuota=30%
+TasksMax=48
