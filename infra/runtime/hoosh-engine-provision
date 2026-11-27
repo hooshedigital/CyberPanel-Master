@@ -19,6 +19,8 @@ DENIED = {"root", "ubuntu", "admin", "nobody", "www-data", "mysql", "redis"}
 MARKER = b"HOOSH_ENGINE_READY\n"
 CONFIG_FILES = ("php.ini", "fpm.conf", "httpd.conf")
 ACL = {"system.posix_acl_access", "system.posix_acl_default"}
+# Keep 8 GiB emergency headroom plus 4 GiB backup staging reserve.
+MIN_NEW_ENGINE_DISK_MIB = 12288
 
 
 def validate(engine, name, domain):
@@ -152,7 +154,7 @@ def capacity():
                      Path("/proc/pressure/" + k).read_text()).group(1))
     fs = os.statvfs("/")
     if (mem("MemAvailable") < 1536 * 1024 or mem("SwapFree") < 1024 * 1024
-            or fs.f_bavail * fs.f_frsize < 8192 * 1048576
+            or fs.f_bavail * fs.f_frsize < MIN_NEW_ENGINE_DISK_MIB * 1048576
             or pressure("cpu") >= 40 or pressure("memory") >= 5):
         raise ValueError("resource_headroom")
 

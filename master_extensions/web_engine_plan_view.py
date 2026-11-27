@@ -24,7 +24,7 @@ def private_engine_plan(request):
     metrics = panel_context(acl) or {}
     # CLI independently validates live capacity, filesystem and enrollment state.
     capacity_ok = (metrics.get("available") is True and metrics.get("ram", 0) >= 1536
-                   and metrics.get("swap", 0) >= 1024 and metrics.get("disk", 0) >= 8192
+                   and metrics.get("swap", 0) >= 1024 and metrics.get("disk", 0) >= 12288
                    and 0 <= metrics.get("cpu", 100) < 40 and 0 <= metrics.get("memory", 100) < 5)
     context = {"capacity_ok": capacity_ok, "metrics": metrics, "form": {
         "engine": "apache", "account": "", "domain": "", "persistent": False}}

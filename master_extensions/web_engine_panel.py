@@ -52,8 +52,8 @@ def panel_context(acl):
         cpu, memory = _psi("cpu"), _psi("memory")
         result.update(available=True, ram=mem["MemAvailable"], swap=mem["SwapFree"],
                       disk=disk, cpu=cpu, memory=memory,
-                      capacity_ok=mem["MemAvailable"]>=1408 and mem["SwapFree"]>=1024
-                      and disk>=8192 and 0<=cpu<40 and 0<=memory<5)
+                      capacity_ok=mem["MemAvailable"]>=1536 and mem["SwapFree"]>=1024
+                      and disk>=12288 and 0<=cpu<40 and 0<=memory<5)
     except (OSError, ValueError, AttributeError, OverflowError):
         pass
     return result

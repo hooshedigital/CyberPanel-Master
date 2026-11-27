@@ -15,6 +15,7 @@ CODES={
 "ram_below_1536_mib":("RAM below threshold","حافظه کمتر از حد مجاز"),
 "swap_below_1024_mib":("Swap below threshold","فضای Swap ناکافی"),
 "disk_below_8_gib":("Disk below threshold","فضای دیسک ناکافی"),
+"disk_backup_reserve":("New workloads need 12 GiB free including backup reserve","برای بارهای جدید حداقل ۱۲ GiB فضای آزاد با احتساب ذخیره پشتیبان لازم است"),
 "cpu_pressure_high":("High CPU pressure","فشار بالای CPU"),
 "memory_pressure_high":("High memory pressure","فشار بالای حافظه"),
 "disk_headroom_warning":("Low disk headroom","هشدار ظرفیت دیسک"),

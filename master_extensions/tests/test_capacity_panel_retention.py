@@ -49,3 +49,11 @@ class RetentionTests(unittest.TestCase):
         d["storage_budget"]["automatic_actions"]=True
         with patch.object(P,"read_report",side_effect=[d,{}]):
             self.assertNotIn("storage_budget",P.capacity_context())
+
+    def test_backup_reserve_reason_is_recognized(self):
+        d={"decision":"blocked","warnings":["disk_headroom_warning"],"blockers":["disk_backup_reserve"]}
+        with patch.object(P,"read_report",side_effect=[d,{}]):
+            r=P.capacity_context("fa")
+            self.assertTrue(r["ready"])
+            self.assertEqual(r["decision"],"blocked")
+            self.assertTrue(any("۱۲ GiB" in x for x in r["capacity_reasons"]))

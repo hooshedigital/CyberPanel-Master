@@ -4,6 +4,7 @@ import runpy
 import tempfile
 import unittest
 from unittest.mock import patch
+from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[2]
 M = runpy.run_path(str(ROOT / "infra/runtime/hoosh-engine-provision"))
@@ -111,3 +112,17 @@ class ProvisionTests(unittest.TestCase):
         self.assertIn("-i", argv)
         self.assertEqual(argv[argv.index("/usr/bin/curl") + 1], "--disable")
         self.assertIn("=http", argv)
+
+    def test_backup_disk_reserve_boundary(self):
+        def read_text(path, *args, **kwargs):
+            if str(path)=="/proc/meminfo":
+                return "MemAvailable: 2097152 kB\nSwapFree: 2097152 kB\n"
+            return "some avg10=0.0 avg60=0.0 avg300=0.0 total=0\n"
+        with patch.object(Path,"read_text",read_text):
+            for available_mib in (8192, 11182, 12287):
+                with self.subTest(available_mib=available_mib):
+                    with patch.object(os,"statvfs",return_value=SimpleNamespace(f_bavail=available_mib*256,f_frsize=4096)):
+                        with self.assertRaisesRegex(ValueError,"resource_headroom"):
+                            M["capacity"]()
+            with patch.object(os,"statvfs",return_value=SimpleNamespace(f_bavail=12288*256,f_frsize=4096)):
+                M["capacity"]()

@@ -17,7 +17,9 @@ class CapacityTests(unittest.TestCase):
         self.assertEqual(r["decision"],"thresholds_met")
         self.assertFalse(r["execution_authorized"])
     def test_disk_warning_and_block(self):
-        self.assertEqual(self.summarize(disk=9.9,used=90)["decision"],"review_required")
+        self.assertEqual(self.summarize(disk=9.9,used=90)["decision"],"blocked")
+        self.assertIn("disk_backup_reserve", self.summarize(disk=9.9,used=90)["blockers"])
+        self.assertNotIn("disk_backup_reserve", self.summarize(disk=12,used=85)["blockers"])
         self.assertEqual(self.summarize(disk=7)["decision"],"blocked")
     def test_stale_and_cpu(self):
         self.assertIn("monitor_stale",self.summarize(self.row(4))["blockers"])
@@ -28,7 +30,7 @@ class CapacityTests(unittest.TestCase):
     def test_policy_under_pressure(self):
         r=self.summarize(disk=9.9,used=90)["workload_policy"]
         self.assertEqual(r["local_build"],"defer")
-        self.assertEqual(r["new_runtime"],"review")
+        self.assertEqual(r["new_runtime"],"defer")
         self.assertEqual(r["retention_review"],"prioritize")
         self.assertEqual(r["existing_services"],"preserve")
         self.assertEqual(r["backup_and_health"],"preserve")

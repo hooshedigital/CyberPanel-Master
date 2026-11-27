@@ -96,6 +96,8 @@ def summarize(latest, history, now, disk_free, disk_use):
         reasons.append("swap_below_1024_mib")
     if disk_free < 8:
         reasons.append("disk_below_8_gib")
+    elif disk_free < 12:
+        reasons.append("disk_backup_reserve")
     if latest["cpu_psi60"] >= 40 or medians.get("cpu_psi60",100) >= 40:
         reasons.append("cpu_pressure_high")
     if latest["memory_psi60"] >= 5 or medians.get("memory_psi60",100) >= 5:
